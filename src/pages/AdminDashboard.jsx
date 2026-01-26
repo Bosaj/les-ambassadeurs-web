@@ -8,70 +8,72 @@ import toast from 'react-hot-toast';
 const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, handleFormSubmit }) => (
     <div>
         <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold capitalize">Manage {type}</h2>
+            <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white">Manage {type}</h2>
         </div>
 
         {/* Add New Form */}
-        <div className="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-200">
-            <h3 className="font-bold mb-4">Add New {type === 'news' ? 'News Item' : 'Program'}</h3>
+        <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-8 border border-gray-200 dark:border-gray-600">
+            <h3 className="font-bold mb-4 text-gray-800 dark:text-white">Add New {type === 'news' ? 'News Item' : 'Program'}</h3>
             <form onSubmit={(e) => { setFormType(type); handleFormSubmit(e); }} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                     <input
                         type="text" placeholder="Title" required
-                        className="border p-2 rounded"
+                        className="border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                         value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })}
                     />
                     <input
                         type="date" required
-                        className="border p-2 rounded"
+                        className="border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                         value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
                     />
                 </div>
                 <input
                     type="url" placeholder="Image URL (e.g. from Pexels)" required
-                    className="w-full border p-2 rounded"
+                    className="w-full border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                     value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })}
                 />
                 <textarea
                     placeholder="Description" required rows="3"
-                    className="w-full border p-2 rounded"
+                    className="w-full border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                     value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}
                 ></textarea>
-                <button type="submit" className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800">
+                <button type="submit" className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition-colors">
                     Add {type === 'news' ? 'News' : 'Program'}
                 </button>
             </form>
         </div>
 
         {/* List */}
-        <table className="w-full text-left">
-            <thead>
-                <tr className="border-b">
-                    <th className="pb-3">Image</th>
-                    <th className="pb-3">Title</th>
-                    <th className="pb-3">Date</th>
-                    <th className="pb-3">Attendees</th>
-                    <th className="pb-3 text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {data.map((item) => (
-                    <tr key={item.id} className="border-b last:border-0 hover:bg-gray-50">
-                        <td className="py-3">
-                            <img src={item.image} alt="" className="h-10 w-16 object-cover rounded" />
-                        </td>
-                        <td className="py-3 font-medium">{item.title}</td>
-                        <td className="py-3 text-gray-500">{item.date}</td>
-                        <td className="py-3">{item.attendees.length}</td>
-                        <td className="py-3 text-right">
-                            <button onClick={() => onDelete(type, item.id)} className="text-red-500 hover:text-red-700 p-2 border rounded hover:bg-red-50">
-                                <FaTrash />
-                            </button>
-                        </td>
+        <div className="overflow-x-auto">
+            <table className="w-full text-left">
+                <thead>
+                    <tr className="border-b dark:border-gray-700 text-gray-700 dark:text-gray-300">
+                        <th className="pb-3">Image</th>
+                        <th className="pb-3">Title</th>
+                        <th className="pb-3">Date</th>
+                        <th className="pb-3">Attendees</th>
+                        <th className="pb-3 text-right">Actions</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody className="text-gray-800 dark:text-gray-200">
+                    {data.map((item) => (
+                        <tr key={item.id} className="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700 transition-colors">
+                            <td className="py-3">
+                                <img src={item.image} alt="" className="h-10 w-16 object-cover rounded" />
+                            </td>
+                            <td className="py-3 font-medium">{item.title}</td>
+                            <td className="py-3 text-gray-500 dark:text-gray-400">{item.date}</td>
+                            <td className="py-3">{item.attendees.length}</td>
+                            <td className="py-3 text-right">
+                                <button onClick={() => onDelete(type, item.id)} className="text-red-500 hover:text-red-700 p-2 border rounded hover:bg-red-50 dark:hover:bg-red-900/20 dark:border-red-800 transition-colors">
+                                    <FaTrash />
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     </div>
 );
 
@@ -110,24 +112,24 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 bg-blue-900 text-white p-6 hidden md:block">
+            <aside className="w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 hidden md:block transition-colors duration-300">
                 <h2 className="text-2xl font-bold mb-8">Admin Panel</h2>
                 <nav className="space-y-2">
-                    <button onClick={() => setActiveTab('news')} className={`w-full text-left p-3 rounded flex items-center gap-3 ${activeTab === 'news' ? 'bg-blue-800' : 'hover:bg-blue-800'}`}>
+                    <button onClick={() => setActiveTab('news')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'news' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaNewspaper /> Manage News
                     </button>
-                    <button onClick={() => setActiveTab('programs')} className={`w-full text-left p-3 rounded flex items-center gap-3 ${activeTab === 'programs' ? 'bg-blue-800' : 'hover:bg-blue-800'}`}>
+                    <button onClick={() => setActiveTab('programs')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaCalendarPlus /> Manage Programs
                     </button>
-                    <button onClick={() => setActiveTab('donations')} className={`w-full text-left p-3 rounded flex items-center gap-3 ${activeTab === 'donations' ? 'bg-blue-800' : 'hover:bg-blue-800'}`}>
+                    <button onClick={() => setActiveTab('donations')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'donations' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaMoneyBillWave /> Donations
                     </button>
-                    <button onClick={() => setActiveTab('testimonials')} className={`w-full text-left p-3 rounded flex items-center gap-3 ${activeTab === 'testimonials' ? 'bg-blue-800' : 'hover:bg-blue-800'}`}>
+                    <button onClick={() => setActiveTab('testimonials')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaComments /> Testimonials
                     </button>
-                    <button onClick={handleLogout} className="w-full text-left p-3 rounded flex items-center gap-3 text-red-200 hover:bg-blue-800 mt-8">
+                    <button onClick={handleLogout} className="w-full text-left p-3 rounded flex items-center gap-3 text-red-200 hover:bg-blue-800 dark:hover:bg-gray-700 mt-8 transition-colors">
                         <FaSignOutAlt /> Logout
                     </button>
                 </nav>
@@ -135,24 +137,24 @@ const AdminDashboard = () => {
 
             {/* Mobile Header / Content */}
             <div className="flex-1">
-                <header className="bg-white shadow p-4 flex justify-between items-center md:hidden">
-                    <h1 className="font-bold text-blue-900">Admin Dashboard</h1>
-                    <button onClick={handleLogout}><FaSignOutAlt /></button>
+                <header className="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center md:hidden transition-colors duration-300">
+                    <h1 className="font-bold text-blue-900 dark:text-white">Admin Dashboard</h1>
+                    <button onClick={handleLogout} className="text-gray-600 dark:text-gray-300"><FaSignOutAlt /></button>
                 </header>
 
                 <main className="p-8">
                     <div className="flex justify-between items-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800">Welcome, {user?.name}</h1>
-                        <button onClick={handleLogout} className="hidden md:flex items-center gap-2 text-gray-600 hover:text-red-500">
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Welcome, {user?.name}</h1>
+                        <button onClick={handleLogout} className="hidden md:flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-red-500 transition-colors">
                             Log out <FaSignOutAlt />
                         </button>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300">
                         {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} />}
                         {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} />}
-                        {activeTab === 'donations' && <div className="text-gray-500 text-center py-10">Donation management coming soon...</div>}
-                        {activeTab === 'testimonials' && <div className="text-gray-500 text-center py-10">Testimonial management coming soon...</div>}
+                        {activeTab === 'donations' && <div className="text-gray-500 dark:text-gray-400 text-center py-10">Donation management coming soon...</div>}
+                        {activeTab === 'testimonials' && <div className="text-gray-500 dark:text-gray-400 text-center py-10">Testimonial management coming soon...</div>}
                     </div>
                 </main>
             </div>
