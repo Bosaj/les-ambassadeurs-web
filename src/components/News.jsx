@@ -38,13 +38,13 @@ const News = () => {
     ];
 
     return (
-        <section id="news" className="py-16 bg-white">
+        <section id="news" className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-blue-900 mb-4">
+                    <h2 className="text-3xl font-bold text-blue-900 dark:text-gray-100 mb-4">
                         {t.news_title}
                     </h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         {t.news_desc}
                     </p>
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
@@ -54,7 +54,7 @@ const News = () => {
                     {newsItems.map((item, index) => (
                         <div
                             key={index}
-                            className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition group cursor-pointer"
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer"
                             onClick={() => setSelectedNews(item)}
                         >
                             <img
@@ -63,7 +63,7 @@ const News = () => {
                                 className="w-full h-48 object-cover transition group-hover:scale-105"
                             />
                             <div className="p-6">
-                                <div className="flex items-center text-sm text-gray-500 mb-2">
+                                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                     <span className="flex items-center gap-1">
                                         <FaCalendarAlt /> <span>{item.date}</span>
                                     </span>
@@ -72,10 +72,10 @@ const News = () => {
                                         <FaMapMarkerAlt /> <span>{item.location}</span>
                                     </span>
                                 </div>
-                                <h3 className="text-xl font-bold text-blue-900 mb-3 line-clamp-2">
+                                <h3 className="text-xl font-bold text-blue-900 dark:text-white mb-3 line-clamp-2">
                                     {item.title}
                                 </h3>
-                                <p className="text-gray-700 mb-4 line-clamp-3">
+                                <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">
                                     {item.desc}
                                 </p>
                                 <button

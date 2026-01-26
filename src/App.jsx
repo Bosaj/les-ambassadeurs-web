@@ -7,21 +7,54 @@ import Donate from './pages/Donate';
 import Volunteer from './pages/Volunteer';
 import NewsPage from './pages/NewsPage';
 import ProgramsPage from './pages/ProgramsPage';
+import { DataProvider } from './context/DataContext';
+import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import AdminDashboard from './pages/AdminDashboard';
+import VolunteerDashboard from './pages/VolunteerDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <LanguageProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="donate" element={<Donate />} />
-            <Route path="volunteer" element={<Volunteer />} />
-            <Route path="news" element={<NewsPage />} />
-            <Route path="programs" element={<ProgramsPage />} />
-          </Route>
-        </Routes>
-      </Router>
+      <ThemeProvider>
+        <DataProvider>
+          <AuthProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path="donate" element={<Donate />} />
+                  <Route path="volunteer" element={<Volunteer />} />
+                  <Route path="news" element={<NewsPage />} />
+                  <Route path="programs" element={<ProgramsPage />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="signup" element={<Signup />} />
+
+                  <Route
+                    path="dashboard/admin"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="dashboard/volunteer"
+                    element={
+                      <ProtectedRoute requiredRole="volunteer">
+                        <VolunteerDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Route>
+              </Routes>
+            </Router>
+          </AuthProvider>
+        </DataProvider>
+      </ThemeProvider>
     </LanguageProvider>
   );
 }

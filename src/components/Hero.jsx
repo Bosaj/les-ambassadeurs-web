@@ -9,15 +9,15 @@ const Hero = () => {
     const t = translations[language];
 
     return (
-        <section id="home" className="bg-gradient-to-br from-[#0D47A1] to-[#1976D2] text-white py-20">
-            <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
+        <section id="home" className="bg-gradient-to-br from-[#0D47A1] to-[#1976D2] dark:from-gray-900 dark:to-black text-white py-12 md:py-20 transition-colors duration-300">
+            <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-8 md:gap-0">
                 <motion.div
                     initial={{ opacity: 0, x: -50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8 }}
                     className="md:w-1/2 mb-10 md:mb-0"
                 >
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">
                         {t.hero_title}
                     </h2>
                     <p className="text-xl mb-8">
@@ -39,9 +39,9 @@ const Hero = () => {
                     className="md:w-1/2 flex justify-center"
                 >
                     <img
-                        src="https://images.pexels.com/photos/16515032/pexels-photo-16515032.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=350"
+                        src="/images/AABV.JPG"
                         alt="Volunteers"
-                        className="rounded-lg shadow-2xl"
+                        className="rounded-lg shadow-2xl w-full max-w-md mx-auto"
                     />
                 </motion.div>
             </div>

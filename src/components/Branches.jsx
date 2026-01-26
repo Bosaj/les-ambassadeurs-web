@@ -56,21 +56,21 @@ const Branches = () => {
         : branchesData;
 
     return (
-        <section id="branches" className="py-16 bg-gray-50">
+        <section id="branches" className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-blue-900 mb-4">
+                    <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-4">
                         {t.branches_title}
                     </h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         {t.branches_desc}
                     </p>
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <div className="relative bg-gray-200 rounded-lg overflow-hidden h-[400px]">
+                    <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                        <div className="relative bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden h-[400px]">
                             <iframe
                                 title="Map of Morocco"
                                 src="https://maps.google.com/maps?q=Morocco&t=&z=5&ie=UTF8&iwloc=&output=embed"
@@ -85,18 +85,18 @@ const Branches = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-xl font-bold mb-6 text-blue-900">
+                    <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                        <h3 className="text-xl font-bold mb-6 text-blue-900 dark:text-white">
                             {t.find_branch}
                         </h3>
 
                         <div className="mb-6">
-                            <label htmlFor="city-search" className="block text-gray-700 mb-2">
+                            <label htmlFor="city-search" className="block text-gray-700 dark:text-gray-300 mb-2">
                                 {t.select_city}
                             </label>
                             <select
                                 id="city-search"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 value={selectedCity}
                                 onChange={(e) => setSelectedCity(e.target.value)}
                             >
@@ -114,19 +114,19 @@ const Branches = () => {
 
                         <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                             {filteredBranches.map(branch => (
-                                <div key={branch.id} className="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition cursor-pointer">
-                                    <h4 className="font-bold text-blue-900">
+                                <div key={branch.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition cursor-pointer">
+                                    <h4 className="font-bold text-blue-900 dark:text-white">
                                         {t[branch.cityKey]}
                                     </h4>
-                                    <p className="text-gray-600 text-sm mt-1 flex items-center gap-2">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 flex items-center gap-2">
                                         <FaMapMarkerAlt className="text-red-500" />
                                         <span>{branch.address}</span>
                                     </p>
-                                    <p className="text-gray-600 text-sm flex items-center gap-2">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2">
                                         <FaPhone className="text-blue-500" />
                                         <span dir="ltr">{branch.phone}</span>
                                     </p>
-                                    <p className="text-gray-600 text-sm flex items-center gap-2">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2">
                                         <FaEnvelope className="text-blue-400" />
                                         <span>{branch.email}</span>
                                     </p>

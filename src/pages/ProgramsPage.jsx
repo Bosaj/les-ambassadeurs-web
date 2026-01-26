@@ -1,115 +1,115 @@
-import React from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
-import { motion } from 'framer-motion';
-import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight, FaLaptop, FaMedkit, FaUsers } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
+import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 const ProgramsPage = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { programs, registerForEvent } = useData();
+    const { user } = useAuth();
+    const [selectedProgram, setSelectedProgram] = useState(null);
+    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
 
-    // Expanded programs list
-    // Expanded programs list
-    const allPrograms = [
-        {
-            icon: <FaGraduationCap className="text-5xl" />,
-            title: t.youth_empowerment,
-            desc: t.youth_desc,
-            details: t.program_details_youth,
-            image: "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=800"
-        },
-        {
-            icon: <FaHandsHelping className="text-5xl" />,
-            title: t.humanitarian_aid,
-            desc: t.humanitarian_desc,
-            details: t.program_details_humanitarian,
-            image: "https://images.pexels.com/photos/6646918/pexels-photo-6646918.jpeg?auto=compress&cs=tinysrgb&w=800"
-        },
-        {
-            icon: <FaHeart className="text-5xl" />,
-            title: t.social_support,
-            desc: t.social_desc,
-            details: t.program_details_social,
-            image: "https://images.pexels.com/photos/7345449/pexels-photo-7345449.jpeg?auto=compress&cs=tinysrgb&w=800"
-        },
-        {
-            icon: <FaLeaf className="text-5xl" />,
-            title: t.environment,
-            desc: t.environment_desc,
-            details: t.program_details_environment,
-            image: "https://images.pexels.com/photos/7656721/pexels-photo-7656721.jpeg?auto=compress&cs=tinysrgb&w=800"
-        },
-        {
-            icon: <FaLaptop className="text-5xl" />,
-            title: t.digital_literacy,
-            desc: t.digital_desc,
-            details: t.program_details_digital,
-            image: "https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=800"
-        },
-        {
-            icon: <FaMedkit className="text-5xl" />,
-            title: t.health_caravans,
-            desc: t.health_desc,
-            details: t.program_details_health,
-            image: "https://images.pexels.com/photos/6129437/pexels-photo-6129437.jpeg?auto=compress&cs=tinysrgb&w=800"
-        },
-        {
-            icon: <FaUsers className="text-5xl" />,
-            title: t.womens_cooperative,
-            desc: t.women_desc,
-            details: t.program_details_women,
-            image: "https://images.pexels.com/photos/4559592/pexels-photo-4559592.jpeg?auto=compress&cs=tinysrgb&w=800"
+    const handleJoinClick = (program) => {
+        if (user) {
+            if (program.attendees.some(a => a.email === user.email)) {
+                toast.error("You are already registered!");
+                return;
+            }
+            registerForEvent('programs', program.id, { name: user.name, email: user.email });
+            toast.success("Successfully joined!");
+        } else {
+            setSelectedProgram(program);
         }
-    ];
+    };
+
+    const handleGuestSubmit = (e) => {
+        e.preventDefault();
+        registerForEvent('programs', selectedProgram.id, guestForm);
+        toast.success("Successfully joined!");
+        setSelectedProgram(null);
+        setGuestForm({ name: '', email: '' });
+    };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="py-20 bg-gray-50 min-h-screen"
-        >
+        <div className="py-20 bg-gray-50 min-h-screen">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold text-blue-900 mb-6">{t.programs_title}</h1>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        {t.programs_desc}
-                    </p>
-                </div>
+                <h1 className="text-4xl font-bold text-center text-blue-900 mb-12">Our Programs</h1>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {allPrograms.map((program, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition group border-t-4 border-blue-900 hover:border-red-500"
-                        >
-                            <div className="relative h-48 mb-6 overflow-hidden rounded-lg">
-                                <img
-                                    src={program.image}
-                                    alt={program.title}
-                                    className="w-full h-full object-cover transition group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition"></div>
-                                <div className="absolute bottom-[-20px] right-4 bg-white p-3 rounded-full shadow-lg text-blue-900 group-hover:text-red-500 transition">
-                                    {program.icon}
+                <div className="space-y-8">
+                    {programs.map((program) => {
+                        const isJoined = user && program.attendees.some(a => a.email === user.email);
+                        return (
+                            <div key={program.id} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition">
+                                <img src={program.image} alt={program.title} className="h-64 md:h-auto md:w-1/3 object-cover" />
+                                <div className="p-8 flex flex-col justify-center flex-1">
+                                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                                        <FaCalendarAlt className="mr-2" /> {program.date}
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-4">{program.title}</h2>
+                                    <p className="text-gray-600 mb-6">{program.description}</p>
+                                    <div className="flex items-center gap-6">
+                                        <span className="text-blue-900 font-semibold">{program.attendees.length} Participants</span>
+                                        {isJoined ? (
+                                            <span className="flex items-center text-green-600 font-bold gap-2 border px-4 py-2 rounded-lg bg-green-50">
+                                                <FaCheckCircle /> Joined
+                                            </span>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleJoinClick(program)}
+                                                className="bg-blue-900 text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition flex items-center gap-2"
+                                            >
+                                                <FaUserPlus /> Join Program
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                            <h3 className="text-2xl font-bold mb-4 text-blue-900 text-center">
-                                {program.title}
-                            </h3>
-                            <p className="text-gray-700 mb-4 text-center font-medium">
-                                {program.desc}
-                            </p>
-                            <p className="text-gray-600 text-sm leading-relaxed text-center">
-                                {program.details}
-                            </p>
-                        </motion.div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
-        </motion.div>
+
+            {/* Guest Modal */}
+            {selectedProgram && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative">
+                        <button
+                            onClick={() => setSelectedProgram(null)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                        >
+                            <FaTimes size={20} />
+                        </button>
+                        <h2 className="text-2xl font-bold mb-4">Join {selectedProgram.title}</h2>
+                        <form onSubmit={handleGuestSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-gray-700 mb-1">Full Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                    value={guestForm.name}
+                                    onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 mb-1">Email Address</label>
+                                <input
+                                    type="email"
+                                    required
+                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                    value={guestForm.email}
+                                    onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                                />
+                            </div>
+                            <button type="submit" className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition">
+                                Confirm & Join
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 

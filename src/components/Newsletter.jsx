@@ -26,7 +26,7 @@ const Newsletter = () => {
     };
 
     return (
-        <section className="py-16 bg-blue-900 text-white">
+        <section className="py-16 bg-blue-900 dark:bg-gray-900 text-white transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl font-bold mb-4">
@@ -41,7 +41,7 @@ const Newsletter = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="flex-grow p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                            className="flex-grow p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700"
                             placeholder={t.subscribe_placeholder}
                         />
                         <button

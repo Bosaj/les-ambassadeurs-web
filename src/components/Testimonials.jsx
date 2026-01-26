@@ -29,13 +29,13 @@ const Testimonials = () => {
     ];
 
     return (
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-blue-900 mb-4">
+                    <h2 className="text-3xl font-bold text-blue-900 dark:text-gray-100 mb-4">
                         {t.testimonials_title}
                     </h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         {t.testimonials_desc}
                     </p>
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
@@ -43,11 +43,11 @@ const Testimonials = () => {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {testimonials.map((item, index) => (
-                        <div key={index} className="bg-gray-50 p-8 rounded-lg shadow-md hover:shadow-lg transition">
+                        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-lg transition">
                             <div className="flex mb-4 text-yellow-400 gap-1">
                                 {[...Array(5)].map((_, i) => <FaStar key={i} />)}
                             </div>
-                            <p className="text-gray-700 italic mb-6">
+                            <p className="text-gray-700 dark:text-gray-200 italic mb-6">
                                 "{item.text}"
                             </p>
                             <div className="flex items-center gap-4">
@@ -57,10 +57,10 @@ const Testimonials = () => {
                                     className="w-12 h-12 rounded-full"
                                 />
                                 <div>
-                                    <h4 className="font-bold text-blue-900">
+                                    <h4 className="font-bold text-blue-900 dark:text-white">
                                         {item.name}
                                     </h4>
-                                    <p className="text-gray-600 text-sm">
+                                    <p className="text-gray-600 dark:text-gray-400 text-sm">
                                         {item.role}
                                     </p>
                                 </div>

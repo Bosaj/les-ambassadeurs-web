@@ -13,31 +13,31 @@ const Donate = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="py-20 bg-gray-50 min-h-screen"
+            className="py-12 md:py-20 bg-gray-50 min-h-screen"
         >
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold text-blue-900 mb-6">{t.donate_title || "Make a Difference Today"}</h1>
+                    <h1 className="text-4xl font-bold text-blue-900 mb-6">{t.donate_title}</h1>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        {t.donate_hero_desc || "Your contribution helps us provide essential support to families in need, educate children, and build a better future for our community."}
+                        {t.donate_hero_desc}
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {/* Bank Transfer */}
                     <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition border-t-4 border-blue-900">
                         <div className="text-blue-900 text-4xl mb-6 flex justify-center">
                             <FaUniversity />
                         </div>
-                        <h3 className="text-2xl font-bold text-center mb-4 text-gray-800">{t.bank_transfer || "Bank Transfer"}</h3>
+                        <h3 className="text-2xl font-bold text-center mb-4 text-gray-800">{t.bank_transfer}</h3>
                         <div className="space-y-4 text-gray-600">
                             <p className="flex justify-between border-b pb-2">
-                                <span className="font-semibold">Bank:</span>
-                                <span>Attijariwafa Bank</span>
+                                <span className="font-semibold">{t.bank_label}</span>
+                                <span>{t.bank_name_value}</span>
                             </p>
                             <p className="flex justify-between border-b pb-2">
-                                <span className="font-semibold">Account Name:</span>
-                                <span>Ambassadors of Good</span>
+                                <span className="font-semibold">{t.account_name_label}</span>
+                                <span>{t.account_name_value}</span>
                             </p>
                             <div className="bg-gray-100 p-3 rounded text-center font-mono text-sm break-all">
                                 RIB: 123 456 78901234567890 12
@@ -50,12 +50,12 @@ const Donate = () => {
                         <div className="text-red-500 text-4xl mb-6 flex justify-center">
                             <FaCreditCard />
                         </div>
-                        <h3 className="text-2xl font-bold text-center mb-4 text-gray-800">{t.online_payment || "Online Payment"}</h3>
+                        <h3 className="text-2xl font-bold text-center mb-4 text-gray-800">{t.online_payment}</h3>
                         <p className="text-gray-600 text-center mb-8">
-                            {t.online_payment_desc || "Securely donate using your credit card. We support Visa, Mastercard, and CMI."}
+                            {t.online_payment_desc}
                         </p>
                         <button className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-md">
-                            {t.donate_now_btn || "Donate Securely"}
+                            {t.donate_now_btn}
                         </button>
                         <div className="mt-4 flex justify-center gap-4 opacity-60">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6" />
@@ -70,10 +70,10 @@ const Donate = () => {
                         </div>
                         <h3 className="text-2xl font-bold text-center mb-4 text-gray-800">PayPal</h3>
                         <p className="text-gray-600 text-center mb-8">
-                            {t.paypal_desc || "Fast and safe donation via PayPal. You can set up recurring monthly donations."}
+                            {t.paypal_desc}
                         </p>
                         <button className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition shadow-md">
-                            {t.donate_paypal || "Donate with PayPal"}
+                            {t.donate_paypal}
                         </button>
                     </div>
                 </div>
