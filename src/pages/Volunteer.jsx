@@ -41,14 +41,14 @@ const Volunteer = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="py-12 md:py-20 bg-gray-50 min-h-screen"
+            className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300"
         >
             <div className="container mx-auto px-4">
-                <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="bg-blue-900 p-6 md:p-10 text-center text-white">
+                <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-300">
+                    <div className="bg-blue-900 dark:bg-gray-700 p-6 md:p-10 text-center text-white">
                         <FaHandPaper className="text-5xl mx-auto mb-4" />
                         <h1 className="text-4xl font-bold mb-4">{t.volunteer_title || "Join Our Family"}</h1>
-                        <p className="text-blue-100 text-lg">
+                        <p className="text-blue-100 dark:text-gray-300 text-lg">
                             {t.volunteer_subtitle || "Become a volunteer and help us create positive change in our community."}
                         </p>
                     </div>
@@ -57,75 +57,75 @@ const Volunteer = () => {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">{t.full_name || "Full Name"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.full_name || "Full Name"}</label>
                                     <input
                                         type="text"
                                         name="fullName"
                                         required
                                         value={formData.fullName}
                                         onChange={handleChange}
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">{t.email || "Email"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.email || "Email"}</label>
                                     <input
                                         type="email"
                                         name="email"
                                         required
                                         value={formData.email}
                                         onChange={handleChange}
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                     />
                                 </div>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">{t.phone || "Phone Number"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.phone || "Phone Number"}</label>
                                     <input
                                         type="tel"
                                         name="phone"
                                         required
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">{t.city || "City"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.city || "City"}</label>
                                     <input
                                         type="text"
                                         name="city"
                                         required
                                         value={formData.city}
                                         onChange={handleChange}
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">{t.skills_expertise}</label>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.skills_expertise}</label>
                                 <textarea
                                     name="skills"
                                     rows="3"
                                     value={formData.skills}
                                     onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                     placeholder={t.skills_placeholder}
                                 ></textarea>
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">{t.why_volunteer}</label>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.why_volunteer}</label>
                                 <textarea
                                     name="motivation"
                                     rows="4"
                                     required
                                     value={formData.motivation}
                                     onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                 ></textarea>
                             </div>
 

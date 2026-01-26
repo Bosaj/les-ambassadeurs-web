@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from 'react-icons/fa';
@@ -54,11 +55,11 @@ const Footer = () => {
                             {t.help_title}
                         </h3>
                         <ul className="space-y-2">
-                            <li><a href="#" className="text-gray-400 hover:text-white transition">{t.volunteer}</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white transition">{t.donate_money}</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white transition">{t.in_kind_donation}</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white transition">{t.partner_title}</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white transition">{t.raise_awareness}</a></li>
+                            <li><Link to="/volunteer" className="text-gray-400 hover:text-white transition">{t.volunteer}</Link></li>
+                            <li><Link to="/donate" className="text-gray-400 hover:text-white transition">{t.donate_money}</Link></li>
+                            <li><Link to="/donate" className="text-gray-400 hover:text-white transition">{t.in_kind_donation}</Link></li>
+                            <li><a href="mailto:asosoufaraelkhir48@gmail.com" className="text-gray-400 hover:text-white transition">{t.partner_title}</a></li>
+                            <li><Link to="/news" className="text-gray-400 hover:text-white transition">{t.raise_awareness}</Link></li>
                         </ul>
                     </div>
 

@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
                 const foundUser = volunteers.find(u => u.email === email && u.password === password);
 
                 if (foundUser) {
-                    const { password, ...userWithoutPass } = foundUser;
+                    const { password: _password, ...userWithoutPass } = foundUser;
                     setUser(userWithoutPass);
                     localStorage.setItem('user', JSON.stringify(userWithoutPass));
                     resolve(userWithoutPass);

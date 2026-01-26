@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
-import { FaLinkedin, FaTwitter, FaEnvelope } from 'react-icons/fa';
+import { FaLinkedin, FaEnvelope } from 'react-icons/fa';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
@@ -47,7 +47,9 @@ const Team = () => {
         {
             name: t.team_oussama_name,
             role: t.team_oussama_role,
-            image: "/team/oussama_elhadji_coordinator.jpg"
+            image: "/team/oussama_elhadji_coordinator.jpg",
+            email: "oussousselhadji@gmail.com",
+            linkedin: "https://www.linkedin.com/in/oussama-elhadji/"
         },
         {
             name: t.team_abdelhakim_name,
@@ -168,13 +170,10 @@ const Team = () => {
                                         {/* Overlay Gradient */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex items-end justify-center pb-6">
                                             <div className="flex gap-4">
-                                                <a href="#" className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white hover:text-blue-900 transition-all duration-300 transform hover:scale-110">
+                                                <a href={member.linkedin || "#"} target={member.linkedin ? "_blank" : "_self"} rel="noopener noreferrer" className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white hover:text-blue-900 transition-all duration-300 transform hover:scale-110">
                                                     <FaLinkedin size={20} />
                                                 </a>
-                                                <a href="#" className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white hover:text-blue-400 transition-all duration-300 transform hover:scale-110">
-                                                    <FaTwitter size={20} />
-                                                </a>
-                                                <a href="#" className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white hover:text-red-500 transition-all duration-300 transform hover:scale-110">
+                                                <a href={member.email ? `mailto:${member.email}` : "#"} className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white hover:text-red-500 transition-all duration-300 transform hover:scale-110">
                                                     <FaEnvelope size={20} />
                                                 </a>
                                             </div>

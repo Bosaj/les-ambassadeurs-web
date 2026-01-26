@@ -34,26 +34,26 @@ const NewsPage = () => {
     };
 
     return (
-        <div className="py-20 bg-gray-50 min-h-screen">
+        <div className="py-20 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
             <div className="container mx-auto px-4">
-                <h1 className="text-4xl font-bold text-center text-blue-900 mb-12">Latest News & Events</h1>
+                <h1 className="text-4xl font-bold text-center text-blue-900 dark:text-white mb-12">Latest News & Events</h1>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {news.map((item) => {
                         const isRegistered = user && item.attendees.some(a => a.email === user.email);
                         return (
-                            <div key={item.id} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition">
+                            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300">
                                 <img src={item.image} alt={item.title} className="h-48 w-full object-cover" />
                                 <div className="p-6 flex-1 flex flex-col">
-                                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                         <FaCalendarAlt className="mr-2" /> {item.date}
                                     </div>
-                                    <h2 className="text-xl font-bold text-gray-800 mb-3">{item.title}</h2>
-                                    <p className="text-gray-600 mb-4 flex-1">{item.description}</p>
-                                    <div className="flex justify-between items-center mt-auto pt-4 border-t">
-                                        <span className="text-sm font-semibold text-blue-900">{item.attendees.length} Attendees</span>
+                                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3">{item.title}</h2>
+                                    <p className="text-gray-600 dark:text-gray-300 mb-4 flex-1">{item.description}</p>
+                                    <div className="flex justify-between items-center mt-auto pt-4 border-t dark:border-gray-700">
+                                        <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">{item.attendees.length} Attendees</span>
                                         {isRegistered ? (
-                                            <span className="flex items-center text-green-600 font-bold gap-2">
+                                            <span className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2">
                                                 <FaCheckCircle /> Joined
                                             </span>
                                         ) : (
@@ -74,32 +74,32 @@ const NewsPage = () => {
 
             {/* Guest Registration Modal */}
             {selectedEvent && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative">
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md relative transition-all duration-300">
                         <button
                             onClick={() => setSelectedEvent(null)}
-                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                            className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                         >
                             <FaTimes size={20} />
                         </button>
-                        <h2 className="text-2xl font-bold mb-4">Register for {selectedEvent.title}</h2>
+                        <h2 className="text-2xl font-bold mb-4 dark:text-white">Register for {selectedEvent.title}</h2>
                         <form onSubmit={handleGuestSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-gray-700 mb-1">Full Name</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                                 <input
                                     type="text"
                                     required
-                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                     value={guestForm.name}
                                     onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
                                 />
                             </div>
                             <div>
-                                <label className="block text-gray-700 mb-1">Email Address</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                                 <input
                                     type="email"
                                     required
-                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                     value={guestForm.email}
                                     onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
                                 />
