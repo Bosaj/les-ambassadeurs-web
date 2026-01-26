@@ -1,6 +1,6 @@
 # Ambassadors of Good Association (Association des Ambassadeurs du Bien)
 
-![Project Banner](https://via.placeholder.com/1200x300?text=Ambassadors+of+Good+Association)
+![Project Banner](/public/images/new_ABV.jpg)
 
 ## 🌍 About The Project
 
