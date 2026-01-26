@@ -5,9 +5,16 @@ import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
 import { Toaster } from 'react-hot-toast';
 
+import { useLanguage } from '../context/LanguageContext';
+
 const Layout = () => {
+    const { language } = useLanguage();
+
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-800 transition-all duration-300 flex flex-col">
+        <div
+            className={`min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 flex flex-col ${language === 'ar' ? 'font-arabic' : ''}`}
+            dir={language === 'ar' ? 'rtl' : 'ltr'}
+        >
             <Header />
             <main className="flex-grow">
                 <Outlet />

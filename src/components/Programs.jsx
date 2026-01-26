@@ -38,13 +38,13 @@ const Programs = () => {
     ];
 
     return (
-        <section id="programs" className="py-16 bg-gray-50">
+        <section id="programs" className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-blue-900 mb-4">
+                    <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-4">
                         {t.programs_title}
                     </h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         {t.programs_desc}
                     </p>
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
@@ -54,16 +54,16 @@ const Programs = () => {
                     {programs.map((program, index) => (
                         <div
                             key={index}
-                            className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition cursor-pointer group"
+                            className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center hover:shadow-lg transition cursor-pointer group"
                             onClick={() => setSelectedProgram(program)}
                         >
-                            <div className="flex justify-center items-center text-blue-900 mb-4 transition group-hover:scale-110 group-hover:text-red-500">
+                            <div className="flex justify-center items-center text-blue-900 dark:text-blue-300 mb-4 transition group-hover:scale-110 group-hover:text-red-500">
                                 {program.icon}
                             </div>
-                            <h3 className="text-xl font-bold mb-3 text-blue-900">
+                            <h3 className="text-xl font-bold mb-3 text-blue-900 dark:text-white">
                                 {program.title}
                             </h3>
-                            <p className="text-gray-700">
+                            <p className="text-gray-700 dark:text-gray-200">
                                 {program.desc}
                             </p>
                             <button

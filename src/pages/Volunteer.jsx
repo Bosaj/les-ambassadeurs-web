@@ -41,11 +41,11 @@ const Volunteer = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="py-20 bg-gray-50 min-h-screen"
+            className="py-12 md:py-20 bg-gray-50 min-h-screen"
         >
             <div className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="bg-blue-900 p-10 text-center text-white">
+                    <div className="bg-blue-900 p-6 md:p-10 text-center text-white">
                         <FaHandPaper className="text-5xl mx-auto mb-4" />
                         <h1 className="text-4xl font-bold mb-4">{t.volunteer_title || "Join Our Family"}</h1>
                         <p className="text-blue-100 text-lg">
@@ -53,7 +53,7 @@ const Volunteer = () => {
                         </p>
                     </div>
 
-                    <div className="p-10">
+                    <div className="p-6 md:p-10">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
@@ -106,19 +106,19 @@ const Volunteer = () => {
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">{t.skills || "Skills & Expertise"}</label>
+                                <label className="block text-gray-700 font-semibold mb-2">{t.skills_expertise}</label>
                                 <textarea
                                     name="skills"
                                     rows="3"
                                     value={formData.skills}
                                     onChange={handleChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder={t.skills_placeholder || "Tell us about your skills (e.g., teaching, medical, design, logistics...)"}
+                                    placeholder={t.skills_placeholder}
                                 ></textarea>
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">{t.motivation || "Why do you want to volunteer?"}</label>
+                                <label className="block text-gray-700 font-semibold mb-2">{t.why_volunteer}</label>
                                 <textarea
                                     name="motivation"
                                     rows="4"
@@ -133,7 +133,7 @@ const Volunteer = () => {
                                 type="submit"
                                 className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-md text-lg"
                             >
-                                {t.submit_application || "Submit Application"}
+                                {t.submit_application}
                             </button>
                         </form>
                     </div>

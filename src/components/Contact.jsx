@@ -37,27 +37,27 @@ const Contact = () => {
     };
 
     return (
-        <section id="contact" className="py-16 bg-gray-50">
+        <section id="contact" className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-blue-900 mb-4">
+                    <h2 className="text-3xl font-bold text-blue-900 dark:text-gray-100 mb-4">
                         {t.contact_us}
                     </h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         {t.contact_desc || "We would love to hear from you and answer your inquiries."}
                     </p>
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
                 </div>
 
-                <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
-                    <h3 className="text-xl font-bold text-blue-900 mb-6">
+                <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-lg shadow-md">
+                    <h3 className="text-xl font-bold text-blue-900 dark:text-white mb-6">
                         {t.send_message}
                     </h3>
 
                     <form onSubmit={handleSubmit}>
                         <div className="grid md:grid-cols-2 gap-6 mb-6">
                             <div>
-                                <label htmlFor="name" className="block text-gray-700 mb-2">
+                                <label htmlFor="name" className="block text-gray-700 dark:text-gray-300 mb-2">
                                     {t.full_name}
                                 </label>
                                 <input
@@ -65,12 +65,12 @@ const Contact = () => {
                                     id="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder={t.full_name}
                                 />
                             </div>
                             <div>
-                                <label htmlFor="email" className="block text-gray-700 mb-2">
+                                <label htmlFor="email" className="block text-gray-700 dark:text-gray-300 mb-2">
                                     {t.email_address}
                                 </label>
                                 <input
@@ -78,21 +78,21 @@ const Contact = () => {
                                     id="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder={t.email_address}
                                 />
                             </div>
                         </div>
 
                         <div className="mb-6">
-                            <label htmlFor="subject" className="block text-gray-700 mb-2">
+                            <label htmlFor="subject" className="block text-gray-700 dark:text-gray-300 mb-2">
                                 {t.subject}
                             </label>
                             <select
                                 id="subject"
                                 value={formData.subject}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">{t.select_subject}</option>
                                 <option value="volunteer">{t.volunteer_subject}</option>
@@ -104,7 +104,7 @@ const Contact = () => {
                         </div>
 
                         <div className="mb-6">
-                            <label htmlFor="message" className="block text-gray-700 mb-2">
+                            <label htmlFor="message" className="block text-gray-700 dark:text-gray-300 mb-2">
                                 {t.message}
                             </label>
                             <textarea
@@ -112,7 +112,7 @@ const Contact = () => {
                                 rows="5"
                                 value={formData.message}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder={t.message}
                             ></textarea>
                         </div>

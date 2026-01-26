@@ -8,7 +8,7 @@ const Footer = () => {
     const t = translations[language];
 
     return (
-        <footer className="bg-gray-900 text-white pt-12 pb-6">
+        <footer className="bg-gray-900 dark:bg-black text-white pt-12 pb-6 transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="grid md:grid-cols-4 gap-8 mb-8">
                     <div>
@@ -77,7 +77,7 @@ const Footer = () => {
                             </li>
                             <li className="flex items-center gap-2">
                                 <FaEnvelope className="text-gray-400" />
-                                <span className="text-gray-400">info@safara.org</span>
+                                <span className="text-gray-400">asosoufaraelkhir48@gmail.com</span>
                             </li>
                         </ul>
                     </div>

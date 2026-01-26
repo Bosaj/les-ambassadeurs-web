@@ -1,103 +1,117 @@
-import React from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
-import { motion } from 'framer-motion';
-import { FaCalendarAlt, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
+import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 const NewsPage = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { news, registerForEvent } = useData();
+    const { user } = useAuth();
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
 
-    // Expanded mock data
-    const newsItems = [
-        {
-            id: 1,
-            image: "https://images.pexels.com/photos/6646917/pexels-photo-6646917.jpeg?auto=compress&cs=tinysrgb&h=400",
-            date: t.news1_date,
-            locationKey: "casablanca",
-            titleKey: "news1_title",
-            descKey: "news1_desc",
-            category: "Education"
-        },
-        {
-            id: 2,
-            image: "https://images.pexels.com/photos/6994982/pexels-photo-6994982.jpeg?auto=compress&cs=tinysrgb&h=400",
-            date: t.news2_date,
-            locationKey: "casablanca",
-            titleKey: "news2_title",
-            descKey: "news2_desc",
-            category: "Health"
-        },
-        {
-            id: 3,
-            image: "https://images.pexels.com/photos/3846052/pexels-photo-3846052.jpeg?auto=compress&cs=tinysrgb&h=400",
-            date: t.news3_date,
-            locationKey: "rabat",
-            titleKey: "news3_title",
-            descKey: "news3_desc",
-            category: "Community"
+    const handleRegisterClick = (event) => {
+        if (user) {
+            // Auto register logged in user
+            if (event.attendees.some(a => a.email === user.email)) {
+                toast.error("You are already registered!");
+                return;
+            }
+            registerForEvent('news', event.id, { name: user.name, email: user.email });
+            toast.success("Successfully registered!");
+        } else {
+            // Open modal for guest
+            setSelectedEvent(event);
         }
-    ];
+    };
+
+    const handleGuestSubmit = (e) => {
+        e.preventDefault();
+        registerForEvent('news', selectedEvent.id, guestForm);
+        toast.success("Successfully registered!");
+        setSelectedEvent(null);
+        setGuestForm({ name: '', email: '' });
+    };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="py-20 bg-gray-50 min-h-screen"
-        >
+        <div className="py-20 bg-gray-50 min-h-screen">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold text-blue-900 mb-6">{t.news_archive_title}</h1>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        {t.news_archive_desc}
-                    </p>
-                </div>
+                <h1 className="text-4xl font-bold text-center text-blue-900 mb-12">Latest News & Events</h1>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {newsItems.map((item, index) => (
-                        <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition group"
-                        >
-                            <div className="relative h-56 overflow-hidden">
-                                <img
-                                    src={item.image}
-                                    alt="News"
-                                    className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
-                                />
-                                <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                                    {item.category}
+                    {news.map((item) => {
+                        const isRegistered = user && item.attendees.some(a => a.email === user.email);
+                        return (
+                            <div key={item.id} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition">
+                                <img src={item.image} alt={item.title} className="h-48 w-full object-cover" />
+                                <div className="p-6 flex-1 flex flex-col">
+                                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                                        <FaCalendarAlt className="mr-2" /> {item.date}
+                                    </div>
+                                    <h2 className="text-xl font-bold text-gray-800 mb-3">{item.title}</h2>
+                                    <p className="text-gray-600 mb-4 flex-1">{item.description}</p>
+                                    <div className="flex justify-between items-center mt-auto pt-4 border-t">
+                                        <span className="text-sm font-semibold text-blue-900">{item.attendees.length} Attendees</span>
+                                        {isRegistered ? (
+                                            <span className="flex items-center text-green-600 font-bold gap-2">
+                                                <FaCheckCircle /> Joined
+                                            </span>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleRegisterClick(item)}
+                                                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition flex items-center gap-2 text-sm"
+                                            >
+                                                <FaUserPlus /> Join / Attend
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="p-6">
-                                <div className="flex items-center text-sm text-gray-500 mb-3 gap-4">
-                                    <span className="flex items-center gap-1">
-                                        <FaCalendarAlt className="text-blue-900" />
-                                        {item.date}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                        <FaMapMarkerAlt className="text-red-500" />
-                                        {t[item.locationKey] || item.locationKey}
-                                    </span>
-                                </div>
-                                <h3 className="text-xl font-bold text-blue-900 mb-3 line-clamp-2 group-hover:text-red-500 transition">
-                                    {t[item.titleKey]}
-                                </h3>
-                                <p className="text-gray-600 mb-4 line-clamp-3">
-                                    {t[item.descKey]}
-                                </p>
-                                <a href="#" className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-800 transition">
-                                    {t.read_more} <FaArrowRight className={`ml-2 ${language === 'ar' ? 'rotate-180' : ''}`} />
-                                </a>
-                            </div>
-                        </motion.div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
-        </motion.div>
+
+            {/* Guest Registration Modal */}
+            {selectedEvent && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative">
+                        <button
+                            onClick={() => setSelectedEvent(null)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                        >
+                            <FaTimes size={20} />
+                        </button>
+                        <h2 className="text-2xl font-bold mb-4">Register for {selectedEvent.title}</h2>
+                        <form onSubmit={handleGuestSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-gray-700 mb-1">Full Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                    value={guestForm.name}
+                                    onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 mb-1">Email Address</label>
+                                <input
+                                    type="email"
+                                    required
+                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                    value={guestForm.email}
+                                    onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                                />
+                            </div>
+                            <button type="submit" className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition">
+                                Confirm Registration
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
