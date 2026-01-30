@@ -2,6 +2,9 @@
 
 ![Project Banner](/public/images/new_ABV.jpg)
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/ee33b656-05db-4629-b6ec-55ed881b3d90/deploy-status)](https://app.netlify.com/sites/les-ambassadeurs-web-demo/deploys)
+**Live Site:** [les-ambassadeurs-web-demo.netlify.app](https://les-ambassadeurs-web-demo.netlify.app)
+
 ## 🌍 About The Project
 
 **Les Ambassadeurs du Bien** is a modern, responsive web application designed for a non-profit organization dedicated to fostering community welfare, social solidarity, and humanitarian aid. This platform serves as the digital hub for the association, enabling them to:
