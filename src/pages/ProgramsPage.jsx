@@ -41,7 +41,7 @@ const ProgramsPage = () => {
                         const isJoined = user && program.attendees.some(a => a.email === user.email);
                         return (
                             <div key={program.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300">
-                                <img src={program.image} alt={program.title} className="h-64 md:h-auto md:w-1/3 object-cover" />
+                                <img src={program.image_url || program.image} alt={program.title} className="h-64 md:h-auto md:w-1/3 object-cover" />
                                 <div className="p-8 flex flex-col justify-center flex-1">
                                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                         <FaCalendarAlt className="mr-2" /> {program.date}
