@@ -2,31 +2,12 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
 import { FaStar } from 'react-icons/fa';
+import { useData } from '../context/DataContext';
 
 const Testimonials = () => {
     const { language } = useLanguage();
     const t = translations[language];
-
-    const testimonials = [
-        {
-            text: t.testimonial1_text,
-            name: language === 'ar' ? "سارة محمد" : "Sara Mohammed",
-            role: t.testimonial1_role,
-            image: "https://randomuser.me/api/portraits/women/68.jpg"
-        },
-        {
-            text: t.testimonial2_text,
-            name: language === 'ar' ? "يوسف الحساني" : "Youssef Hassani",
-            role: t.testimonial2_role,
-            image: "https://randomuser.me/api/portraits/men/44.jpg"
-        },
-        {
-            text: t.testimonial3_text,
-            name: language === 'ar' ? "عمر العمراني" : "Omar Amrani",
-            role: t.testimonial3_role,
-            image: "https://randomuser.me/api/portraits/men/22.jpg"
-        }
-    ];
+    const { testimonials } = useData();
 
     return (
         <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -43,18 +24,18 @@ const Testimonials = () => {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {testimonials.map((item, index) => (
-                        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-lg transition">
+                        <div key={item.id || index} className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-lg transition">
                             <div className="flex mb-4 text-yellow-400 gap-1">
                                 {[...Array(5)].map((_, i) => <FaStar key={i} />)}
                             </div>
                             <p className="text-gray-700 dark:text-gray-200 italic mb-6">
-                                "{item.text}"
+                                "{item.content}"
                             </p>
                             <div className="flex items-center gap-4">
                                 <img
-                                    src={item.image}
+                                    src={item.image_url || "https://via.placeholder.com/150"}
                                     alt={item.name}
-                                    className="w-12 h-12 rounded-full"
+                                    className="w-12 h-12 rounded-full object-cover"
                                 />
                                 <div>
                                     <h4 className="font-bold text-blue-900 dark:text-white">

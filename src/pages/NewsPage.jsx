@@ -43,7 +43,7 @@ const NewsPage = () => {
                         const isRegistered = user && item.attendees.some(a => a.email === user.email);
                         return (
                             <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300">
-                                <img src={item.image} alt={item.title} className="h-48 w-full object-cover" />
+                                <img src={item.image_url || item.image} alt={item.title} className="h-48 w-full object-cover" />
                                 <div className="p-6 flex-1 flex flex-col">
                                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                         <FaCalendarAlt className="mr-2" /> {item.date}
