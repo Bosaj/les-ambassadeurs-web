@@ -41,7 +41,7 @@ const Newsletter = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="flex-grow p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                            className="flex-grow p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 placeholder-gray-500"
                             placeholder={t.subscribe_placeholder}
                         />
                         <button

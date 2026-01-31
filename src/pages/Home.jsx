@@ -2,6 +2,7 @@ import React from 'react';
 import Hero from '../components/Hero';
 import Mission from '../components/Mission';
 import Programs from '../components/Programs';
+
 import Impact from '../components/Impact';
 import Branches from '../components/Branches';
 import News from '../components/News';
@@ -25,6 +26,7 @@ const Home = () => {
             <Hero />
             <Mission />
             <Programs />
+
             <Impact />
             <Branches />
             <News />

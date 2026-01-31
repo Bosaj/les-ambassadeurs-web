@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
+// removed import { translations } from '../translations';
 import { FaPaperPlane } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const Contact = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { language, t } = useLanguage();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -44,7 +43,7 @@ const Contact = () => {
                         {t.contact_us}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                        {t.contact_desc || "We would love to hear from you and answer your inquiries."}
+                        {t.contact_desc}
                     </p>
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
                 </div>

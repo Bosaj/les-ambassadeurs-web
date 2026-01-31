@@ -7,8 +7,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 const Header = () => {
-    const { language, changeLanguage } = useLanguage();
-    const t = translations[language];
+    const { language, changeLanguage, t } = useLanguage();
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -34,13 +33,13 @@ const Header = () => {
                             <>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaHandHoldingHeart /> <Link to="/donate" className="hover:text-red-400 transition">{t.donate}</Link></span>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaHandsHelping /> <Link to="/volunteer" className="hover:text-red-400 transition">{t.volunteer}</Link></span>
-                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaUser /> <Link to="/login" className="hover:text-red-400 transition">Login</Link></span>
+                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaUser /> <Link to="/login" className="hover:text-red-400 transition">{t.login_btn || "Login"}</Link></span>
                             </>
                         ) : (
                             <>
-                                <span className="flex items-center gap-2 text-xs sm:text-base font-bold text-yellow-300">Welcome, {user.name.split(' ')[0]}</span>
-                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">Dashboard</Link></span>
-                                <button onClick={logout} className="flex items-center gap-2 text-xs sm:text-base hover:text-red-400 transition"><FaSignOutAlt /> Logout</button>
+                                <span className="flex items-center gap-2 text-xs sm:text-base font-bold text-yellow-300">{t.welcome}, {user.name.split(' ')[0]}</span>
+                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">{t.dashboard || "Dashboard"}</Link></span>
+                                <button onClick={logout} className="flex items-center gap-2 text-xs sm:text-base hover:text-red-400 transition"><FaSignOutAlt /> {t.logout}</button>
                             </>
                         )}
                     </div>
@@ -122,11 +121,11 @@ const Header = () => {
                                 <li><NavLink to="/news" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.news}</NavLink></li>
                                 <li><a href="/#contact" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.contact_us}</a></li>
                                 {!user ? (
-                                    <li><Link to="/login" className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>Login</Link></li>
+                                    <li><Link to="/login" className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.login_btn || "Login"}</Link></li>
                                 ) : (
                                     <>
-                                        <li><Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>Dashboard</Link></li>
-                                        <li><button onClick={() => { logout(); toggleMobileMenu(); }} className="block py-2 text-red-600 hover:text-red-800 font-bold w-full text-left">Logout</button></li>
+                                        <li><Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.dashboard || "Dashboard"}</Link></li>
+                                        <li><button onClick={() => { logout(); toggleMobileMenu(); }} className="block py-2 text-red-600 hover:text-red-800 font-bold w-full text-left">{t.logout}</button></li>
                                     </>
                                 )}
                             </ul>

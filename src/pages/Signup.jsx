@@ -1,15 +1,15 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
+import { FaGoogle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const Signup = () => {
-    const { signup } = useAuth();
+    const { signup, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { language, t } = useLanguage();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -34,6 +34,16 @@ const Signup = () => {
             toast.error(error.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            await loginWithGoogle();
+            navigate('/dashboard/volunteer'); // Navigate after successful Google login
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred || "Failed to login with Google");
         }
     };
 
