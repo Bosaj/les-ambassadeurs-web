@@ -14,7 +14,10 @@ const News = () => {
 
     // Combine News and Events for the "Latest News & Events" section
     // Sort by date descending
-    const allItems = [...(news || []), ...(events || [])].sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
+    const allItems = [
+        ...(news || []).map(n => ({ ...n, type: 'news', displayCategory: 'News' })),
+        ...(events || []).map(e => ({ ...e, type: 'event', displayCategory: e.category || 'Event' }))
+    ].sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
     const displayItems = allItems.slice(0, 3);
 
     return (
@@ -22,7 +25,7 @@ const News = () => {
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-blue-900 dark:text-gray-100 mb-4">
-                        {t.news_title} {/* Maybe allow renaming to "Upcoming Events" later if user desires */}
+                        {t.news_title}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         {t.news_desc}
@@ -37,11 +40,20 @@ const News = () => {
                             className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer"
                             onClick={() => setSelectedNews(item)}
                         >
-                            <img
-                                src={item.image_url || "https://via.placeholder.com/300"}
-                                alt={getLocalizedContent(item.title, language)}
-                                className="w-full h-48 object-cover transition group-hover:scale-105"
-                            />
+                            <div className="relative">
+                                <img
+                                    src={item.image_url || "https://via.placeholder.com/300"}
+                                    alt={getLocalizedContent(item.title, language)}
+                                    className="w-full h-48 object-cover transition group-hover:scale-105"
+                                />
+                                <span className={`absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded shadow-md uppercase tracking-wider ${item.type === 'news' ? 'bg-red-500 text-white' :
+                                        item.category === 'program' ? 'bg-purple-500 text-white' :
+                                            item.category === 'project' ? 'bg-amber-500 text-white' :
+                                                'bg-blue-500 text-white'
+                                    }`}>
+                                    {item.displayCategory}
+                                </span>
+                            </div>
                             <div className="p-6">
                                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                     <span className="flex items-center gap-1">

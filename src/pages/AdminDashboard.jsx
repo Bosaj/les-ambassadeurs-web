@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
-import { FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash, FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash, FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck, FaEnvelope, FaPhone, FaEye } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import Modal from '../components/Modal';
 
 import { useLanguage } from '../context/LanguageContext';
 
@@ -135,39 +136,39 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
         </div>
 
         {/* List */}
-        < div className="overflow-x-auto" >
-            <table className="w-full text-left">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+            <table className="w-full text-left min-w-[800px]">
                 <thead>
-                    <tr className="border-b dark:border-gray-700 text-gray-700 dark:text-gray-300">
-                        <th className="pb-3">{t.table_image}</th>
-                        <th className="pb-3">{t.table_title}</th>
-                        <th className="pb-3">{t.table_date}</th>
-                        <th className="pb-3">{t.table_attendees}</th>
-                        <th className="pb-3 text-center">{t.pin_item}</th>
-                        <th className="pb-3 text-right">{t.table_actions}</th>
+                    <tr className="border-b dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                        <th className="p-4 whitespace-nowrap">{t.table_image}</th>
+                        <th className="p-4 min-w-[200px]">{t.table_title}</th>
+                        <th className="p-4 whitespace-nowrap">{t.table_date}</th>
+                        <th className="p-4 whitespace-nowrap">{t.table_attendees}</th>
+                        <th className="p-4 whitespace-nowrap text-center">{t.pin_item}</th>
+                        <th className="p-4 whitespace-nowrap text-right">{t.table_actions}</th>
                     </tr>
                 </thead>
-                <tbody className="text-gray-800 dark:text-gray-200">
+                <tbody className="text-gray-800 dark:text-gray-200 divide-y divide-gray-200 dark:divide-gray-700">
                     {data.map((item) => (
-                        <tr key={item.id} className="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700 transition-colors">
-                            <td className="py-3">
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td className="p-4 whitespace-nowrap">
                                 <img src={item.image_url || item.image} alt="" className="h-10 w-16 object-cover rounded" />
                             </td>
-                            <td className="py-3 font-medium">
+                            <td className="p-4 font-medium">
                                 {(item.title?.en || item.title?.fr || item.title?.ar || (typeof item.title === 'string' ? item.title : '') || 'Untitled')}
                             </td>
-                            <td className="py-3 text-gray-500 dark:text-gray-400">
-                                {new Date(item.date).toLocaleDateString()}
+                            <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                {item.date ? new Date(item.date).toLocaleDateString() : '-'}
                             </td>
-                            <td className="py-3">{item.attendees?.length || 0}</td>
-                            <td className="py-3 text-center">
-                                <button onClick={() => togglePin(type, item.id, item.is_pinned)} className="p-2 hover:bg-gray-100 rounded-full transition">
+                            <td className="p-4 whitespace-nowrap text-center">{item.attendees?.length || 0}</td>
+                            <td className="p-4 whitespace-nowrap text-center">
+                                <button onClick={() => togglePin(type, item.id, item.is_pinned)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition">
                                     <FaThumbtack className={item.is_pinned ? 'text-blue-600' : 'text-gray-300'} />
                                 </button>
                             </td>
-                            <td className="py-3 text-right">
+                            <td className="p-4 whitespace-nowrap text-right">
                                 <button onClick={() => onEdit(item)} className="text-blue-500 hover:text-blue-700 p-2 border rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:border-blue-800 transition-colors mr-2">
-                                    <FaNewspaper /> {/* Reusing icon for edit, or import FaEdit */}
+                                    <FaNewspaper />
                                 </button>
                                 <button onClick={() => onDelete(type, item.id)} className="text-red-500 hover:text-red-700 p-2 border rounded hover:bg-red-50 dark:hover:bg-red-900/20 dark:border-red-800 transition-colors">
                                     <FaTrash />
@@ -184,10 +185,11 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const { t } = useLanguage();
-    const { news, programs, events, testimonials, addPost, updatePost, deletePost, togglePin } = useData();
+    const { news, programs, events, testimonials, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions } = useData();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('news');
     const [editingId, setEditingId] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Form State
     const [formType, setFormType] = useState('news'); // 'news' or 'programs'
@@ -203,6 +205,30 @@ const AdminDashboard = () => {
         content: { en: '', fr: '', ar: '' },
         rating: 5
     });
+
+    // User Details Modal State
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [userDetails, setUserDetails] = useState({ activities: [], donations: [], suggestions: [] });
+    const [userDetailsLoading, setUserDetailsLoading] = useState(false);
+    const [activeUserTab, setActiveUserTab] = useState('activities');
+
+    const handleViewUser = async (userProfile) => {
+        setSelectedUser(userProfile);
+        setUserDetailsLoading(true);
+        try {
+            const [activities, donations, suggestions] = await Promise.all([
+                fetchUserActivities(userProfile.email),
+                fetchUserDonations(userProfile.email),
+                fetchUserSuggestions(userProfile.id)
+            ]);
+            setUserDetails({ activities, donations, suggestions });
+        } catch (error) {
+            console.error("Error fetching user details:", error);
+            toast.error("Failed to load user details");
+        } finally {
+            setUserDetailsLoading(false);
+        }
+    };
 
 
     const handleLogout = () => {
@@ -258,25 +284,25 @@ const AdminDashboard = () => {
             <div>
                 <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-8 border border-gray-200 dark:border-gray-600">
                     <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.invite_new_admin}</h3>
-                    <form onSubmit={handleInvite} className="flex gap-4">
+                    <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
                         <input
                             type="email" required placeholder="User Email"
                             className="flex-1 border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                             value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
                         />
-                        <button disabled={loading} className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition">
+                        <button disabled={loading} className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition whitespace-nowrap">
                             {loading ? t.processing : t.send_invitation}
                         </button>
                     </form>
                 </div>
                 <div>
                     <h3 className="font-bold mb-4 text-gray-800 dark:text-white">Pending Requests</h3>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden overflow-x-auto">
                         {requests.length === 0 ? <p className="p-4 text-center">No pending requests</p> : (
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Name</th><th className="p-3 text-right">Actions</th></tr></thead>
+                            <table className="w-full text-left min-w-[300px]">
+                                <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="p-3 whitespace-nowrap">Name</th><th className="p-3 text-right whitespace-nowrap">Actions</th></tr></thead>
                                 <tbody>{requests.map(r => (
-                                    <tr key={r.id} className="border-t dark:border-gray-600"><td className="p-3 dark:text-white">{r.full_name}</td><td className="p-3 text-right"><button onClick={() => handleApprove(r.id)} className="text-green-500 mr-2"><FaCheck /></button><button onClick={() => handleDeny(r.id)} className="text-red-500"><FaTimes /></button></td></tr>
+                                    <tr key={r.id} className="border-t dark:border-gray-600"><td className="p-3 dark:text-white whitespace-nowrap">{r.full_name}</td><td className="p-3 text-right whitespace-nowrap"><button onClick={() => handleApprove(r.id)} className="text-green-500 mr-2"><FaCheck /></button><button onClick={() => handleDeny(r.id)} className="text-red-500"><FaTimes /></button></td></tr>
                                 ))}</tbody>
                             </table>
                         )}
@@ -319,24 +345,34 @@ const AdminDashboard = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
                     {view === 'members' ? (
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                            <table className="w-full text-left min-w-[800px]">
                                 <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                     <tr>
-                                        <th className="p-4">Name</th>
-                                        <th className="p-4">Email</th>
-                                        <th className="p-4">Role</th>
-                                        <th className="p-4">Phone</th>
-                                        <th className="p-4">City</th>
+                                        <th className="p-4 whitespace-nowrap">Name</th>
+                                        <th className="p-4 whitespace-nowrap">Email</th>
+                                        <th className="p-4 whitespace-nowrap">Role</th>
+                                        <th className="p-4 whitespace-nowrap">Phone</th>
+                                        <th className="p-4 whitespace-nowrap">City</th>
+                                        <th className="p-4 whitespace-nowrap text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {users.map(u => (
-                                        <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td className="p-4 font-medium dark:text-white">{u.full_name}</td>
-                                            <td className="p-4 text-gray-500 dark:text-gray-400">{u.email}</td>
-                                            <td className="p-4"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{u.role}</span></td>
-                                            <td className="p-4 text-gray-500 dark:text-gray-400">{u.phone_number || '-'}</td>
-                                            <td className="p-4 text-gray-500 dark:text-gray-400">{u.city || '-'}</td>
+                                        <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <td className="p-4 font-medium dark:text-white whitespace-nowrap">{u.full_name}</td>
+                                            <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.email}</td>
+                                            <td className="p-4 whitespace-nowrap"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{u.role}</span></td>
+                                            <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.phone_number || '-'}</td>
+                                            <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.city || '-'}</td>
+                                            <td className="p-4 text-right whitespace-nowrap">
+                                                <button
+                                                    onClick={() => handleViewUser(u)}
+                                                    className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 p-2 rounded hover:bg-blue-200 transition"
+                                                    title="View Full Profile"
+                                                >
+                                                    <FaEye />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -344,24 +380,24 @@ const AdminDashboard = () => {
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                            <table className="w-full text-left min-w-[800px]">
                                 <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                     <tr>
-                                        <th className="p-4">Event</th>
-                                        <th className="p-4">Date</th>
-                                        <th className="p-4">Attendee Name</th>
-                                        <th className="p-4">Attendee Email</th>
-                                        <th className="p-4">Registered At</th>
+                                        <th className="p-4 whitespace-nowrap">Event</th>
+                                        <th className="p-4 whitespace-nowrap">Date</th>
+                                        <th className="p-4 whitespace-nowrap">Attendee Name</th>
+                                        <th className="p-4 whitespace-nowrap">Attendee Email</th>
+                                        <th className="p-4 whitespace-nowrap">Registered At</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {attendees.map(a => (
-                                        <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td className="p-4 font-medium dark:text-white">{a.events?.title || 'Unknown Event'}</td>
-                                            <td className="p-4 text-gray-500 dark:text-gray-400">{a.events?.date ? new Date(a.events.date).toLocaleDateString() : '-'}</td>
-                                            <td className="p-4 dark:text-gray-300">{a.name}</td>
-                                            <td className="p-4 text-gray-500 dark:text-gray-400">{a.email}</td>
-                                            <td className="p-4 text-gray-400 text-sm">{new Date(a.created_at).toLocaleString()}</td>
+                                        <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <td className="p-4 font-medium dark:text-white whitespace-nowrap">{a.events?.title || 'Unknown Event'}</td>
+                                            <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.events?.date ? new Date(a.events.date).toLocaleDateString() : '-'}</td>
+                                            <td className="p-4 dark:text-gray-300 whitespace-nowrap">{a.name}</td>
+                                            <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.email}</td>
+                                            <td className="p-4 text-gray-400 text-sm whitespace-nowrap">{new Date(a.created_at).toLocaleString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -443,31 +479,44 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex transition-colors duration-300">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex transition-colors duration-300 relative">
             {/* Sidebar */}
-            <aside className="w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 hidden md:block transition-colors duration-300">
-                <h2 className="text-2xl font-bold mb-8">{t.admin_panel}</h2>
+            {/* Mobile Overlay */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <h2 className="text-2xl font-bold mb-8 flex justify-between items-center">
+                    {t.admin_panel}
+                    <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-white">
+                        <FaTimes />
+                    </button>
+                </h2>
                 <nav className="space-y-2">
-                    <button onClick={() => setActiveTab('news')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'news' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('news'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'news' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaNewspaper /> {t.manage_news}
                     </button>
-                    <button onClick={() => setActiveTab('programs')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('programs'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaCalendarPlus /> {t.manage_programs}
                     </button>
-                    <button onClick={() => setActiveTab('events')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'events' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('events'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'events' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaCalendarCheck /> {t.manage_events}
                     </button>
-                    <button onClick={() => setActiveTab('users')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'users' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'users' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaUsers /> {t.manage_users || "Manage Community"}
                     </button>
-                    <button onClick={() => setActiveTab('donations')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'donations' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('donations'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'donations' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaMoneyBillWave /> {t.donations}
                     </button>
-                    <button onClick={() => setActiveTab('testimonials')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('testimonials'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaComments /> {t.manage_testimonials}
                     </button>
                     {user?.email === 'oussousselhadji@gmail.com' && (
-                        <button onClick={() => setActiveTab('admins')} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                        <button onClick={() => { setActiveTab('admins'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                             <FaUserShield /> {t.manage_admins}
                         </button>
                     )}
@@ -478,10 +527,15 @@ const AdminDashboard = () => {
             </aside>
 
             {/* Mobile Header / Content */}
-            <div className="flex-1">
-                <header className="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center md:hidden transition-colors duration-300">
-                    <h1 className="font-bold text-blue-900 dark:text-white">{t.admin_panel}</h1>
-                    <button onClick={handleLogout} className="text-gray-600 dark:text-gray-300"><FaSignOutAlt /></button>
+            <div className="flex-1 w-full md:w-auto">
+                <header className="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center md:hidden transition-colors duration-300 sticky top-0 z-30">
+                    <button onClick={() => setIsSidebarOpen(true)} className="text-gray-600 dark:text-gray-300 p-2">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <h1 className="font-bold text-blue-900 dark:text-white truncate mx-2">{t.admin_panel}</h1>
+                    <button onClick={handleLogout} className="text-gray-600 dark:text-gray-300 p-2"><FaSignOutAlt /></button>
                 </header>
 
                 <main className="p-8">
@@ -603,8 +657,8 @@ const AdminDashboard = () => {
 
                                 <div className="grid grid-cols-1 gap-4">
                                     {testimonials.length > 0 ? testimonials.map(item => (
-                                        <div key={item.id} className="bg-white dark:bg-gray-800 p-4 rounded shadow flex justify-between items-center">
-                                            <div className="flex items-center gap-4">
+                                        <div key={item.id} className="bg-white dark:bg-gray-800 p-4 rounded shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                            <div className="flex items-center gap-4 w-full sm:w-auto">
                                                 <img src={item.image_url || "https://via.placeholder.com/50"} alt={item.name} className="w-12 h-12 rounded-full object-cover" />
                                                 <div>
                                                     <h4 className="font-bold dark:text-white">{item.name}</h4>
@@ -640,6 +694,108 @@ const AdminDashboard = () => {
                     </div>
                 </main>
             </div >
+            {/* User Details Modal */}
+            <Modal
+                isOpen={!!selectedUser}
+                onClose={() => setSelectedUser(null)}
+                title={selectedUser ? `User Details: ${selectedUser.full_name}` : 'User Details'}
+            >
+                {selectedUser && (
+                    <div className="space-y-6">
+                        {/* Profile Info */}
+                        <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <img src={selectedUser.avatar_url || `https://ui-avatars.com/api/?name=${selectedUser.full_name}`} alt={selectedUser.full_name} className="w-16 h-16 rounded-full" />
+                            <div>
+                                <h3 className="font-bold text-lg dark:text-white">{selectedUser.full_name}</h3>
+                                <p className="text-gray-500 dark:text-gray-400">{selectedUser.email}</p>
+                                <div className="flex gap-2 mt-1">
+                                    <span className={`text-xs px-2 py-1 rounded ${selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{selectedUser.role}</span>
+                                    {selectedUser.phone_number && <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded flex items-center gap-1"><FaPhone className="text-[10px]" /> {selectedUser.phone_number}</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex border-b dark:border-gray-700">
+                            <button onClick={() => setActiveUserTab('activities')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'activities' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                                Activities ({userDetails.activities?.length || 0})
+                            </button>
+                            <button onClick={() => setActiveUserTab('donations')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'donations' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                                Donations ({userDetails.donations?.length || 0})
+                            </button>
+                            <button onClick={() => setActiveUserTab('suggestions')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'suggestions' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                                Suggestions ({userDetails.suggestions?.length || 0})
+                            </button>
+                        </div>
+
+                        {/* Loading State */}
+                        {userDetailsLoading ? (
+                            <div className="py-8 text-center text-gray-500">Loading details...</div>
+                        ) : (
+                            <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                                {/* Activities Tab */}
+                                {activeUserTab === 'activities' && (
+                                    <div className="space-y-3">
+                                        {userDetails.activities?.length > 0 ? userDetails.activities.map(activity => (
+                                            <div key={activity.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
+                                                <div>
+                                                    <h4 className="font-bold text-gray-800 dark:text-white">{activity.events?.title?.en || activity.events?.title?.fr || activity.events?.title?.ar || 'Event'}</h4>
+                                                    <p className="text-xs text-gray-500">{new Date(activity.events?.date).toLocaleDateString()} • {activity.events?.category || 'Event'}</p>
+                                                </div>
+                                                <span className={`text-xs px-2 py-1 rounded capitalize ${activity.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                                        activity.status === 'attended' ? 'bg-purple-100 text-purple-800' :
+                                                            activity.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                                'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    {activity.status || 'pending'}
+                                                </span>
+                                            </div>
+                                        )) : <p className="text-gray-500 text-center py-4">No activities found.</p>}
+                                    </div>
+                                )}
+
+                                {/* Donations Tab */}
+                                {activeUserTab === 'donations' && (
+                                    <div className="space-y-3">
+                                        {userDetails.donations?.length > 0 ? userDetails.donations.map(donation => (
+                                            <div key={donation.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
+                                                <div>
+                                                    <h4 className="font-bold text-green-600">{donation.amount} MAD</h4>
+                                                    <p className="text-xs text-gray-500">Via {donation.method}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-xs text-gray-400 block">{new Date(donation.created_at).toLocaleDateString()}</span>
+                                                    <span className={`text-xs px-2 py-0.5 rounded capitalize ${donation.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{donation.status || 'pending'}</span>
+                                                </div>
+                                            </div>
+                                        )) : <p className="text-gray-500 text-center py-4">No donations found.</p>}
+                                    </div>
+                                )}
+
+                                {/* Suggestions Tab */}
+                                {activeUserTab === 'suggestions' && (
+                                    <div className="space-y-3">
+                                        {userDetails.suggestions?.length > 0 ? userDetails.suggestions.map(suggestion => (
+                                            <div key={suggestion.id} className="p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h4 className="font-bold text-gray-800 dark:text-white">{suggestion.title}</h4>
+                                                    <span className="text-xs text-gray-400">{new Date(suggestion.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{suggestion.description}</p>
+                                                {suggestion.proposed_date && (
+                                                    <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded inline-block">
+                                                        Proposed Date: {new Date(suggestion.proposed_date).toLocaleDateString()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )) : <p className="text-gray-500 text-center py-4">No suggestions found.</p>}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </Modal>
         </div >
     );
 };

@@ -30,7 +30,7 @@ const ProgramsPage = () => {
                 toast.error(type === 'projects' ? t.already_supporting : t.already_registered);
                 return;
             }
-            registerForEvent(type, item.id, { name: user.name, email: user.email });
+            registerForEvent(type, item.id, { name: user.full_name || user.user_metadata?.full_name || user.email, email: user.email });
             toast.success(type === 'projects' ? t.successfully_supported : t.successfully_joined);
         } else {
             setSelectedItem(item);

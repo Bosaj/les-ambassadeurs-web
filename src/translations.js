@@ -655,7 +655,7 @@ export const translations = {
         volunteer_dashboard: "Volunteer Dashboard",
         logout: "Logout",
         donations_made: "Donations Made",
-        events_joined: "Events Joined",
+        events_joined: "Events, Programs, and Supported Projects Joined",
         upcoming_opportunities: "Upcoming Opportunities",
         join_event_btn: "Join Event",
         share_story: "Share Your Story",
