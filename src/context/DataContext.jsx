@@ -71,6 +71,9 @@ export const DataProvider = ({ children }) => {
 
         } catch (error) {
             console.error("Error fetching data:", error);
+            if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+                toast.error("Network connection error. working offline?");
+            }
         } finally {
             setLoading(false);
         }
