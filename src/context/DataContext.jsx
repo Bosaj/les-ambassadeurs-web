@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { getLocalizedContent } from '../utils/languageUtils';
 
 const DataContext = createContext(null);
 
@@ -83,12 +84,7 @@ export const DataProvider = ({ children }) => {
         fetchData();
     }, []);
 
-    // Helper to get localized string
-    const getLocalizedContent = (contentObj, lang = 'en') => {
-        if (!contentObj) return '';
-        if (typeof contentObj === 'string') return contentObj; // Backwards compatibility
-        return contentObj[lang] || contentObj['en'] || Object.values(contentObj)[0] || '';
-    };
+    // Helper to get localized string is now imported from utils
 
     const addPost = async (type, postData) => {
         try {

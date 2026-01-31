@@ -33,8 +33,11 @@ const Programs = () => {
                     {displayPrograms.length > 0 ? displayPrograms.map((program, index) => (
                         <div
                             key={program.id || index}
-                            className="bg-white dark:bg-gray-700 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group flex flex-col items-center w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-2rem)] max-w-sm overflow-hidden"
-                            onClick={() => navigate('/programs', { state: { selectedProgram: program } })}
+                            className="bg-transparent rounded-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group flex flex-col items-center w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-2rem)] max-w-sm overflow-hidden border border-gray-200 dark:border-gray-700"
+                            onClick={() => {
+                                navigate('/programs', { state: { selectedProgram: program } });
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
                         >
                             <div className="w-full h-48 bg-gray-200 dark:bg-gray-600 relative overflow-hidden">
                                 {program.image_url ? (
@@ -64,6 +67,10 @@ const Programs = () => {
                                     {getLocalizedContent(program.description, language)}
                                 </p>
                                 <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedProgram(program);
+                                    }}
                                     className="mt-auto inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
                                 >
                                     <span>{t.learn_more}</span>
@@ -77,7 +84,11 @@ const Programs = () => {
                 </div>
 
                 <div className="text-center mt-12">
-                    <Link to="/programs" className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg inline-flex items-center transition">
+                    <Link
+                        to="/programs"
+                        className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg inline-flex items-center transition"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    >
                         <span>{t.discover_all}</span>
                         <FaArrowRight className={`ml-2 ${language === 'ar' ? 'rotate-180' : ''}`} />
                     </Link>
@@ -88,31 +99,38 @@ const Programs = () => {
                 isOpen={!!selectedProgram}
                 onClose={() => setSelectedProgram(null)}
                 title={getLocalizedContent(selectedProgram?.title, language)}
+                heroImage={selectedProgram?.image_url}
             >
-                <div className="text-center mb-6">
-                    {selectedProgram?.image_url ? (
-                        <img
-                            src={selectedProgram.image_url}
-                            alt={getLocalizedContent(selectedProgram.title, language)}
-                            className="w-full h-64 object-cover rounded-lg mb-4"
-                        />
-                    ) : (
-                        <div className="text-blue-900 text-6xl mb-4 flex justify-center">
-                            <FaHandsHelping />
-                        </div>
-                    )}
-                    <p className="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
-                        {getLocalizedContent(selectedProgram?.description, language)}
-                    </p>
-                </div>
-                <div className="flex justify-center">
-                    <Link
-                        to="/donate"
-                        className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition"
-                        onClick={() => setSelectedProgram(null)}
-                    >
-                        {t.donate}
-                    </Link>
+                <div className="relative">
+                    {/* Hero image is handled by Modal component now */
+                        !selectedProgram?.image_url && (
+                            <div className="flex justify-center items-center h-48 bg-blue-50 dark:bg-gray-800 rounded-lg mb-6">
+                                <FaHandsHelping className="text-blue-900/40 text-6xl" />
+                            </div>
+                        )}
+
+                    <div className="prose dark:prose-invert max-w-none">
+                        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-8">
+                            {getLocalizedContent(selectedProgram?.description, language)}
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-end mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                        <Link
+                            to="/volunteer"
+                            className="px-6 py-2.5 rounded-full border-2 border-blue-900 text-blue-900 dark:border-blue-400 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-gray-800 transition text-center"
+                            onClick={() => setSelectedProgram(null)}
+                        >
+                            {t.volunteer}
+                        </Link>
+                        <Link
+                            to="/donate"
+                            className="px-6 py-2.5 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold shadow-lg hover:shadow-red-500/30 hover:-translate-y-0.5 transition-all text-center"
+                            onClick={() => setSelectedProgram(null)}
+                        >
+                            {t.donate}
+                        </Link>
+                    </div>
                 </div>
             </Modal>
         </section>

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaHandsHelping, FaThumbtack } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Modal from '../components/Modal';
 
 const ProgramsPage = () => {
     const { programs, projects, registerForEvent, getLocalizedContent } = useData();
@@ -130,48 +131,40 @@ const ProgramsPage = () => {
             </div>
 
             {/* Guest Modal */}
-            {selectedItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md relative transition-all duration-300 animate-fade-in">
-                        <button
-                            onClick={() => setSelectedItem(null)}
-                            className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition"
-                        >
-                            <FaTimes size={20} />
-                        </button>
-                        <h2 className="text-2xl font-bold mb-4 dark:text-white">
-                            {selectedType === 'projects' ? t.support_verb : t.join_verb} {getLocalizedContent(selectedItem.title, language)}
-                        </h2>
-                        <form onSubmit={handleGuestSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t.full_name}</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    value={guestForm.name}
-                                    onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                                    placeholder={t.enter_name_placeholder}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t.email_address}</label>
-                                <input
-                                    type="email"
-                                    required
-                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    value={guestForm.email}
-                                    onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                                    placeholder={t.enter_email_placeholder}
-                                />
-                            </div>
-                            <button type="submit" className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3 rounded-lg font-bold transition shadow-lg`}>
-                                {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
-                            </button>
-                        </form>
+            <Modal
+                isOpen={!!selectedItem}
+                onClose={() => setSelectedItem(null)}
+                title={`${selectedType === 'projects' ? t.support_verb : t.join_verb} ${getLocalizedContent(selectedItem?.title, language)}`}
+                heroImage={selectedItem?.image_url}
+            >
+                <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2">
+                    <div>
+                        <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
+                        <input
+                            type="text"
+                            required
+                            className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                            value={guestForm.name}
+                            onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                            placeholder={t.enter_name_placeholder}
+                        />
                     </div>
-                </div>
-            )}
+                    <div>
+                        <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
+                        <input
+                            type="email"
+                            required
+                            className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                            value={guestForm.email}
+                            onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                            placeholder={t.enter_email_placeholder}
+                        />
+                    </div>
+                    <button type="submit" className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3 rounded-lg font-bold transition shadow-lg mt-4`}>
+                        {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
+                    </button>
+                </form>
+            </Modal>
         </div>
     );
 };

@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
-import { FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash, FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck, FaEnvelope, FaPhone, FaEye } from 'react-icons/fa';
+import {
+    FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash,
+    FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck,
+    FaEnvelope, FaPhone, FaEye, FaHandHoldingHeart
+} from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import Modal from '../components/Modal';
@@ -12,13 +16,13 @@ import { useLanguage } from '../context/LanguageContext';
 const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, handleFormSubmit, activeLang, setActiveLang, t, togglePin, onEdit, editingId, onCancel }) => (
     <div>
         <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white">{t.manage} {type === 'news' ? t.tab_news : (type === 'events' ? t.tab_events : t.tab_programs)}</h2>
+            <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white">{t.manage} {type === 'news' ? t.tab_news : (type === 'events' ? t.tab_events : (type === 'projects' ? (t.projects_section_title || "Projects") : t.tab_programs))}</h2>
         </div>
 
         {/* Add New Form */}
         <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-8 border border-gray-200 dark:border-gray-600">
             <h3 className="font-bold mb-4 text-gray-800 dark:text-white">
-                {editingId ? `${t.edit_btn} ${type === 'news' ? t.tab_news : (type === 'events' ? t.tab_events : t.tab_programs)}` : (type === 'news' ? t.add_new_news : (type === 'events' ? t.add_new_event : t.add_new_program))}
+                {editingId ? `${t.edit_btn} ${type === 'news' ? t.tab_news : (type === 'events' ? t.tab_events : (type === 'projects' ? "Project" : t.tab_programs))}` : (type === 'news' ? t.add_new_news : (type === 'events' ? t.add_new_event : (type === 'projects' ? (t.add_new_project || "Add New Project") : t.add_new_program)))}
             </h3>
 
             {/* Language Tabs */}
@@ -185,7 +189,7 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const { t } = useLanguage();
-    const { news, programs, events, testimonials, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions } = useData();
+    const { news, programs, projects, events, testimonials, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions } = useData();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('news');
     const [editingId, setEditingId] = useState(null);
@@ -503,6 +507,9 @@ const AdminDashboard = () => {
                     <button onClick={() => { setActiveTab('programs'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaCalendarPlus /> {t.manage_programs}
                     </button>
+                    <button onClick={() => { setActiveTab('projects'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'projects' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                        <FaHandHoldingHeart /> {t.manage_projects || "Manage Projects"}
+                    </button>
                     <button onClick={() => { setActiveTab('events'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'events' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaCalendarCheck /> {t.manage_events}
                     </button>
@@ -549,6 +556,7 @@ const AdminDashboard = () => {
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300">
                         {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} editingId={editingId} onCancel={handleCancelEdit} />}
                         {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} editingId={editingId} onCancel={handleCancelEdit} />}
+                        {activeTab === 'projects' && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} editingId={editingId} onCancel={handleCancelEdit} />}
                         {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} editingId={editingId} onCancel={handleCancelEdit} />}
 
                         {activeTab === 'testimonials' && (

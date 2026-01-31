@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaArrowRight } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Modal from '../components/Modal';
 
 const NewsPage = () => {
     const { news, events, registerForEvent, getLocalizedContent } = useData();
@@ -60,7 +61,7 @@ const NewsPage = () => {
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {news.map((item) => {
                                 return (
-                                    <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300">
+                                    <div key={item.id} className="bg-transparent rounded-xl flex flex-col hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
                                         <img
                                             src={item.image_url || item.image || "https://via.placeholder.com/400x300"}
                                             alt={getLocalizedContent(item.title, language)}
@@ -108,7 +109,7 @@ const NewsPage = () => {
                             {events.map((item) => {
                                 const isRegistered = user && item.attendees && item.attendees.some(a => a.email === user.email);
                                 return (
-                                    <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300">
+                                    <div key={item.id} className="bg-transparent rounded-xl flex flex-col hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
                                         <img
                                             src={item.image_url || item.image || "https://via.placeholder.com/400x300"}
                                             alt={getLocalizedContent(item.title, language)}
@@ -151,59 +152,57 @@ const NewsPage = () => {
             </div>
 
             {/* Guest Registration Modal */}
-            {selectedEvent && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md relative transition-all duration-300">
-                        <button
-                            onClick={() => setSelectedEvent(null)}
-                            className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                        >
-                            <FaTimes size={20} />
+            <Modal
+                isOpen={!!selectedEvent}
+                onClose={() => setSelectedEvent(null)}
+                title={selectedEvent?.category === 'event' || selectedEvent?.attendees ?
+                    `${t.register_for} ${getLocalizedContent(selectedEvent?.title, language)}` :
+                    getLocalizedContent(selectedEvent?.title, language)
+                }
+                heroImage={selectedEvent?.image_url || selectedEvent?.image}
+            >
+                {(selectedEvent?.category === 'event' || (selectedEvent?.attendees && !selectedEvent?.description?.en)) ? (
+                    <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2">
+                        <div>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                value={guestForm.name}
+                                onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
+                            <input
+                                type="email"
+                                required
+                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                value={guestForm.email}
+                                onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                            />
+                        </div>
+                        <button type="submit" className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg mt-4">
+                            {t.confirm_registration}
                         </button>
-                        <h2 className="text-2xl font-bold mb-4 dark:text-white">
-                            {selectedEvent.category === 'event' || selectedEvent.attendees ?
-                                `${t.register_for} ${getLocalizedContent(selectedEvent.title, language)}` :
-                                getLocalizedContent(selectedEvent.title, language)
-                            }
-                        </h2>
-
-                        {(selectedEvent.category === 'event' || (selectedEvent.attendees && !selectedEvent.description.en)) ? (
-                            <form onSubmit={handleGuestSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 mb-1">{t.full_name}</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                        value={guestForm.name}
-                                        onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 mb-1">{t.email_address}</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                        value={guestForm.email}
-                                        onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                                    />
-                                </div>
-                                <button type="submit" className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition">
-                                    {t.confirm_registration}
-                                </button>
-                            </form>
-                        ) : (
-                            <div className="prose dark:prose-invert max-w-none">
-                                <p className="text-gray-600 dark:text-gray-300">
-                                    {getLocalizedContent(selectedEvent.description, language)}
-                                </p>
-                                {/* Add more details here if available */}
-                            </div>
-                        )}
+                    </form>
+                ) : (
+                    <div className="relative">
+                        <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
+                            <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">
+                                <FaCalendarAlt />
+                                <span>{selectedEvent?.date ? new Date(selectedEvent.date).toLocaleDateString() : 'TBA'}</span>
+                            </span>
+                        </div>
+                        <div className="prose dark:prose-invert max-w-none">
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line text-lg">
+                                {getLocalizedContent(selectedEvent?.description, language)}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </Modal>
         </div>
     );
 };

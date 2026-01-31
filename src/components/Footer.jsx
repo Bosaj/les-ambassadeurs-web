@@ -1,11 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 // removed import { translations } from '../translations';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from 'react-icons/fa';
 
 const Footer = () => {
     const { language, t } = useLanguage();
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleNavigation = (e, sectionId) => {
+        e.preventDefault();
+        if (location.pathname === '/') {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        } else {
+            navigate('/', { state: { scrollTo: sectionId } });
+        }
+    };
 
     return (
         <footer className="bg-gray-900 dark:bg-black text-white pt-12 pb-6 transition-colors duration-300">
@@ -41,11 +56,11 @@ const Footer = () => {
                             {t.quick_links}
                         </h3>
                         <ul className="space-y-2">
-                            <li><a href="#" className="text-gray-400 hover:text-white transition">{t.home}</a></li>
-                            <li><a href="#about" className="text-gray-400 hover:text-white transition">{t.about}</a></li>
-                            <li><a href="#programs" className="text-gray-400 hover:text-white transition">{t.programs}</a></li>
-                            <li><a href="#branches" className="text-gray-400 hover:text-white transition">{t.branches}</a></li>
-                            <li><a href="#news" className="text-gray-400 hover:text-white transition">{t.news}</a></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'hero')} className="text-gray-400 hover:text-white transition text-left">{t.home}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'about')} className="text-gray-400 hover:text-white transition text-left">{t.about}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'programs')} className="text-gray-400 hover:text-white transition text-left">{t.programs}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'branches')} className="text-gray-400 hover:text-white transition text-left">{t.branches}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'news')} className="text-gray-400 hover:text-white transition text-left">{t.news}</button></li>
                         </ul>
                     </div>
 
