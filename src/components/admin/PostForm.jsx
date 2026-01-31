@@ -61,35 +61,122 @@ const PostForm = ({
                 ))}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-                {/* Title */}
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {t.title_label} ({activeLang.toUpperCase()})
-                    </label>
-                    <input
-                        type="text"
-                        required
-                        className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
-                        dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
-                        value={formData.title[activeLang] || ''}
-                        onChange={e => setFormData({ ...formData, title: { ...formData.title, [activeLang]: e.target.value } })}
-                        placeholder={`${t.title_label} in ${activeLang}`}
-                    />
-                </div>
 
-                {/* Date */}
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.date_label}</label>
-                    <input
-                        type="date"
-                        required={type !== 'projects'} // Projects might not strictly need a date? assuming yes for now based on previous code.
-                        className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
-                        value={formData.date || ''}
-                        onChange={e => setFormData({ ...formData, date: e.target.value })}
-                    />
-                </div>
-            </div>
+
+            {/* Conditional Fields based on Type */}
+            {
+                type === 'testimonials' ? (
+                    <>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {/* Name */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {t.name_label || "Name"}
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
+                                    value={formData.name || ''}
+                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                    placeholder={t.name_placeholder || "Enter name"}
+                                />
+                            </div>
+
+                            {/* Rating */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {t.rating_label || "Rating"} (1-5)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="5"
+                                    required
+                                    className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
+                                    value={formData.rating || 5}
+                                    onChange={e => setFormData({ ...formData, rating: parseInt(e.target.value) })}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Role (Trilingual) */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {t.role_label || "Role/Position"} ({activeLang.toUpperCase()})
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
+                                dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                                value={formData.role[activeLang] || ''}
+                                onChange={e => setFormData({ ...formData, role: { ...formData.role, [activeLang]: e.target.value } })}
+                                placeholder={`${t.role_label || "Role"} in ${activeLang}`}
+                            />
+                        </div>
+
+                        {/* Content (Trilingual) - Replaces Description */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {t.testimonial_content || "Testimonial Content"} ({activeLang.toUpperCase()})
+                            </label>
+                            <textarea
+                                required
+                                rows="4"
+                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all resize-y"
+                                dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                                value={formData.content[activeLang] || ''}
+                                onChange={e => setFormData({ ...formData, content: { ...formData.content, [activeLang]: e.target.value } })}
+                                placeholder={`${t.testimonial_content || "Content"} in ${activeLang}`}
+                            ></textarea>
+                        </div>
+
+                        {/* Approval Checkbox */}
+                        <div className="flex items-center gap-2 mt-2">
+                            <input
+                                type="checkbox"
+                                id="is_approved"
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                checked={formData.is_approved || false}
+                                onChange={e => setFormData({ ...formData, is_approved: e.target.checked })}
+                            />
+                            <label htmlFor="is_approved" className="text-sm font-medium text-gray-900 dark:text-gray-300">
+                                {t.approved_label || "Approved"}
+                            </label>
+                        </div>
+                    </>
+                ) : (
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {/* Title and Date for non-testimonials */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {t.title_label} ({activeLang.toUpperCase()})
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
+                                dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                                value={formData.title[activeLang] || ''}
+                                onChange={e => setFormData({ ...formData, title: { ...formData.title, [activeLang]: e.target.value } })}
+                                placeholder={`${t.title_label} in ${activeLang}`}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.date_label}</label>
+                            <input
+                                type="date"
+                                required={type !== 'projects'}
+                                className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
+                                value={formData.date || ''}
+                                onChange={e => setFormData({ ...formData, date: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Image Upload */}
             <div className="space-y-2">
@@ -124,21 +211,25 @@ const PostForm = ({
                 </div>
             </div>
 
-            {/* Description */}
-            <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t.description_label} ({activeLang.toUpperCase()})
-                </label>
-                <textarea
-                    required
-                    rows="6"
-                    className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all resize-y"
-                    dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
-                    value={formData.description[activeLang] || ''}
-                    onChange={e => setFormData({ ...formData, description: { ...formData.description, [activeLang]: e.target.value } })}
-                    placeholder={`${t.description_label} in ${activeLang}`}
-                ></textarea>
-            </div>
+            {/* Description (Only for non-testimonials) */}
+            {
+                type !== 'testimonials' && (
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {t.description_label} ({activeLang.toUpperCase()})
+                        </label>
+                        <textarea
+                            required
+                            rows="6"
+                            className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all resize-y"
+                            dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                            value={formData.description[activeLang] || ''}
+                            onChange={e => setFormData({ ...formData, description: { ...formData.description, [activeLang]: e.target.value } })}
+                            placeholder={`${t.description_label} in ${activeLang}`}
+                        ></textarea>
+                    </div>
+                )
+            }
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-4 border-t dark:border-gray-700 mt-6">
@@ -156,7 +247,7 @@ const PostForm = ({
                     {editingId ? t.update_btn : t.add_btn}
                 </button>
             </div>
-        </form>
+        </form >
     );
 };
 
