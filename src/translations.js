@@ -392,6 +392,10 @@ export const translations = {
         try_again: "حاول مرة أخرى",
         support_label: "الدعم التقني",
         developer_label: "المطور",
+        approved: "تمت الموافقة",
+        pending: "قيد الانتظار",
+        testimonial_approved: "تمت الموافقة على الشهادة",
+        testimonial_revoked: "تم إلغاء الموافقة على الشهادة",
     },
     en: {
         donate: "Donate Now",
@@ -785,8 +789,11 @@ export const translations = {
         contact_support: "Contact Support",
         developer_contact: "Contact Developer",
         try_again: "Try Again",
-        support_label: "Support Team",
         developer_label: "Developer",
+        approved: "Approved",
+        pending: "Pending",
+        testimonial_approved: "Testimonial Approved",
+        testimonial_revoked: "Testimonial revoked",
     },
     fr: {
         donate: "Faire un don maintenant",
@@ -1228,5 +1235,9 @@ export const translations = {
         try_again: "Réessayer",
         support_label: "Équipe de support",
         developer_label: "Développeur",
+        approved: "Approuvé",
+        pending: "En attente",
+        testimonial_approved: "Témoignage approuvé",
+        testimonial_revoked: "Approbation révoquée",
     },
 };

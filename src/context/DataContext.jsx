@@ -62,8 +62,7 @@ export const DataProvider = ({ children }) => {
             const { data: testimonialsData, error: testimonialsError } = await supabase
                 .from('testimonials')
                 .select('*')
-                // Note: This filters for approved only. Admin might need a separate fetch or all data.
-                .eq('is_approved', true)
+                // .eq('is_approved', true) // Removed to allow admin to see all. Filtered in component.
                 .order('rating', { ascending: false })
                 .order('created_at', { ascending: false });
 

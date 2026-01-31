@@ -23,7 +23,7 @@ const Testimonials = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {testimonials.map((item, index) => (
+                    {testimonials.filter(item => item.is_approved).map((item, index) => (
                         <div key={item.id || index} className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-lg transition">
                             <div className="flex mb-4 text-yellow-400 gap-1">
                                 {[...Array(5)].map((_, i) => <FaStar key={i} />)}

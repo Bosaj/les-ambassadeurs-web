@@ -415,6 +415,22 @@ const AdminDashboard = () => {
         });
     };
 
+    const handleToggleApproval = async (item) => {
+        try {
+            const postData = {
+                ...item,
+                image: item.image_url || item.image, // Map image_url to image for updatePost
+                is_approved: !item.is_approved
+            };
+
+            await updatePost('testimonials', item.id, postData);
+            toast.success(item.is_approved ? (t.testimonial_revoked || "Revoked") : (t.testimonial_approved || "Approved"));
+        } catch (error) {
+            console.error("Error toggling approval:", error);
+            toast.error("Failed to update status");
+        }
+    };
+
     const handleFormSubmit = (e, type) => {
         e.preventDefault();
         const targetType = type || formType;
@@ -544,11 +560,16 @@ const AdminDashboard = () => {
 
                                 <div className="grid grid-cols-1 gap-4">
                                     {testimonials.length > 0 ? testimonials.map(item => (
-                                        <div key={item.id} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-gray-100 dark:border-gray-700">
+                                        <div key={item.id} className={`bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border ${item.is_approved ? 'border-gray-100 dark:border-gray-700' : 'border-yellow-300 dark:border-yellow-600'}`}>
                                             <div className="flex items-center gap-4 w-full sm:w-auto">
                                                 <img src={item.image_url || "https://via.placeholder.com/50"} alt={item.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white dark:ring-gray-600" />
                                                 <div>
-                                                    <h4 className="font-bold dark:text-white">{item.name}</h4>
+                                                    <h4 className="font-bold dark:text-white flex items-center gap-2">
+                                                        {item.name}
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${item.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                            {item.is_approved ? (t.approved || "Approved") : (t.pending || "Pending")}
+                                                        </span>
+                                                    </h4>
                                                     <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-col">
                                                         <span>{typeof item.role === 'object' ? (item.role[activeLang] || item.role.en) : item.role}</span>
                                                         {item.rating && <span className="text-yellow-500 text-xs">{'★'.repeat(item.rating)}</span>}
@@ -556,6 +577,16 @@ const AdminDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleToggleApproval(item)}
+                                                    className={`p-2 rounded-lg transition-colors ${item.is_approved
+                                                        ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20'
+                                                        : 'text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20'
+                                                        }`}
+                                                    title={item.is_approved ? "Revoke Approval" : "Approve"}
+                                                >
+                                                    {item.is_approved ? <FaTimes /> : <FaCheck />}
+                                                </button>
                                                 <button onClick={() => togglePin('testimonials', item.id, item.is_pinned)} className={`p-2 rounded-full transition ${item.is_pinned ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}>
                                                     <FaThumbtack className={item.is_pinned ? 'text-blue-600' : ''} />
                                                 </button>
