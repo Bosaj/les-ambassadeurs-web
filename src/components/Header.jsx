@@ -37,7 +37,7 @@ const Header = () => {
                             </>
                         ) : (
                             <>
-                                <span className="flex items-center gap-2 text-xs sm:text-base font-bold text-yellow-300">{t.welcome}, {user.name.split(' ')[0]}</span>
+                                <span className="flex items-center gap-2 text-xs sm:text-base font-bold text-yellow-300">{t.welcome}, {user.name?.split(' ')[0] || user.email?.split('@')[0]}</span>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">{t.dashboard || "Dashboard"}</Link></span>
                                 <button onClick={logout} className="flex items-center gap-2 text-xs sm:text-base hover:text-red-400 transition"><FaSignOutAlt /> {t.logout}</button>
                             </>
@@ -66,10 +66,10 @@ const Header = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Main Header */}
-            <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
+            < header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50" >
                 <div className="container mx-auto px-4 py-3 flex justify-between items-center">
                     <Link to="/" className="flex items-center">
                         <img src="/images/new_ABV.jpg" alt="Logo" className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover mr-2 md:mr-3 ml-2 md:ml-3" />

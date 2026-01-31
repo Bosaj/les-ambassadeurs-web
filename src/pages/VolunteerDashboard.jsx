@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
-import { useNavigate } from 'react-router-dom';
-import { FaHandHoldingHeart, FaCalendarCheck, FaStar, FaSignOutAlt } from 'react-icons/fa';
-import toast from 'react-hot-toast';
+import { useData } from '../context/DataContext';
 
 const VolunteerDashboard = () => {
     const { user, logout } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const { addPost } = useData();
     const navigate = useNavigate();
 
     const [eventCount, setEventCount] = useState(0);
     const [donationCount, setDonationCount] = useState(0);
     const [testimonial, setTestimonial] = useState('');
+    const [rating, setRating] = useState(5);
 
     const events = [
-        { id: 1, title: 'Beach Cleanup', date: '2024-06-05', location: 'Casablanca' },
-        { id: 2, title: 'Food Drive', date: '2024-03-12', location: 'Rabat' }
+        { id: 1, title: t.event_beach_cleanup, date: '2024-06-05', location: 'Casablanca' },
+        { id: 2, title: t.event_food_drive, date: '2024-03-12', location: 'Rabat' }
     ];
 
     const handleLogout = () => {
@@ -29,16 +28,51 @@ const VolunteerDashboard = () => {
         toast.success(t.event_joined_success);
     };
 
-    const handleSubmitTestimonial = (e) => {
+    const handleRequestAdmin = async () => {
+        if (!window.confirm(t.confirm_admin_request || "Request Admin access?")) return;
+
+        const toastId = toast.loading(t.submitting_request || "Submitting request...");
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ request_status: 'pending' })
+                .eq('id', user.id);
+
+            if (error) throw error;
+            toast.success(t.request_submitted || "Request submitted successfully!", { id: toastId });
+        } catch (error) {
+            console.error('Error requesting admin:', error);
+            toast.error(t.request_failed || "Request failed", { id: toastId });
+        }
+    };
+
+    const handleSubmitTestimonial = async (e) => {
         e.preventDefault();
-        setTestimonial('');
-        toast.success(t.testimonial_submitted);
+        const toastId = toast.loading(t.processing || "Processing...");
+        try {
+            await addPost('testimonials', {
+                name: user.name,
+                role: { en: 'Volunteer', fr: 'Bénévole', ar: 'متطوع' }, // Generic role
+                content: { [language]: testimonial }, // Save content in current language
+                rating: rating,
+                image_url: user.user_metadata?.avatar_url || '', // Use user profile pic if available
+                is_approved: false // Pending approval
+            });
+            toast.success(t.testimonial_submitted_approval, { id: toastId });
+            setTestimonial('');
+            setRating(5);
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred, { id: toastId });
+        }
     };
 
     const handleDonateClick = () => {
         setDonationCount(prev => prev + 1);
         toast.success(t.donation_thank_you);
     };
+
+
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -48,9 +82,16 @@ const VolunteerDashboard = () => {
                         <h1 className="text-3xl font-bold text-gray-900">{t.welcome}, {user?.name}</h1>
                         <p className="text-gray-600">{t.volunteer_dashboard}</p>
                     </div>
-                    <button onClick={handleLogout} className="bg-white border text-gray-700 px-4 py-2 rounded hover:bg-gray-50 flex items-center gap-2">
-                        <FaSignOutAlt /> {t.logout}
-                    </button>
+                    <div className="flex gap-2">
+                        {user?.role !== 'admin' && (
+                            <button onClick={handleRequestAdmin} className="bg-yellow-100 text-yellow-800 border border-yellow-200 px-4 py-2 rounded hover:bg-yellow-200 flex items-center gap-2">
+                                <FaUserShield /> {t.request_admin || "Request Admin Access"}
+                            </button>
+                        )}
+                        <button onClick={handleLogout} className="bg-white border text-gray-700 px-4 py-2 rounded hover:bg-gray-50 flex items-center gap-2">
+                            <FaSignOutAlt /> {t.logout}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}

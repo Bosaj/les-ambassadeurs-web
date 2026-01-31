@@ -7,7 +7,7 @@ import { useData } from '../context/DataContext';
 const Testimonials = () => {
     const { language } = useLanguage();
     const t = translations[language];
-    const { testimonials } = useData();
+    const { testimonials, getLocalizedContent } = useData();
 
     return (
         <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -29,7 +29,7 @@ const Testimonials = () => {
                                 {[...Array(5)].map((_, i) => <FaStar key={i} />)}
                             </div>
                             <p className="text-gray-700 dark:text-gray-200 italic mb-6">
-                                "{item.content}"
+                                "{getLocalizedContent(item.content, language)}"
                             </p>
                             <div className="flex items-center gap-4">
                                 <img
@@ -42,7 +42,7 @@ const Testimonials = () => {
                                         {item.name}
                                     </h4>
                                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                        {item.role}
+                                        {getLocalizedContent(item.role, language)}
                                     </p>
                                 </div>
                             </div>
