@@ -92,18 +92,33 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const getURL = () => {
+        let url = window.location.origin;
+        // Ensures the URL is correct for both local and production environments
+        return url;
+    };
+
+
+
     const loginWithGoogle = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin
+                redirectTo: getURL()
             }
         });
         if (error) throw error;
     };
 
+    const refreshProfile = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            await fetchProfile(session.user);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile }}>
             {!loading && children}
         </AuthContext.Provider>
     );

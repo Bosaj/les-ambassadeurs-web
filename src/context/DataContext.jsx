@@ -1,10 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 
 const DataContext = createContext(null);
-
-// Initial data removed - now fetching from Supabase
-
 
 export const DataProvider = ({ children }) => {
     const [news, setNews] = useState([]);
@@ -33,9 +31,12 @@ export const DataProvider = ({ children }) => {
                 .from('events')
                 .select('*, attendees:event_attendees(id, name, email)')
                 .order('is_pinned', { ascending: false })
-                .order('date', { ascending: false }); // Order by event date
+                .order('date', { ascending: false });
 
             if (eventsError) throw eventsError;
+
+            // Debug log
+            console.log("Fetched Events with Attendees:", allEventsData);
 
             // Filter into categories
             const p = [];
@@ -43,7 +44,10 @@ export const DataProvider = ({ children }) => {
             const proj = [];
 
             (allEventsData || []).forEach(item => {
-                const cat = item.category || 'program'; // Default to program for legacy
+                // Ensure attendees is an array
+                if (!item.attendees) item.attendees = [];
+
+                const cat = item.category || 'program';
                 if (cat === 'program') p.push(item);
                 else if (cat === 'event') e.push(item);
                 else if (cat === 'project') proj.push(item);
@@ -57,8 +61,9 @@ export const DataProvider = ({ children }) => {
             const { data: testimonialsData, error: testimonialsError } = await supabase
                 .from('testimonials')
                 .select('*')
+                // Note: This filters for approved only. Admin might need a separate fetch or all data.
                 .eq('is_approved', true)
-                .order('rating', { ascending: false }) // Show highest rated first? Or pinned?
+                .order('rating', { ascending: false })
                 .order('created_at', { ascending: false });
 
             if (testimonialsError) throw testimonialsError;
@@ -87,18 +92,13 @@ export const DataProvider = ({ children }) => {
             let table = '';
             let insertData = {};
 
-            // Helper to create trilingual object from single input (for simplified admin input)
-            // Ideally Admin Dashboard should implement trilingual inputs.
-            // For now, we replicate the input to all languages avoiding empty fields issues.
-            const createTrilingual = (text) => ({ en: text, fr: text, ar: text });
-
             if (type === 'news') {
                 table = 'news';
                 insertData = {
-                    title: postData.title, // Expecting object: {en: "", fr: "", ar: ""}
+                    title: postData.title,
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
-                    description: postData.description // Expecting object
+                    description: postData.description
                 };
             } else if (['programs', 'events', 'projects'].includes(type)) {
                 table = 'events';
@@ -115,11 +115,10 @@ export const DataProvider = ({ children }) => {
                 table = 'testimonials';
                 insertData = {
                     name: postData.name,
-                    role: postData.role, // Now JSONB
-                    content: postData.content, // Now JSONB
+                    role: postData.role,
+                    content: postData.content,
                     image_url: postData.image,
                     rating: postData.rating || 5,
-
                     is_approved: postData.is_approved !== undefined ? postData.is_approved : true
                 };
             }
@@ -132,7 +131,6 @@ export const DataProvider = ({ children }) => {
 
             if (error) throw error;
 
-            // Re-fetch to ensure category sorting is correct (easiest) or manually push
             fetchData();
             return data;
         } catch (error) {
@@ -161,7 +159,6 @@ export const DataProvider = ({ children }) => {
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
                     description: postData.description,
-                    // category is generally not changed, but if we wanted to we could
                 };
             } else if (type === 'testimonials') {
                 table = 'testimonials';
@@ -184,10 +181,38 @@ export const DataProvider = ({ children }) => {
 
             if (error) throw error;
 
-            fetchData(); // Refresh data
+            fetchData();
             return data;
         } catch (error) {
             console.error(`Error updating ${type}:`, error);
+            throw error;
+        }
+    };
+
+    const deletePost = async (type, id) => {
+        try {
+            let table = '';
+            if (type === 'news') table = 'news';
+            else if (['programs', 'events', 'projects'].includes(type.toLowerCase())) table = 'events';
+            else if (type === 'testimonials') table = 'testimonials';
+
+            const { error } = await supabase
+                .from(table)
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Optimistic updates
+            if (type === 'news') setNews(prev => prev.filter(item => item.id !== id));
+            else if (type === 'testimonials') setTestimonials(prev => prev.filter(item => item.id !== id));
+            else {
+                setPrograms(prev => prev.filter(item => item.id !== id));
+                setEvents(prev => prev.filter(item => item.id !== id));
+                setProjects(prev => prev.filter(item => item.id !== id));
+            }
+        } catch (error) {
+            console.error(`Error deleting ${type}:`, error);
             throw error;
         }
     };
@@ -213,58 +238,58 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const deletePost = async (type, id) => {
-        try {
-            let table = '';
-            if (type === 'news') table = 'news';
-            else if (['programs', 'events', 'projects'].includes(type.toLowerCase())) table = 'events'; // covers all categories
-            else if (type === 'testimonials') table = 'testimonials';
-
-            const { error } = await supabase
-                .from(table)
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-
-            // Update local state
-            if (type === 'news') setNews(prev => prev.filter(item => item.id !== id));
-            else if (type === 'testimonials') setTestimonials(prev => prev.filter(item => item.id !== id));
-            else {
-                // For events table, we might not know which specific state list it was in without id lookup, 
-                // but checking all 3 is safe and fast.
-                setPrograms(prev => prev.filter(item => item.id !== id));
-                setEvents(prev => prev.filter(item => item.id !== id));
-                setProjects(prev => prev.filter(item => item.id !== id));
-            }
-        } catch (error) {
-            console.error(`Error deleting ${type}:`, error);
-            throw error;
-        }
-    };
-
     const registerForEvent = async (type, eventId, userDetails) => {
-        // Can register for any event type technically
         try {
-            const { error } = await supabase
+            console.log(`Registering for event ${eventId}`, userDetails);
+
+            // 1. Database Insert
+            const safeName = userDetails.name || userDetails.email || 'Anonymous';
+            console.log("DEBUG: Inserting attendee (safeguarded):", {
+                event_id: eventId,
+                name: safeName,
+                email: userDetails.email,
+            });
+            const { error, data } = await supabase
                 .from('event_attendees')
                 .insert([{
                     event_id: eventId,
-                    name: userDetails.name,
+                    name: safeName,
                     email: userDetails.email,
-                }]);
+                }])
+                .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error("Supabase connect error:", error);
+                throw error;
+            }
 
-            // Optimistic Update helper
-            const updateAttendee = (list) => list.map(p => {
-                if (p.id === eventId) return { ...p, attendees: [...(p.attendees || []), userDetails] };
-                return p;
-            });
+            console.log("Registration successful:", data);
 
-            setPrograms(prev => updateAttendee(prev));
-            setEvents(prev => updateAttendee(prev));
-            setProjects(prev => updateAttendee(prev));
+            // 2. Optimistic Update
+            const updateList = (list) => {
+                return list.map(item => {
+                    if (item.id === eventId) {
+                        const newAttendee = {
+                            id: data?.[0]?.id || Date.now(),
+                            name: userDetails.name,
+                            email: userDetails.email
+                        };
+                        const updatedItem = {
+                            ...item,
+                            attendees: [...(item.attendees || []), newAttendee]
+                        };
+                        console.log("Updated local item:", updatedItem);
+                        return updatedItem;
+                    }
+                    return item;
+                });
+            };
+
+            setPrograms(prev => updateList(prev));
+            setEvents(prev => updateList(prev));
+            setProjects(prev => updateList(prev));
+
+            return true;
 
         } catch (error) {
             console.error("Error registering:", error);
@@ -280,6 +305,7 @@ export const DataProvider = ({ children }) => {
                     donor_name: donationData.name,
                     amount: donationData.amount,
                     method: donationData.method,
+                    email: donationData.email, // Ensure email is saved
                     status: 'pending'
                 }]);
 
@@ -291,11 +317,86 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    // --- New Dashboard Features ---
+
+    const fetchUserActivities = async (email) => {
+        if (!email) return [];
+        try {
+            const { data, error } = await supabase
+                .from('event_attendees')
+                .select(`
+                    id, 
+                    status, 
+                    created_at,
+                    events ( id, title, date, image_url, category )
+                `)
+                .eq('email', email)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Error fetching activities:", err);
+            return [];
+        }
+    };
+
+    const fetchUserDonations = async (email) => {
+        if (!email) return [];
+        try {
+            const { data, error } = await supabase
+                .from('donations')
+                .select('*')
+                .eq('email', email)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Error fetching donations:", err);
+            return [];
+        }
+    };
+
+    const submitSuggestion = async (suggestionData) => {
+        try {
+            const { data, error } = await supabase
+                .from('event_suggestions')
+                .insert([suggestionData])
+                .select();
+
+            if (error) throw error;
+            return { data, error: null };
+        } catch (err) {
+            console.error("Error submitting suggestion:", err);
+            return { data: null, error: err };
+        }
+    };
+
+    const fetchUserSuggestions = async (userId) => {
+        if (!userId) return [];
+        try {
+            const { data, error } = await supabase
+                .from('event_suggestions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Error fetching suggestions:", err);
+            return [];
+        }
+    };
+
     return (
         <DataContext.Provider value={{
             news, programs, events, projects, testimonials,
             addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
-            getLocalizedContent, loading
+            getLocalizedContent, loading,
+            // New exports
+            fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions
         }}>
             {children}
         </DataContext.Provider>

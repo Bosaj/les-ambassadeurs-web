@@ -18,7 +18,7 @@ const EventsPage = () => {
                 toast.error(t.you_are_registered);
                 return;
             }
-            registerForEvent('events', event.id, { name: user.name, email: user.email });
+            registerForEvent('events', event.id, { name: user.full_name || user.user_metadata?.full_name || user.email, email: user.email });
             toast.success(t.successfully_joined);
         } else {
             setSelectedEvent(event);

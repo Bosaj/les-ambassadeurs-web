@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera } from 'react-icons/fa';
 
 const Profile = () => {
-    const { user } = useAuth();
+    const { user, refreshProfile } = useAuth();
     const { t, language } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const Profile = () => {
         if (user) {
             setFormData(prev => ({
                 ...prev,
-                full_name: user.name || '',
+                full_name: user.full_name || user.name || '',
                 email: user.email || '',
                 username: user.username || ''
             }));
@@ -82,7 +82,7 @@ const Profile = () => {
 
             // 3. Update Profile (Name, Username, Avatar)
             const profileUpdates = {};
-            if (formData.full_name !== user.name) profileUpdates.full_name = formData.full_name;
+            if (formData.full_name !== (user.full_name || user.name)) profileUpdates.full_name = formData.full_name;
             if (formData.username !== user.username) profileUpdates.username = formData.username;
             if (avatarUrl !== user.avatar_url) profileUpdates.avatar_url = avatarUrl;
 
@@ -96,6 +96,7 @@ const Profile = () => {
 
             toast.success(t.update_success || "Profile updated successfully!", { id: toastId });
             setFormData(prev => ({ ...prev, password: '' })); // Clear password field
+            await refreshProfile(); // Refresh global user state
 
         } catch (error) {
             console.error(error);

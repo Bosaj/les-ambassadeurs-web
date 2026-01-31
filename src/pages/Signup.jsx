@@ -48,10 +48,10 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+            <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-10 rounded-xl shadow-lg transition-colors duration-300">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
                         {t.signup_title}
                     </h2>
                 </div>
@@ -61,7 +61,7 @@ const Signup = () => {
                             name="name"
                             type="text"
                             required
-                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder={t.full_name_placeholder}
                             value={formData.name}
                             onChange={handleChange}
@@ -70,7 +70,7 @@ const Signup = () => {
                             name="email"
                             type="email"
                             required
-                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder={t.email_placeholder}
                             value={formData.email}
                             onChange={handleChange}
@@ -79,7 +79,7 @@ const Signup = () => {
                             name="phone"
                             type="tel"
                             required
-                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder={t.phone_placeholder}
                             value={formData.phone}
                             onChange={handleChange}
@@ -88,7 +88,7 @@ const Signup = () => {
                             name="password"
                             type="password"
                             required
-                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder={t.password_placeholder}
                             value={formData.password}
                             onChange={handleChange}
@@ -106,7 +106,18 @@ const Signup = () => {
                     </div>
                 </form>
                 <div className="text-center text-sm">
-                    <p className="text-gray-600">
+                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <p className="text-center text-gray-500 mb-4">{t.or_signup_with || "Or sign up with"}</p>
+                        <button
+                            onClick={handleGoogleLogin}
+                            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium"
+                        >
+                            <FaGoogle className="text-red-500" />
+                            <span>Google</span>
+                        </button>
+                    </div>
+
+                    <p className="mt-6 text-gray-600 dark:text-gray-400">
                         {t.have_account}{' '}
                         <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
                             {t.sign_in_link}
