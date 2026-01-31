@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { translations } from '../translations';
+
 import { motion } from 'framer-motion';
 import { FaHeart, FaCreditCard, FaPaypal, FaUniversity, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const Donate = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { language, t } = useLanguage();
     const { addDonation } = useData();
     const { user } = useAuth();
 
@@ -29,11 +28,11 @@ const Donate = () => {
         e.preventDefault();
         try {
             await addDonation(donationForm);
-            toast.success("Thank you for your donation pledge! We will contact you shortly.");
+            toast.success(t.donation_success);
             setShowModal(false);
             setDonationForm({ name: '', amount: '', method: 'online' });
         } catch (error) {
-            toast.error("Failed to process donation. Please try again.");
+            toast.error(t.donation_error);
         }
     };
 
@@ -76,7 +75,7 @@ const Donate = () => {
                             onClick={() => handleDonateClick('transfer')}
                             className="w-full mt-6 bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-md"
                         >
-                            Record Transfer
+                            {t.record_transfer}
                         </button>
                     </div>
 
@@ -121,9 +120,9 @@ const Donate = () => {
 
                 <div className="mt-20 text-center bg-blue-50 dark:bg-gray-800 p-10 rounded-2xl max-w-4xl mx-auto transition-colors duration-300">
                     <FaHeart className="text-red-500 text-5xl mx-auto mb-6 animate-pulse" />
-                    <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-4">{t.impact_title || "Where does your money go?"}</h2>
+                    <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-4">{t.impact_title}</h2>
                     <p className="text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
-                        {t.impact_desc || "100% of your donation goes directly to our programs. We are committed to transparency and will provide you with reports on how your contribution made a difference."}
+                        {t.impact_desc}
                     </p>
                 </div>
             </div>
@@ -138,10 +137,10 @@ const Donate = () => {
                         >
                             <FaTimes size={20} />
                         </button>
-                        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Make a Donation</h2>
+                        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">{t.make_donation}</h2>
                         <form onSubmit={handleDonateSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-2">{t.full_name}</label>
                                 <input
                                     type="text"
                                     required
@@ -151,7 +150,7 @@ const Donate = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2">Amount (TND)</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-2">{t.amount_label}</label>
                                 <input
                                     type="number"
                                     required
@@ -162,19 +161,19 @@ const Donate = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2">Payment Method</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-2">{t.payment_method}</label>
                                 <select
                                     className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                     value={donationForm.method}
                                     onChange={e => setDonationForm({ ...donationForm, method: e.target.value })}
                                 >
-                                    <option value="online">Credit Card (Stripe)</option>
+                                    <option value="online">{t.credit_card_stripe}</option>
                                     <option value="paypal">PayPal</option>
-                                    <option value="transfer">Bank Transfer</option>
+                                    <option value="transfer">{t.bank_transfer_option}</option>
                                 </select>
                             </div>
                             <button type="submit" className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-lg mt-4">
-                                Confirm Donation
+                                {t.confirm_donation}
                             </button>
                         </form>
                     </div>

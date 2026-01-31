@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
-import { FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash } from 'react-icons/fa';
+import { FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash, FaUserShield, FaCheck, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 
-const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, handleFormSubmit }) => (
+const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, handleFormSubmit, activeLang, setActiveLang }) => (
     <div>
         <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white">Manage {type}</h2>
@@ -15,18 +15,45 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
         {/* Add New Form */}
         <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-8 border border-gray-200 dark:border-gray-600">
             <h3 className="font-bold mb-4 text-gray-800 dark:text-white">Add New {type === 'news' ? 'News Item' : 'Program'}</h3>
+
+            {/* Language Tabs */}
+            <div className="flex gap-2 mb-4">
+                {['en', 'fr', 'ar'].map(lang => (
+                    <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setActiveLang(lang)}
+                        className={`px-4 py-2 rounded text-sm font-medium transition-colors ${activeLang === lang
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                            }`}
+                    >
+                        {lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : 'العربية'}
+                    </button>
+                ))}
+            </div>
+
             <form onSubmit={(e) => { setFormType(type); handleFormSubmit(e); }} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                    <input
-                        type="text" placeholder="Title" required
-                        className="border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                        value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })}
-                    />
-                    <input
-                        type="date" required
-                        className="border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                        value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
-                    />
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-gray-600 dark:text-gray-300">Title ({activeLang.toUpperCase()})</label>
+                        <input
+                            type="text" placeholder={`Title in ${activeLang}`} required
+                            className="border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                            dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                            value={formData.title[activeLang]}
+                            onChange={e => setFormData({ ...formData, title: { ...formData.title, [activeLang]: e.target.value } })}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-gray-600 dark:text-gray-300">Date</label>
+                        <input
+                            type="date" required
+                            className="border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                            value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-2">
@@ -81,11 +108,17 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
                     />
                 </div>
 
-                <textarea
-                    placeholder="Description" required rows="3"
-                    className="w-full border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                    value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}
-                ></textarea>
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm text-gray-600 dark:text-gray-300">Description ({activeLang.toUpperCase()})</label>
+                    <textarea
+                        placeholder={`Description in ${activeLang}`} required rows="3"
+                        className="w-full border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                        dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                        value={formData.description[activeLang]}
+                        onChange={e => setFormData({ ...formData, description: { ...formData.description, [activeLang]: e.target.value } })}
+                    ></textarea>
+                </div>
+
                 <button type="submit" className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition-colors">
                     Add {type === 'news' ? 'News' : 'Program'}
                 </button>
@@ -110,7 +143,7 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
                             <td className="py-3">
                                 <img src={item.image_url || item.image} alt="" className="h-10 w-16 object-cover rounded" />
                             </td>
-                            <td className="py-3 font-medium">{item.title}</td>
+                            <td className="py-3 font-medium">{item.title.en || item.title.fr || item.title.ar || Object.values(item.title)[0] || item.title}</td>
                             <td className="py-3 text-gray-500 dark:text-gray-400">{item.date}</td>
                             <td className="py-3">{item.attendees.length}</td>
                             <td className="py-3 text-right">
@@ -134,17 +167,119 @@ const AdminDashboard = () => {
 
     // Form State
     const [formType, setFormType] = useState('news'); // 'news' or 'programs'
+    // Trilingual Form State
+    const [activeLang, setActiveLang] = useState('en');
     const [formData, setFormData] = useState({
-        title: '',
+        title: { en: '', fr: '', ar: '' },
         date: '',
         image: '',
-        description: ''
+        description: { en: '', fr: '', ar: '' }
     });
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
+
+    const AdminManagement = () => {
+        const [requests, setRequests] = useState([]);
+        const [inviteEmail, setInviteEmail] = useState('');
+        const [loading, setLoading] = useState(false);
+
+        const fetchRequests = async () => {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('request_status', 'pending');
+            if (!error) setRequests(data || []);
+        };
+
+        useEffect(() => { fetchRequests(); }, []);
+
+        const handleApprove = async (id) => {
+            try {
+                await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id);
+                toast.success("Request Approved");
+                fetchRequests();
+            } catch (e) { toast.error("Error approving"); }
+        };
+
+        const handleDeny = async (id) => {
+            try {
+                await supabase.from('profiles').update({ request_status: 'denied' }).eq('id', id);
+                toast.success("Request Denied");
+                fetchRequests();
+            } catch (e) { toast.error("Error denying"); }
+        };
+
+        const handleInvite = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            try {
+                const { data, error } = await supabase.rpc('make_admin_by_email', { target_email: inviteEmail });
+                if (error) throw error;
+                if (data.success) {
+                    toast.success(data.message);
+                    setInviteEmail('');
+                } else {
+                    toast.error(data.message);
+                }
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to invite admin");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        return (
+            <div>
+                <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-8 border border-gray-200 dark:border-gray-600">
+                    <h3 className="font-bold mb-4 text-gray-800 dark:text-white">Add Admin by Email</h3>
+                    <form onSubmit={handleInvite} className="flex gap-4">
+                        <input
+                            type="email" required placeholder="User Email"
+                            className="flex-1 border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                            value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
+                        />
+                        <button disabled={loading} className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition">
+                            {loading ? 'Processing...' : 'Make Admin'}
+                        </button>
+                    </form>
+                </div>
+
+                <div>
+                    <h3 className="font-bold mb-4 text-gray-800 dark:text-white">Pending Admin Requests</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden">
+                        {requests.length === 0 ? (
+                            <p className="p-4 text-center text-gray-500">No pending requests</p>
+                        ) : (
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th className="p-3 text-gray-600 dark:text-gray-300">Name</th>
+                                        <th className="p-3 text-right text-gray-600 dark:text-gray-300">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {requests.map(req => (
+                                        <tr key={req.id} className="border-t dark:border-gray-600">
+                                            <td className="p-3 dark:text-white">{req.full_name}</td>
+                                            <td className="p-3 text-right flex justify-end gap-2">
+                                                <button onClick={() => handleApprove(req.id)} className="text-green-500 bg-green-50 p-2 rounded hover:bg-green-100"><FaCheck /></button>
+                                                <button onClick={() => handleDeny(req.id)} className="text-red-500 bg-red-50 p-2 rounded hover:bg-red-100"><FaTimes /></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
 
     const handleDelete = (type, id) => {
         if (window.confirm("Are you sure?")) {
@@ -157,7 +292,12 @@ const AdminDashboard = () => {
         e.preventDefault();
         addPost(formType, formData);
         toast.success(`${formType === 'news' ? 'News' : 'Program'} added successfully!`);
-        setFormData({ title: '', date: '', image: '', description: '' });
+        setFormData({
+            title: { en: '', fr: '', ar: '' },
+            date: '',
+            image: '',
+            description: { en: '', fr: '', ar: '' }
+        });
     };
 
     return (
@@ -178,6 +318,11 @@ const AdminDashboard = () => {
                     <button onClick={() => setActiveTab('testimonials')} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaComments /> Testimonials
                     </button>
+                    {user?.email === 'oussousselhadji@gmail.com' && (
+                        <button onClick={() => setActiveTab('admins')} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaUserShield /> Manage Admins
+                        </button>
+                    )}
                     <button onClick={handleLogout} className="w-full text-left p-3 rounded flex items-center gap-3 text-red-200 hover:bg-blue-800 dark:hover:bg-gray-700 mt-8 transition-colors">
                         <FaSignOutAlt /> Logout
                     </button>
@@ -200,8 +345,8 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300">
-                        {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} />}
-                        {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} />}
+                        {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} />}
+                        {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} />}
 
                         {activeTab === 'testimonials' && (
                             <div>
@@ -266,6 +411,10 @@ const AdminDashboard = () => {
                         )}
 
                         {activeTab === 'donations' && <div className="text-gray-500 dark:text-gray-400 text-center py-10">Donation management coming soon... (Check Supabase Dashboard for now)</div>}
+
+                        {activeTab === 'admins' && user?.email === 'oussousselhadji@gmail.com' && (
+                            <AdminManagement />
+                        )}
                     </div>
                 </main>
             </div >

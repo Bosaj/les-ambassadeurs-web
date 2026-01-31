@@ -7,6 +7,8 @@ import Donate from './pages/Donate';
 import Volunteer from './pages/Volunteer';
 import NewsPage from './pages/NewsPage';
 import ProgramsPage from './pages/ProgramsPage';
+import EventsPage from './pages/EventsPage';
+
 import { DataProvider } from './context/DataContext';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -30,6 +32,8 @@ function App() {
                   <Route path="volunteer" element={<Volunteer />} />
                   <Route path="news" element={<NewsPage />} />
                   <Route path="programs" element={<ProgramsPage />} />
+                  <Route path="events" element={<EventsPage />} />
+
                   <Route path="login" element={<Login />} />
                   <Route path="signup" element={<Signup />} />
 

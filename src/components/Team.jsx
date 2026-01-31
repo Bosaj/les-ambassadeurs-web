@@ -107,12 +107,7 @@ const Team = () => {
                         <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-red-500 rounded-full"></div>
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-lg mt-4">
-                        {language === 'ar'
-                            ? "تعرف على الفريق المتميز الذي يقود مبادراتنا ويصنع الفرق."
-                            : language === 'fr'
-                                ? "Rencontrez l'équipe dévouée qui dirige nos initiatives et fait la différence."
-                                : "Meet the dedicated team leading our initiatives and making a difference."
-                        }
+                        {t.team_intro_desc}
                     </p>
                 </div>
 
@@ -130,6 +125,9 @@ const Team = () => {
                             modifier: 2.5,
                             slideShadows: false,
                         }}
+                        loop={true}
+                        loopedSlides={10} // Increased for smoother infinite loop
+                        loopAdditionalSlides={5}
                         autoplay={{
                             delay: 3500,
                             disableOnInteraction: false,

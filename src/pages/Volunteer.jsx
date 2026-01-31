@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
+// removed import { translations } from '../translations';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { FaHandPaper } from 'react-icons/fa';
 
 const Volunteer = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { language, t } = useLanguage();
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -25,7 +24,7 @@ const Volunteer = () => {
         e.preventDefault();
         // Simulate API call
         setTimeout(() => {
-            toast.success(t.volunteer_success || "Thank you for volunteering! We will contact you soon.");
+            toast.success(t.volunteer_success);
             setFormData({
                 fullName: '',
                 email: '',
@@ -47,9 +46,9 @@ const Volunteer = () => {
                 <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-300">
                     <div className="bg-blue-900 dark:bg-gray-700 p-6 md:p-10 text-center text-white">
                         <FaHandPaper className="text-5xl mx-auto mb-4" />
-                        <h1 className="text-4xl font-bold mb-4">{t.volunteer_title || "Join Our Family"}</h1>
+                        <h1 className="text-4xl font-bold mb-4">{t.volunteer_title}</h1>
                         <p className="text-blue-100 dark:text-gray-300 text-lg">
-                            {t.volunteer_subtitle || "Become a volunteer and help us create positive change in our community."}
+                            {t.volunteer_subtitle}
                         </p>
                     </div>
 
@@ -57,7 +56,7 @@ const Volunteer = () => {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.full_name || "Full Name"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.full_name}</label>
                                     <input
                                         type="text"
                                         name="fullName"
@@ -68,7 +67,7 @@ const Volunteer = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.email || "Email"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.email}</label>
                                     <input
                                         type="email"
                                         name="email"
@@ -82,7 +81,7 @@ const Volunteer = () => {
 
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.phone || "Phone Number"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.phone}</label>
                                     <input
                                         type="tel"
                                         name="phone"
@@ -93,7 +92,7 @@ const Volunteer = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.city || "City"}</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">{t.city}</label>
                                     <input
                                         type="text"
                                         name="city"

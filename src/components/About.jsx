@@ -1,10 +1,9 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
+// removed import { translations } from '../translations';
 
 const About = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { language, t } = useLanguage();
 
     return (
         <section id="about" className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">

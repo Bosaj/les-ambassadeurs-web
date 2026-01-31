@@ -92,8 +92,15 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const loginWithGoogle = async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+        });
+        if (error) throw error;
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

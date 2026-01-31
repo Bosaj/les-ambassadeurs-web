@@ -1,12 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
+// removed import { translations } from '../translations';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from 'react-icons/fa';
 
 const Footer = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
+    const { language, t } = useLanguage();
 
     return (
         <footer className="bg-gray-900 dark:bg-black text-white pt-12 pb-6 transition-colors duration-300">
@@ -70,11 +69,11 @@ const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-2">
                                 <FaMapMarkerAlt className="text-gray-400 mt-1" />
-                                <span className="text-gray-400">123 Mohammed VI Street, Casablanca, Morocco</span>
+                                <span className="text-gray-400">{t.address}</span>
                             </li>
                             <li className="flex items-center gap-2">
                                 <FaPhone className="text-gray-400" />
-                                <span className="text-gray-400" dir="ltr">0522-123456</span>
+                                <span className="text-gray-400" dir="ltr">{t.phone_number}</span>
                             </li>
                             <li className="flex items-center gap-2">
                                 <FaEnvelope className="text-gray-400" />

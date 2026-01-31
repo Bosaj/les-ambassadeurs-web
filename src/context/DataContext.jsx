@@ -44,12 +44,16 @@ const initialPrograms = [
 export const DataProvider = ({ children }) => {
     const [news, setNews] = useState([]);
     const [programs, setPrograms] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [testimonials, setTestimonials] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         try {
             setLoading(true);
+
+            // Fetch News
             const { data: newsData, error: newsError } = await supabase
                 .from('news')
                 .select('*')
@@ -58,20 +62,35 @@ export const DataProvider = ({ children }) => {
             if (newsError) throw newsError;
             setNews(newsData || []);
 
-            const { data: eventsData, error: eventsError } = await supabase
+            // Fetch All Events/Programs/Projects
+            const { data: allEventsData, error: eventsError } = await supabase
                 .from('events')
                 .select('*, attendees:event_attendees(id, name, email)')
-                .order('created_at', { ascending: false });
+                .order('date', { ascending: false }); // Order by event date
 
             if (eventsError) throw eventsError;
-            setPrograms(eventsData || []);
 
+            // Filter into categories
+            const p = [];
+            const e = [];
+            const proj = [];
+
+            (allEventsData || []).forEach(item => {
+                const cat = item.category || 'program'; // Default to program for legacy
+                if (cat === 'program') p.push(item);
+                else if (cat === 'event') e.push(item);
+                else if (cat === 'project') proj.push(item);
+            });
+
+            setPrograms(p);
+            setEvents(e);
+            setProjects(proj);
+
+            // Fetch Testimonials
             const { data: testimonialsData, error: testimonialsError } = await supabase
                 .from('testimonials')
                 .select('*')
-                .eq('is_approved', true) // Only show approved by default? Or all for admin.
-                // Assuming DataContext is general, maybe fetch all and filter in UI, or fetch approved. 
-                // Let's fetch all for now, UI can filter.
+                .eq('is_approved', true)
                 .order('created_at', { ascending: false });
 
             if (testimonialsError) throw testimonialsError;
@@ -79,7 +98,6 @@ export const DataProvider = ({ children }) => {
 
         } catch (error) {
             console.error("Error fetching data:", error);
-            // Fallback to empty or handled error state
         } finally {
             setLoading(false);
         }
@@ -87,30 +105,42 @@ export const DataProvider = ({ children }) => {
 
     useEffect(() => {
         fetchData();
-
-        // Optional: Realtime subscriptions could go here
     }, []);
+
+    // Helper to get localized string
+    const getLocalizedContent = (contentObj, lang = 'en') => {
+        if (!contentObj) return '';
+        if (typeof contentObj === 'string') return contentObj; // Backwards compatibility
+        return contentObj[lang] || contentObj['en'] || Object.values(contentObj)[0] || '';
+    };
 
     const addPost = async (type, postData) => {
         try {
             let table = '';
             let insertData = {};
 
+            // Helper to create trilingual object from single input (for simplified admin input)
+            // Ideally Admin Dashboard should implement trilingual inputs.
+            // For now, we replicate the input to all languages avoiding empty fields issues.
+            const createTrilingual = (text) => ({ en: text, fr: text, ar: text });
+
             if (type === 'news') {
                 table = 'news';
                 insertData = {
-                    title: postData.title,
+                    title: postData.title, // Expecting object: {en: "", fr: "", ar: ""}
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
-                    description: postData.description
+                    description: postData.description // Expecting object
                 };
-            } else if (type === 'programs') {
+            } else if (['programs', 'events', 'projects'].includes(type)) {
                 table = 'events';
+                const categoryMap = { 'programs': 'program', 'events': 'event', 'projects': 'project' };
                 insertData = {
                     title: postData.title,
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
-                    description: postData.description
+                    description: postData.description,
+                    category: categoryMap[type] || 'program'
                 };
             } else if (type === 'testimonials') {
                 table = 'testimonials';
@@ -119,7 +149,7 @@ export const DataProvider = ({ children }) => {
                     role: postData.role,
                     content: postData.content,
                     image_url: postData.image,
-                    is_approved: true // Auto approve for admin added
+                    is_approved: true
                 };
             }
 
@@ -131,13 +161,8 @@ export const DataProvider = ({ children }) => {
 
             if (error) throw error;
 
-            if (type === 'news') {
-                setNews(prev => [data, ...prev]);
-            } else if (type === 'programs') {
-                setPrograms(prev => [{ ...data, attendees: [] }, ...prev]);
-            } else if (type === 'testimonials') {
-                setTestimonials(prev => [data, ...prev]);
-            }
+            // Re-fetch to ensure category sorting is correct (easiest) or manually push
+            fetchData();
             return data;
         } catch (error) {
             console.error(`Error adding ${type}:`, error);
@@ -149,7 +174,7 @@ export const DataProvider = ({ children }) => {
         try {
             let table = '';
             if (type === 'news') table = 'news';
-            else if (type === 'programs') table = 'events';
+            else if (['programs', 'events', 'projects'].includes(type.toLowerCase())) table = 'events'; // covers all categories
             else if (type === 'testimonials') table = 'testimonials';
 
             const { error } = await supabase
@@ -159,12 +184,15 @@ export const DataProvider = ({ children }) => {
 
             if (error) throw error;
 
-            if (type === 'news') {
-                setNews(prev => prev.filter(item => item.id !== id));
-            } else if (type === 'programs') {
+            // Update local state
+            if (type === 'news') setNews(prev => prev.filter(item => item.id !== id));
+            else if (type === 'testimonials') setTestimonials(prev => prev.filter(item => item.id !== id));
+            else {
+                // For events table, we might not know which specific state list it was in without id lookup, 
+                // but checking all 3 is safe and fast.
                 setPrograms(prev => prev.filter(item => item.id !== id));
-            } else if (type === 'testimonials') {
-                setTestimonials(prev => prev.filter(item => item.id !== id));
+                setEvents(prev => prev.filter(item => item.id !== id));
+                setProjects(prev => prev.filter(item => item.id !== id));
             }
         } catch (error) {
             console.error(`Error deleting ${type}:`, error);
@@ -173,9 +201,7 @@ export const DataProvider = ({ children }) => {
     };
 
     const registerForEvent = async (type, eventId, userDetails) => {
-        // Only supports programs (events) currently as News doesn't have attendees
-        if (type !== 'programs') return;
-
+        // Can register for any event type technically
         try {
             const { error } = await supabase
                 .from('event_attendees')
@@ -183,24 +209,20 @@ export const DataProvider = ({ children }) => {
                     event_id: eventId,
                     name: userDetails.name,
                     email: userDetails.email,
-                    // user_id is automatically handled if authenticated? 
-                    // No, explicitly set if we have auth context here, but keeping it simple for guests 
-                    // RLS allows public insert, so user_id might be null for guests
                 }]);
 
             if (error) throw error;
 
-            // Optimistic update or refetch
-            // Optimistic:
-            setPrograms(prev => prev.map(p => {
-                if (p.id === eventId) {
-                    return {
-                        ...p,
-                        attendees: [...(p.attendees || []), userDetails]
-                    };
-                }
+            // Optimistic Update helper
+            const updateAttendee = (list) => list.map(p => {
+                if (p.id === eventId) return { ...p, attendees: [...(p.attendees || []), userDetails] };
                 return p;
-            }));
+            });
+
+            setPrograms(prev => updateAttendee(prev));
+            setEvents(prev => updateAttendee(prev));
+            setProjects(prev => updateAttendee(prev));
+
         } catch (error) {
             console.error("Error registering:", error);
             throw error;
@@ -215,7 +237,7 @@ export const DataProvider = ({ children }) => {
                     donor_name: donationData.name,
                     amount: donationData.amount,
                     method: donationData.method,
-                    status: 'pending' // Default status
+                    status: 'pending'
                 }]);
 
             if (error) throw error;
@@ -227,7 +249,11 @@ export const DataProvider = ({ children }) => {
     };
 
     return (
-        <DataContext.Provider value={{ news, programs, testimonials, addPost, deletePost, registerForEvent, addDonation, loading }}>
+        <DataContext.Provider value={{
+            news, programs, events, projects, testimonials,
+            addPost, deletePost, registerForEvent, addDonation,
+            getLocalizedContent, loading
+        }}>
             {children}
         </DataContext.Provider>
     );
