@@ -141,6 +141,57 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const updatePost = async (type, id, postData) => {
+        try {
+            let table = '';
+            let updateData = {};
+
+            if (type === 'news') {
+                table = 'news';
+                updateData = {
+                    title: postData.title,
+                    date: new Date(postData.date).toISOString(),
+                    image_url: postData.image,
+                    description: postData.description
+                };
+            } else if (['programs', 'events', 'projects'].includes(type)) {
+                table = 'events';
+                updateData = {
+                    title: postData.title,
+                    date: new Date(postData.date).toISOString(),
+                    image_url: postData.image,
+                    description: postData.description,
+                    // category is generally not changed, but if we wanted to we could
+                };
+            } else if (type === 'testimonials') {
+                table = 'testimonials';
+                updateData = {
+                    name: postData.name,
+                    role: postData.role,
+                    content: postData.content,
+                    image_url: postData.image,
+                    rating: postData.rating || 5,
+                    is_approved: postData.is_approved
+                };
+            }
+
+            const { data, error } = await supabase
+                .from(table)
+                .update(updateData)
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            fetchData(); // Refresh data
+            return data;
+        } catch (error) {
+            console.error(`Error updating ${type}:`, error);
+            throw error;
+        }
+    };
+
     const togglePin = async (type, id, currentStatus) => {
         try {
             let table = '';
@@ -243,7 +294,7 @@ export const DataProvider = ({ children }) => {
     return (
         <DataContext.Provider value={{
             news, programs, events, projects, testimonials,
-            addPost, deletePost, registerForEvent, addDonation, togglePin,
+            addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
             getLocalizedContent, loading
         }}>
             {children}

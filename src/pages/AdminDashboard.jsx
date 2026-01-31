@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 
 import { useLanguage } from '../context/LanguageContext';
 
-const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, handleFormSubmit, activeLang, setActiveLang, t, togglePin }) => (
+const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, handleFormSubmit, activeLang, setActiveLang, t, togglePin, onEdit, editingId, onCancel }) => (
     <div>
         <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white">{t.manage} {type === 'news' ? t.tab_news : (type === 'events' ? t.tab_events : t.tab_programs)}</h2>
@@ -16,7 +16,9 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
 
         {/* Add New Form */}
         <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-8 border border-gray-200 dark:border-gray-600">
-            <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{type === 'news' ? t.add_new_news : (type === 'events' ? t.add_new_event : t.add_new_program)}</h3>
+            <h3 className="font-bold mb-4 text-gray-800 dark:text-white">
+                {editingId ? `${t.edit_btn} ${type === 'news' ? t.tab_news : (type === 'events' ? t.tab_events : t.tab_programs)}` : (type === 'news' ? t.add_new_news : (type === 'events' ? t.add_new_event : t.add_new_program))}
+            </h3>
 
             {/* Language Tabs */}
             <div className="flex gap-2 mb-4">
@@ -122,8 +124,13 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
                 </div>
 
                 <button type="submit" className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition-colors">
-                    {t.add_btn}
+                    {editingId ? t.update_btn : t.add_btn}
                 </button>
+                {editingId && (
+                    <button type="button" onClick={onCancel} className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition-colors ml-2">
+                        {t.cancel_btn}
+                    </button>
+                )}
             </form>
         </div>
 
@@ -159,6 +166,9 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
                                 </button>
                             </td>
                             <td className="py-3 text-right">
+                                <button onClick={() => onEdit(item)} className="text-blue-500 hover:text-blue-700 p-2 border rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:border-blue-800 transition-colors mr-2">
+                                    <FaNewspaper /> {/* Reusing icon for edit, or import FaEdit */}
+                                </button>
                                 <button onClick={() => onDelete(type, item.id)} className="text-red-500 hover:text-red-700 p-2 border rounded hover:bg-red-50 dark:hover:bg-red-900/20 dark:border-red-800 transition-colors">
                                     <FaTrash />
                                 </button>
@@ -174,9 +184,10 @@ const PostList = ({ type, data, onDelete, formData, setFormData, setFormType, ha
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const { t } = useLanguage();
-    const { news, programs, events, testimonials, addPost, deletePost, togglePin } = useData();
+    const { news, programs, events, testimonials, addPost, updatePost, deletePost, togglePin } = useData();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('news');
+    const [editingId, setEditingId] = useState(null);
 
     // Form State
     const [formType, setFormType] = useState('news'); // 'news' or 'programs'
@@ -370,24 +381,64 @@ const AdminDashboard = () => {
         }
     };
 
+
+
+
+    const handleEdit = (item, type) => {
+        setEditingId(item.id);
+        const tType = type || activeTab;
+        setFormType(tType);
+
+        // Normalize data for form
+        // Title/Description might be strings or objects
+        const normalize = (val) => (typeof val === 'object' && val !== null) ? val : { en: val, fr: val, ar: val };
+
+        setFormData({
+            title: normalize(item.title),
+            date: item.date ? item.date.split('T')[0] : '',
+            image: item.image_url || item.image || '',
+            description: normalize(item.description),
+            name: item.name || '',
+            role: normalize(item.role),
+            content: normalize(item.content),
+            rating: item.rating || 5,
+            is_approved: item.is_approved
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setFormData({
+            title: { en: '', fr: '', ar: '' },
+            date: '',
+            image: '',
+            description: { en: '', fr: '', ar: '' },
+            name: '',
+            role: { en: '', fr: '', ar: '' },
+            content: { en: '', fr: '', ar: '' },
+            rating: 5
+        });
+    };
+
     const handleFormSubmit = (e, type) => {
         e.preventDefault();
         const targetType = type || formType;
         const toastId = toast.loading(t.processing || "Processing...");
 
-        addPost(targetType, formData)
+        const action = editingId
+            ? updatePost(targetType, editingId, formData)
+            : addPost(targetType, formData);
+
+        action
             .then(() => {
-                toast.success(t.item_added_success, { id: toastId });
-                setFormData({
-                    title: { en: '', fr: '', ar: '' },
-                    date: '',
-                    image: '',
-                    description: { en: '', fr: '', ar: '' }
-                });
+                toast.success(editingId ? t.item_updated_success : t.item_added_success, { id: toastId });
+                handleCancelEdit(); // Reset form
             })
             .catch((error) => {
                 console.error(error);
-                toast.error(t.error_adding_item || "Error adding item", { id: toastId });
+                toast.error(t.error_adding_item || "Error saving item", { id: toastId });
             });
     };
 
@@ -442,9 +493,9 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300">
-                        {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} />}
-                        {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} />}
-                        {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} />}
+                        {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} editingId={editingId} onCancel={handleCancelEdit} />}
+                        {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} editingId={editingId} onCancel={handleCancelEdit} />}
+                        {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={addPost} formData={formData} setFormData={setFormData} setFormType={setFormType} handleFormSubmit={handleFormSubmit} activeLang={activeLang} setActiveLang={setActiveLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} editingId={editingId} onCancel={handleCancelEdit} />}
 
                         {activeTab === 'testimonials' && (
                             <div>
@@ -542,7 +593,12 @@ const AdminDashboard = () => {
                                             onChange={e => setFormData({ ...formData, content: { ...formData.content, [activeLang]: e.target.value } })}
                                         ></textarea>
                                     </div>
-                                    <button type="submit" className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition">{t.add_btn}</button>
+                                    <button type="submit" className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition">{editingId ? t.update_btn : t.add_btn}</button>
+                                    {editingId && (
+                                        <button type="button" onClick={handleCancelEdit} className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition ml-2">
+                                            {t.cancel_btn}
+                                        </button>
+                                    )}
                                 </form>
 
                                 <div className="grid grid-cols-1 gap-4">
@@ -561,6 +617,9 @@ const AdminDashboard = () => {
                                             <div className="flex gap-2">
                                                 <button onClick={() => togglePin('testimonials', item.id, item.is_pinned)} className="text-gray-400 hover:text-blue-500 p-2">
                                                     <FaThumbtack className={item.is_pinned ? 'text-blue-600' : ''} />
+                                                </button>
+                                                <button onClick={() => handleEdit(item, 'testimonials')} className="text-blue-500 hover:text-blue-700 p-2">
+                                                    <FaNewspaper />
                                                 </button>
                                                 <button onClick={() => handleDelete('testimonials', item.id)} className="text-red-500 hover:text-red-700">
                                                     <FaTrash />

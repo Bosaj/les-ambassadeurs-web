@@ -37,7 +37,17 @@ const Header = () => {
                             </>
                         ) : (
                             <>
-                                <span className="flex items-center gap-2 text-xs sm:text-base font-bold text-yellow-300">{t.welcome}, {user.name?.split(' ')[0] || user.email?.split('@')[0]}</span>
+                                <div className="flex items-center gap-2">
+                                    {user.avatar_url ? (
+                                        <img src={user.avatar_url} alt="Profile" className="w-6 h-6 rounded-full object-cover border border-white/50" />
+                                    ) : (
+                                        <FaUser />
+                                    )}
+                                    <span className="text-xs sm:text-base font-bold text-yellow-300">
+                                        {t.welcome}, {user.username || user.name?.split(' ')[0] || user.email?.split('@')[0]}
+                                    </span>
+                                </div>
+                                <span className="flex items-center gap-2 text-xs sm:text-base"><Link to="/profile" className="hover:text-red-400 transition">{t.profile_title || "Profile"}</Link></span>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">{t.dashboard || "Dashboard"}</Link></span>
                                 <button onClick={logout} className="flex items-center gap-2 text-xs sm:text-base hover:text-red-400 transition"><FaSignOutAlt /> {t.logout}</button>
                             </>
@@ -85,7 +95,7 @@ const Header = () => {
                             <li><a href="/#about" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.about}</a></li>
                             <li><a href="/#programs" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.programs}</a></li>
                             <li><a href="/#branches" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.branches}</a></li>
-                            <li><NavLink to="/news" className={navLinkClass}>{t.news}</NavLink></li>
+                            <li><NavLink to="/news" className={navLinkClass} onClick={handleScrollToTop}>{t.news}</NavLink></li>
                             <li><a href="/#contact" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.contact_us}</a></li>
                         </ul>
                     </nav>
