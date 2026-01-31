@@ -707,6 +707,7 @@ const AdminDashboard = () => {
                             <img src={selectedUser.avatar_url || `https://ui-avatars.com/api/?name=${selectedUser.full_name}`} alt={selectedUser.full_name} className="w-16 h-16 rounded-full" />
                             <div>
                                 <h3 className="font-bold text-lg dark:text-white">{selectedUser.full_name}</h3>
+                                {selectedUser.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{selectedUser.username}</p>}
                                 <p className="text-gray-500 dark:text-gray-400">{selectedUser.email}</p>
                                 <div className="flex gap-2 mt-1">
                                     <span className={`text-xs px-2 py-1 rounded ${selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{selectedUser.role}</span>
@@ -743,9 +744,9 @@ const AdminDashboard = () => {
                                                     <p className="text-xs text-gray-500">{new Date(activity.events?.date).toLocaleDateString()} • {activity.events?.category || 'Event'}</p>
                                                 </div>
                                                 <span className={`text-xs px-2 py-1 rounded capitalize ${activity.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                                        activity.status === 'attended' ? 'bg-purple-100 text-purple-800' :
-                                                            activity.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                                'bg-yellow-100 text-yellow-800'
+                                                    activity.status === 'attended' ? 'bg-purple-100 text-purple-800' :
+                                                        activity.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                            'bg-yellow-100 text-yellow-800'
                                                     }`}>
                                                     {activity.status || 'pending'}
                                                 </span>
