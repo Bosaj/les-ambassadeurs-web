@@ -21,10 +21,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
+                            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
                         >
-                            <div className="sticky top-0 bg-white p-6 border-b flex justify-between items-center z-10">
-                                <h3 className="text-2xl font-bold text-blue-900">{title}</h3>
+                            <div className="sticky top-0 bg-white dark:bg-gray-800 p-6 border-b dark:border-gray-700 flex justify-between items-center z-10">
+                                <h3 className="text-2xl font-bold text-blue-900 dark:text-white">{title}</h3>
                                 <button
                                     onClick={onClose}
                                     className="text-gray-500 hover:text-red-500 transition text-xl p-2 rounded-full hover:bg-gray-100"

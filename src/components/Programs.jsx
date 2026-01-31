@@ -87,14 +87,22 @@ const Programs = () => {
             <Modal
                 isOpen={!!selectedProgram}
                 onClose={() => setSelectedProgram(null)}
-                title={selectedProgram?.title}
+                title={getLocalizedContent(selectedProgram?.title, language)}
             >
                 <div className="text-center mb-6">
-                    <div className="text-blue-900 text-6xl mb-4 flex justify-center">
-                        {selectedProgram?.icon}
-                    </div>
-                    <p className="text-lg text-gray-700 leading-relaxed">
-                        {selectedProgram?.details}
+                    {selectedProgram?.image_url ? (
+                        <img
+                            src={selectedProgram.image_url}
+                            alt={getLocalizedContent(selectedProgram.title, language)}
+                            className="w-full h-64 object-cover rounded-lg mb-4"
+                        />
+                    ) : (
+                        <div className="text-blue-900 text-6xl mb-4 flex justify-center">
+                            <FaHandsHelping />
+                        </div>
+                    )}
+                    <p className="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+                        {getLocalizedContent(selectedProgram?.description, language)}
                     </p>
                 </div>
                 <div className="flex justify-center">

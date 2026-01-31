@@ -2,18 +2,20 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { translations } from '../translations';
-import { FaCalendarAlt, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaArrowRight, FaThumbtack } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import Modal from './Modal';
 
 const News = () => {
     const { language } = useLanguage();
-    const { events, getLocalizedContent } = useData(); // Fetch real events
+    const { news, events, getLocalizedContent } = useData();
     const t = translations[language];
     const [selectedNews, setSelectedNews] = useState(null);
 
-    // Dynamic events/news - user asked for "showcase event" - assuming this maps to the Events category
-    const displayEvents = events.slice(0, 3);
+    // Combine News and Events for the "Latest News & Events" section
+    // Sort by date descending
+    const allItems = [...(news || []), ...(events || [])].sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
+    const displayItems = allItems.slice(0, 3);
 
     return (
         <section id="news" className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -29,7 +31,7 @@ const News = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {displayEvents.length > 0 ? displayEvents.map((item, index) => (
+                    {displayItems.length > 0 ? displayItems.map((item, index) => (
                         <div
                             key={item.id || index}
                             className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer"
@@ -45,6 +47,7 @@ const News = () => {
                                     <span className="flex items-center gap-1">
                                         <FaCalendarAlt /> <span>{new Date(item.date).toLocaleDateString()}</span>
                                     </span>
+                                    {item.is_pinned && <span className="flex items-center gap-1 text-blue-600 ml-auto"><FaThumbtack /> {t.pin_item || "Pinned"}</span>}
                                 </div>
                                 <h3 className="text-xl font-bold text-blue-900 dark:text-white mb-3 line-clamp-2">
                                     {getLocalizedContent(item.title, language)}
@@ -83,13 +86,13 @@ const News = () => {
                 title={getLocalizedContent(selectedNews?.title, language)}
             >
                 <img
-                    src={selectedNews?.image_url || selectedNews?.image}
+                    src={selectedNews?.image_url || selectedNews?.image || "https://via.placeholder.com/600"}
                     alt={getLocalizedContent(selectedNews?.title, language)}
                     className="w-full h-64 object-cover rounded-lg mb-6"
                 />
                 <div className="flex items-center text-sm text-gray-500 mb-4 gap-4">
                     <span className="flex items-center gap-1">
-                        <FaCalendarAlt /> <span>{selectedNews ? new Date(selectedNews.date).toLocaleDateString() : ''}</span>
+                        <FaCalendarAlt /> <span>{selectedNews?.date ? new Date(selectedNews.date).toLocaleDateString() : ''}</span>
                     </span>
                     {selectedNews?.location && (
                         <span className="flex items-center gap-1">

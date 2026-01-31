@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaHandsHelping } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaHandsHelping, FaThumbtack } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const ProgramsPage = () => {
@@ -62,8 +62,11 @@ const ProgramsPage = () => {
                     className="h-64 md:h-auto md:w-1/3 object-cover"
                 />
                 <div className="p-8 flex flex-col justify-center flex-1">
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                        <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : t.ongoing}
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2 justify-between">
+                        <div className="flex items-center">
+                            <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : t.ongoing}
+                        </div>
+                        {item.is_pinned && <div className="flex items-center text-blue-600 gap-1"><FaThumbtack /> {t.pin_item || "Pinned"}</div>}
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
                         {getLocalizedContent(item.title, language)}

@@ -126,7 +126,7 @@ const Team = () => {
                             slideShadows: false,
                         }}
                         loop={true}
-                        loopedSlides={10} // Increased for smoother infinite loop
+                        loopedslides={10} // Increased for smoother infinite loop
                         loopAdditionalSlides={5}
                         autoplay={{
                             delay: 3500,
@@ -199,7 +199,7 @@ const Team = () => {
                 </div>
             </div>
 
-            <style jsx global>{`
+            <style>{`
                 .swiper-pagination-bullet {
                     background-color: #CBD5E1;
                     opacity: 1;
