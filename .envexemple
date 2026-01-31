@@ -1,0 +1,2 @@
+VITE_SUPABASE_URL=your_actual_url
+VITE_SUPABASE_ANON_KEY=your_actual_anon_key
