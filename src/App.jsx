@@ -18,6 +18,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorPage from './pages/ErrorPage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
@@ -26,37 +28,41 @@ function App() {
         <DataProvider>
           <AuthProvider>
             <Router>
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Home />} />
-                  <Route path="donate" element={<Donate />} />
-                  <Route path="volunteer" element={<Volunteer />} />
-                  <Route path="news" element={<NewsPage />} />
-                  <Route path="programs" element={<ProgramsPage />} />
-                  <Route path="events" element={<EventsPage />} />
+              <ErrorBoundary>
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />} />
+                    <Route path="donate" element={<Donate />} />
+                    <Route path="volunteer" element={<Volunteer />} />
+                    <Route path="news" element={<NewsPage />} />
+                    <Route path="programs" element={<ProgramsPage />} />
+                    <Route path="events" element={<EventsPage />} />
 
-                  <Route path="login" element={<Login />} />
-                  <Route path="signup" element={<Signup />} />
-                  <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="signup" element={<Signup />} />
+                    <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-                  <Route
-                    path="dashboard/admin"
-                    element={
-                      <ProtectedRoute requiredRole="admin">
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="dashboard/volunteer"
-                    element={
-                      <ProtectedRoute requiredRole="volunteer">
-                        <VolunteerDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                </Route>
-              </Routes>
+                    <Route
+                      path="dashboard/admin"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <AdminDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="dashboard/volunteer"
+                      element={
+                        <ProtectedRoute requiredRole="volunteer">
+                          <VolunteerDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    {/* Catch-all 404 */}
+                    <Route path="*" element={<ErrorPage is404={true} />} />
+                  </Route>
+                </Routes>
+              </ErrorBoundary>
             </Router>
           </AuthProvider>
         </DataProvider>
