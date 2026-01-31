@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
-import { FaHandHoldingHeart, FaHandsHelping, FaEnvelope, FaBars, FaTimes, FaUser, FaSignOutAlt, FaTachometerAlt, FaMoon, FaSun } from 'react-icons/fa';
+import { FaHandHoldingHeart, FaHandsHelping, FaEnvelope, FaBars, FaTimes, FaUser, FaSignOutAlt, FaTachometerAlt, FaMoon, FaSun, FaChevronDown } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 const Header = () => {
@@ -11,6 +11,7 @@ const Header = () => {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [programsDropdownOpen, setProgramsDropdownOpen] = useState(false);
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -22,6 +23,24 @@ const Header = () => {
 
     const navLinkClass = ({ isActive }) =>
         `text-blue-900 dark:text-gray-200 font-medium transition hover:text-red-500 ${isActive ? 'text-red-500 font-bold dark:text-red-400' : ''}`;
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleNavigation = (e, sectionId) => {
+        e.preventDefault();
+        if (location.pathname === '/') {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Fallback for strict strict mode or if element not yet rendered
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        } else {
+            navigate('/', { state: { scrollTo: sectionId } });
+        }
+    };
 
     return (
         <>
@@ -91,12 +110,55 @@ const Header = () => {
                     {/* Desktop Nav */}
                     <nav className="hidden md:block">
                         <ul className="flex items-center gap-8">
-                            <li><NavLink to="/" className={navLinkClass} onClick={handleScrollToTop} end>{t.home}</NavLink></li>
-                            <li><a href="/#about" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.about}</a></li>
-                            <li><a href="/#programs" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.programs}</a></li>
-                            <li><a href="/#branches" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.branches}</a></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'hero')} className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition cursor-pointer">{t.home}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'about')} className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition cursor-pointer">{t.about}</button></li>
+
+                            {/* Programs Dropdown */}
+                            <li className="relative group"
+                                onMouseEnter={() => setProgramsDropdownOpen(true)}
+                                onMouseLeave={() => setProgramsDropdownOpen(false)}
+                            >
+                                <button
+                                    className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition cursor-pointer flex items-center gap-1"
+                                    onClick={(e) => {
+                                        // Optional: Click main link to go to page or section? 
+                                        // Let's make it toggle dropdown on click if not hovering (touch devices) or just go to Section
+                                        handleNavigation(e, 'programs');
+                                    }}
+                                >
+                                    {t.programs} <FaChevronDown className="text-xs" />
+                                </button>
+
+                                {programsDropdownOpen && (
+                                    <div className="absolute top-full left-0 pt-2 w-48 animate-fade-in z-50">
+                                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden py-1">
+                                            <button
+                                                onClick={(e) => {
+                                                    handleNavigation(e, 'programs');
+                                                    setProgramsDropdownOpen(false);
+                                                }}
+                                                className="block w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-900 dark:hover:text-white transition"
+                                            >
+                                                {t.featured_programs || "Featured"}
+                                            </button>
+                                            <NavLink
+                                                to="/programs"
+                                                className="block w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-900 dark:hover:text-white transition"
+                                                onClick={() => {
+                                                    setProgramsDropdownOpen(false);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >
+                                                {t.all_programs || "View All Programs"}
+                                            </NavLink>
+                                        </div>
+                                    </div>
+                                )}
+                            </li>
+
+                            <li><button onClick={(e) => handleNavigation(e, 'branches')} className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition cursor-pointer">{t.branches}</button></li>
                             <li><NavLink to="/news" className={navLinkClass} onClick={handleScrollToTop}>{t.news}</NavLink></li>
-                            <li><a href="/#contact" className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition">{t.contact_us}</a></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'contact')} className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition cursor-pointer">{t.contact_us}</button></li>
                         </ul>
                     </nav>
 
@@ -124,12 +186,39 @@ const Header = () => {
                     isMobileMenuOpen && (
                         <div className="md:hidden bg-white dark:bg-gray-800 w-full py-2 px-4 shadow-md border-t dark:border-gray-700">
                             <ul className="flex flex-col gap-4">
-                                <li><NavLink to="/" className="block py-2 text-blue-900 hover:text-red-500" onClick={() => { toggleMobileMenu(); handleScrollToTop(); }}>{t.home}</NavLink></li>
-                                <li><a href="/#about" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.about}</a></li>
-                                <li><a href="/#programs" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.programs}</a></li>
-                                <li><a href="/#branches" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.branches}</a></li>
+                                <li><button className="block py-2 text-blue-900 text-left hover:text-red-500" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'hero'); }}>{t.home}</button></li>
+                                <li><button className="block py-2 text-blue-900 text-left hover:text-red-500" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'about'); }}>{t.about}</button></li>
+
+                                {/* Mobile Programs Submenu */}
+                                <li>
+                                    <div className="flex flex-col gap-2">
+                                        <button className="block py-2 text-blue-900 text-left hover:text-red-500 font-medium" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'programs'); }}>
+                                            {t.programs}
+                                        </button>
+                                        <div className="pl-4 border-l-2 border-gray-100 flex flex-col gap-2">
+                                            <button
+                                                className="block py-1 text-sm text-gray-500 hover:text-blue-900 text-left"
+                                                onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'programs'); }}
+                                            >
+                                                {t.featured_programs || "Featured"}
+                                            </button>
+                                            <NavLink
+                                                to="/programs"
+                                                className="block py-1 text-sm text-gray-500 hover:text-blue-900"
+                                                onClick={() => {
+                                                    toggleMobileMenu();
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >
+                                                {t.all_programs || "View All"}
+                                            </NavLink>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li><button className="block py-2 text-blue-900 text-left hover:text-red-500" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'branches'); }}>{t.branches}</button></li>
                                 <li><NavLink to="/news" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.news}</NavLink></li>
-                                <li><a href="/#contact" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.contact_us}</a></li>
+                                <li><button className="block py-2 text-blue-900 text-left hover:text-red-500" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'contact'); }}>{t.contact_us}</button></li>
                                 {!user ? (
                                     <li><Link to="/login" className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.login_btn || "Login"}</Link></li>
                                 ) : (

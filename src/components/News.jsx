@@ -37,7 +37,7 @@ const News = () => {
                     {displayItems.length > 0 ? displayItems.map((item, index) => (
                         <div
                             key={item.id || index}
-                            className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer"
+                            className="bg-transparent rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer"
                             onClick={() => setSelectedNews(item)}
                         >
                             <div className="relative">
@@ -47,9 +47,9 @@ const News = () => {
                                     className="w-full h-48 object-cover transition group-hover:scale-105"
                                 />
                                 <span className={`absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded shadow-md uppercase tracking-wider ${item.type === 'news' ? 'bg-red-500 text-white' :
-                                        item.category === 'program' ? 'bg-purple-500 text-white' :
-                                            item.category === 'project' ? 'bg-amber-500 text-white' :
-                                                'bg-blue-500 text-white'
+                                    item.category === 'program' ? 'bg-purple-500 text-white' :
+                                        item.category === 'project' ? 'bg-amber-500 text-white' :
+                                            'bg-blue-500 text-white'
                                     }`}>
                                     {item.displayCategory}
                                 </span>
@@ -85,7 +85,11 @@ const News = () => {
                 </div>
 
                 <div className="text-center mt-12">
-                    <Link to="/news" className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg inline-flex items-center transition">
+                    <Link
+                        to="/news"
+                        className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg inline-flex items-center transition"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    >
                         <span>{t.view_all_news}</span>
                         <FaArrowRight className={`ml-2 ${language === 'ar' ? 'rotate-180' : ''}`} />
                     </Link>
@@ -96,25 +100,41 @@ const News = () => {
                 isOpen={!!selectedNews}
                 onClose={() => setSelectedNews(null)}
                 title={getLocalizedContent(selectedNews?.title, language)}
+                heroImage={selectedNews?.image_url || selectedNews?.image}
             >
-                <img
-                    src={selectedNews?.image_url || selectedNews?.image || "https://via.placeholder.com/600"}
-                    alt={getLocalizedContent(selectedNews?.title, language)}
-                    className="w-full h-64 object-cover rounded-lg mb-6"
-                />
-                <div className="flex items-center text-sm text-gray-500 mb-4 gap-4">
-                    <span className="flex items-center gap-1">
-                        <FaCalendarAlt /> <span>{selectedNews?.date ? new Date(selectedNews.date).toLocaleDateString() : ''}</span>
-                    </span>
-                    {selectedNews?.location && (
-                        <span className="flex items-center gap-1">
-                            <FaMapMarkerAlt /> <span>{selectedNews.location}</span>
+                <div className="relative">
+                    <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
+                        <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">
+                            <FaCalendarAlt />
+                            <span>{selectedNews?.date ? new Date(selectedNews.date).toLocaleDateString() : ''}</span>
                         </span>
+                        {selectedNews?.location && (
+                            <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full border border-red-100 dark:border-red-800">
+                                <FaMapMarkerAlt />
+                                <span>{selectedNews.location}</span>
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="prose dark:prose-invert max-w-none">
+                        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                            {getLocalizedContent(selectedNews?.description, language)}
+                        </p>
+                    </div>
+
+                    {/* Optional: Add call to action if it's an event */}
+                    {selectedNews?.type === 'event' && (
+                        <div className="flex justify-end mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                            <Link
+                                to="/contact" // Or registration link
+                                className="px-6 py-2.5 rounded-full bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 transition"
+                                onClick={() => setSelectedNews(null)}
+                            >
+                                {t.join_event || "Join Event"}
+                            </Link>
+                        </div>
                     )}
                 </div>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                    {getLocalizedContent(selectedNews?.description, language)}
-                </p>
             </Modal>
         </section>
     );
