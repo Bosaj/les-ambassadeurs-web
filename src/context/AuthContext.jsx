@@ -117,8 +117,29 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const upgradeToMember = async (userId) => {
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    membership_status: 'pending',
+                    payment_status: 'unpaid',
+                    commitment_signed: true,
+                    internal_law_read: true
+                })
+                .eq('id', userId);
+
+            if (error) throw error;
+            await refreshProfile();
+            return { success: true };
+        } catch (error) {
+            console.error("Error upgrading to member:", error);
+            return { success: false, error };
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember }}>
             {!loading && children}
         </AuthContext.Provider>
     );

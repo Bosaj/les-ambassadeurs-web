@@ -134,16 +134,16 @@ const VolunteerDashboard = () => {
 
     const handleSuggestionSubmit = async (e) => {
         e.preventDefault();
-        const toastId = toast.loading("Submitting suggestion...");
+        const toastId = toast.loading(t.suggestion_submitting || "Submitting suggestion...");
         const result = await submitSuggestion({
             user_id: user.id,
             ...suggestionForm
         });
 
         if (result.error) {
-            toast.error("Failed to submit suggestion", { id: toastId });
+            toast.error(t.suggestion_failed || "Failed to submit suggestion", { id: toastId });
         } else {
-            toast.success("Suggestion submitted successfully!", { id: toastId });
+            toast.success(t.suggestion_success || "Suggestion submitted successfully!", { id: toastId });
             setSuggestionForm({ title: '', description: '', proposed_date: '' });
         }
     };
@@ -175,10 +175,10 @@ const VolunteerDashboard = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'confirmed': return <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaCheckCircle /> Confirmed</span>;
-            case 'attended': return <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaCheckCircle /> Attended</span>;
-            case 'rejected': return <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaTimesCircle /> Rejected</span>;
-            default: return <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaClock /> Pending</span>;
+            case 'confirmed': return <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaCheckCircle /> {t.status_confirmed || "Confirmed"}</span>;
+            case 'attended': return <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaCheckCircle /> {t.status_attended || "Attended"}</span>;
+            case 'rejected': return <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaTimesCircle /> {t.status_rejected || "Rejected"}</span>;
+            default: return <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaClock /> {t.status_pending_badge || "Pending"}</span>;
         }
     };
 
@@ -216,7 +216,7 @@ const VolunteerDashboard = () => {
                                 <div className="bg-blue-900 text-white rounded-xl p-6 shadow-md flex items-center justify-between cursor-pointer transform hover:scale-105 transition" onClick={() => setActiveTab('impact')}>
                                     <div>
                                         <p className="text-lg opacity-80">{t.donations_made || "Total Donated"}</p>
-                                        <h2 className="text-4xl font-bold">{totalDonated} MAD</h2>
+                                        <h2 className="text-4xl font-bold">{totalDonated} {t.currency_mad || "MAD"}</h2>
                                     </div>
                                     <FaMoneyBillWave className="text-5xl opacity-50" />
                                 </div>
@@ -292,10 +292,10 @@ const VolunteerDashboard = () => {
                     {activeTab === 'activities' && (
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700">
                             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
-                                <FaHistory className="text-blue-500" /> My Activity History
+                                <FaHistory className="text-blue-500" /> {t.activity_history || "My Activity History"}
                             </h2>
                             {userActivities.length === 0 ? (
-                                <p className="text-gray-500 dark:text-gray-400 text-center py-10">You usually haven't joined any events yet.</p>
+                                <p className="text-gray-500 dark:text-gray-400 text-center py-10">{t.no_activities_joined || "You usually haven't joined any events yet."}</p>
                             ) : (
                                 <div className="space-y-4">
                                     {userActivities.map(activity => (
@@ -320,7 +320,7 @@ const VolunteerDashboard = () => {
                                                         </span>
                                                     </p>
                                                     <p className="text-xs text-gray-400 mt-1">
-                                                        Registered on: {new Date(activity.created_at).toLocaleDateString()}
+                                                        {t.registered_on || "Registered on:"} {new Date(activity.created_at).toLocaleDateString()}
                                                     </p>
                                                 </div>
                                             </div>
@@ -338,17 +338,17 @@ const VolunteerDashboard = () => {
                     {activeTab === 'impact' && (
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700">
                             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
-                                <FaHandHoldingHeart className="text-red-500" /> My Donation Impact
+                                <FaHandHoldingHeart className="text-red-500" /> {t.donation_impact || "My Donation Impact"}
                             </h2>
                             <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white p-8 rounded-2xl mb-8 text-center">
-                                <p className="text-xl mb-2 opacity-90">Total Contribution</p>
+                                <p className="text-xl mb-2 opacity-90">{t.total_contribution || "Total Contribution"}</p>
                                 <h3 className="text-5xl font-bold">{totalDonated} <span className="text-2xl">MAD</span></h3>
-                                <p className="mt-4 text-sm opacity-75">Thank you for making a difference!</p>
+                                <p className="mt-4 text-sm opacity-75">{t.thank_you_diff || "Thank you for making a difference!"}</p>
                             </div>
 
-                            <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">Donation History</h3>
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">{t.donation_history || "Donation History"}</h3>
                             {userDonations.length === 0 ? (
-                                <p className="text-gray-500 dark:text-gray-400 text-center py-8">No donations found yet.</p>
+                                <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t.no_donations_found || "No donations found yet."}</p>
                             ) : (
                                 <div className="space-y-3">
                                     {userDonations.map(donation => (
@@ -369,34 +369,34 @@ const VolunteerDashboard = () => {
                     {activeTab === 'suggestions' && (
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700">
                             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
-                                <FaLightbulb className="text-yellow-500" /> Suggest an Event
+                                <FaLightbulb className="text-yellow-500" /> {t.suggest_event || "Suggest an Event"}
                             </h2>
 
                             <form onSubmit={handleSuggestionSubmit} className="max-w-2xl mx-auto space-y-6">
                                 <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Event Title</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">{t.event_title_label || "Event Title"}</label>
                                     <input
                                         type="text"
                                         required
                                         className="w-full border dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                         value={suggestionForm.title}
                                         onChange={e => setSuggestionForm({ ...suggestionForm, title: e.target.value })}
-                                        placeholder="e.g., Beach Cleanup Drive"
+                                        placeholder={t.event_title_placeholder || "e.g., Beach Cleanup Drive"}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Detailed Description</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">{t.event_desc_label || "Detailed Description"}</label>
                                     <textarea
                                         required
                                         className="w-full border dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
                                         rows="5"
                                         value={suggestionForm.description}
                                         onChange={e => setSuggestionForm({ ...suggestionForm, description: e.target.value })}
-                                        placeholder="Describe the objective, target audience, and requirements..."
+                                        placeholder={t.event_desc_placeholder || "Describe the objective, target audience, and requirements..."}
                                     ></textarea>
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Proposed Date (Optional)</label>
+                                    <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">{t.proposed_date_label || "Proposed Date (Optional)"}</label>
                                     <input
                                         type="date"
                                         className="w-full border dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white"
@@ -405,7 +405,7 @@ const VolunteerDashboard = () => {
                                     />
                                 </div>
                                 <button className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg">
-                                    Submit Suggestion
+                                    {t.submit_suggestion || "Submit Suggestion"}
                                 </button>
                             </form>
                         </div>

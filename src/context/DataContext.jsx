@@ -12,6 +12,41 @@ export const DataProvider = ({ children }) => {
     const [projects, setProjects] = useState([]);
     const [testimonials, setTestimonials] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [users, setUsers] = useState([]); // Added to store user data
+
+    const fetchUsers = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setUsers(data || []);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
+
+    const verifyMember = async (userId, action) => {
+        try {
+            const updates = action === 'approve'
+                ? { membership_status: 'active', role: 'member', payment_status: 'paid' }
+                : { membership_status: 'rejected' };
+
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', userId);
+
+            if (error) throw error;
+            fetchUsers(); // Refresh list
+            return { success: true };
+        } catch (error) {
+            console.error("Error verifying member:", error);
+            return { success: false, error };
+        }
+    };
 
     const fetchData = async () => {
         try {
@@ -394,7 +429,8 @@ export const DataProvider = ({ children }) => {
             addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
             getLocalizedContent, loading,
             // New exports
-            fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions
+            fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
+            verifyMember
         }}>
             {children}
         </DataContext.Provider>
