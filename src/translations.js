@@ -495,6 +495,20 @@ export const translations = {
         mark_paid: "تحديد كمدفوع",
         remove_payment: "حذف",
         no_history: ".لا توجد مدفوعات مسجلة بعد",
+
+        // Dashboard Overview
+        quick_actions: "إجراءات سريعة",
+        recent_activity: "النشاط الأخير",
+        needs_attention: "يحتاج انتباه",
+        pending_members_count: "أعضاء في الانتظار",
+        pending_testimonials_count: "شهادات في الانتظار",
+        view_details: "عرض التفاصيل",
+        no_recent_activity: "لم يتم العثور على نشاط حديث.",
+        add_program: "إضافة برنامج",
+        add_event: "إضافة حدث",
+        add_news: "إضافة خبر",
+        add_project: "إضافة مشروع",
+        welcome_admin: "مرحباً، المشرف",
     },
     en: {
         donate: "Donate Now",
@@ -1027,6 +1041,20 @@ export const translations = {
         mark_paid: "Mark Paid",
         remove_payment: "Remove",
         no_history: "No membership payments recorded yet.",
+
+        // Dashboard Overview
+        quick_actions: "Quick Actions",
+        recent_activity: "Recent Activity",
+        needs_attention: "Needs Attention",
+        pending_members_count: "Pending Members",
+        pending_testimonials_count: "Pending Testimonials",
+        view_details: "View Details",
+        no_recent_activity: "No recent activity found.",
+        add_program: "Add Program",
+        add_event: "Add Event",
+        add_news: "Add News",
+        add_project: "Add Project",
+        welcome_admin: "Welcome, Admin",
     },
     fr: {
         donate: "Faire un don maintenant",
@@ -1571,5 +1599,19 @@ export const translations = {
         mark_paid: "Marquer comme payé",
         remove_payment: "Supprimer",
         no_history: "Aucun paiement d'adhésion enregistré pour l'instant.",
+
+        // Dashboard Overview
+        quick_actions: "Actions Rapides",
+        recent_activity: "Activité Récente",
+        needs_attention: "Nécessite Attention",
+        pending_members_count: "Membres en attente",
+        pending_testimonials_count: "Témoignages en attente",
+        view_details: "Voir Détails",
+        no_recent_activity: "Aucune activité récente trouvée.",
+        add_program: "Ajouter Programme",
+        add_event: "Ajouter Événement",
+        add_news: "Ajouter Actualité",
+        add_project: "Ajouter Projet",
+        welcome_admin: "Bienvenue, Admin",
     },
 };
