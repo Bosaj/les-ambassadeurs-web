@@ -15,7 +15,8 @@ const Signup = () => {
         name: '',
         email: '',
         password: '',
-        phone: ''
+        phone: '',
+        city: ''
     });
     const [loading, setLoading] = useState(false);
 
@@ -27,7 +28,7 @@ const Signup = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await signup(formData.name, formData.email, formData.password, formData.phone);
+            await signup(formData.name, formData.email, formData.password, formData.phone, formData.city);
             toast.success(t.account_created);
             navigate('/dashboard/volunteer');
         } catch (error) {
@@ -82,6 +83,15 @@ const Signup = () => {
                             className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder={t.phone_placeholder}
                             value={formData.phone}
+                            onChange={handleChange}
+                        />
+                        <input
+                            name="city"
+                            type="text"
+                            required
+                            className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            placeholder={t.city_placeholder || "City"} // Fallback if translation missing
+                            value={formData.city}
                             onChange={handleChange}
                         />
                         <input
