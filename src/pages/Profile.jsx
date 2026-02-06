@@ -257,7 +257,7 @@ const Profile = () => {
             <div className="max-w-4xl mx-auto mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden animate-fade-in delay-100">
                 <div className="bg-green-600 p-6 text-white text-center">
                     <FaHistory className="text-4xl mx-auto mb-3" />
-                    <h2 className="text-2xl font-bold">{t.membership_history || "Membership History"}</h2>
+                    <h2 className="text-2xl font-bold">{t.membership_history_title || "Membership History"}</h2>
                     <p className="opacity-90">{t.membership_history_desc || "Your annual contribution records"}</p>
                 </div>
                 <div className="p-8">
