@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
-import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaMoneyBillWave, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera } from 'react-icons/fa';
 
 const Profile = () => {
     const { user, refreshProfile } = useAuth();
@@ -34,22 +34,6 @@ const Profile = () => {
                 setAvatarPreview(user.avatar_url);
             }
         }
-    }, [user]);
-
-    const [membershipHistory, setMembershipHistory] = useState([]);
-
-    useEffect(() => {
-        const fetchHistory = async () => {
-            if (!user) return;
-            const { data, error } = await supabase
-                .from('annual_memberships')
-                .select('*')
-                .eq('user_id', user.id);
-            if (!error && data) {
-                setMembershipHistory(data);
-            }
-        };
-        fetchHistory();
     }, [user]);
 
     const handleChange = (e) => {
@@ -248,44 +232,6 @@ const Profile = () => {
                             {loading ? t.processing : <><FaSave /> {t.save_changes}</>}
                         </button>
                     </form>
-                </div>
-
-                {/* Membership History Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 mt-6">
-                    <div className="bg-green-600 dark:bg-green-700 p-4 text-white flex items-center gap-3">
-                        <FaMoneyBillWave className="text-2xl" />
-                        <h2 className="text-xl font-bold">{t.membership_history || "Annual Membership History"}</h2>
-                    </div>
-                    <div className="p-6">
-                        <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">
-                            {t.membership_info || "Track your annual membership status (50 DH/year)."}
-                        </p>
-                        <div className="space-y-3">
-                            {(() => {
-                                const startYear = 2024;
-                                const currentYear = new Date().getFullYear();
-                                const years = [];
-                                for (let y = startYear; y <= currentYear + 1; y++) years.push(y);
-
-                                return years.map(year => {
-                                    const record = membershipHistory.find(m => m.year === year);
-                                    const isPaid = !!record;
-
-                                    return (
-                                        <div key={year} className="flex items-center justify-between p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
-                                            <span className="font-bold text-lg dark:text-gray-200">{year}</span>
-                                            <span className={`px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2 ${isPaid
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
-                                                    : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
-                                                }`}>
-                                                {isPaid ? <><FaCheckCircle /> {t.paid || "Paid"}</> : <><FaTimesCircle /> {t.unpaid || "Unpaid"}</>}
-                                            </span>
-                                        </div>
-                                    );
-                                });
-                            })()}
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
