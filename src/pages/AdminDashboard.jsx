@@ -16,7 +16,7 @@ import PostForm from '../components/admin/PostForm';
 import { useLanguage } from '../context/LanguageContext';
 
 // Membership History Modal Component
-const MembershipHistoryModal = ({ user, onClose }) => {
+const MembershipHistoryModal = ({ user, onClose, t }) => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const currentYear = new Date().getFullYear();
@@ -76,11 +76,11 @@ const MembershipHistoryModal = ({ user, onClose }) => {
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-                <div className="bg-blue-900 p-6 text-white flex justify-between items-center">
+                <div className="flex items-center justify-between p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                     <div>
-                        <h3 className="text-xl font-bold flex items-center gap-2">
-                            <FaHistory /> Membership History
-                        </h3>
+                        <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
+                            <FaHistory /> {t.membership_history_title || "Membership History"}
+                        </h2>
                         <p className="text-sm opacity-80">{user.full_name}</p>
                     </div>
                     <button onClick={onClose} className="text-white/70 hover:text-white transition">
@@ -90,7 +90,7 @@ const MembershipHistoryModal = ({ user, onClose }) => {
 
                 <div className="p-6 max-h-[60vh] overflow-y-auto">
                     {loading ? (
-                        <div className="text-center py-8">Loading history...</div>
+                        <div className="text-center py-8">{t.loading_history || "Loading history..."}</div>
                     ) : (
                         <div className="space-y-3">
                             {years.map(year => {
@@ -105,7 +105,7 @@ const MembershipHistoryModal = ({ user, onClose }) => {
                                             </div>
                                             <div>
                                                 <div className="font-bold dark:text-white">{year}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">Annual Fee: 50 DH</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: 50 DH</div>
                                             </div>
                                         </div>
 
@@ -113,7 +113,7 @@ const MembershipHistoryModal = ({ user, onClose }) => {
                                             onClick={() => togglePayment(year, record)}
                                             className={`px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2 ${isPaid ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-green-600 text-white hover:bg-green-700'}`}
                                         >
-                                            {isPaid ? 'Remove' : 'Mark Paid'}
+                                            {isPaid ? (t.remove_payment || 'Remove') : (t.mark_paid || 'Mark Paid')}
                                         </button>
                                     </div>
                                 );
@@ -407,12 +407,12 @@ const AdminDashboard = () => {
                             <table className="w-full text-left min-w-[800px]">
                                 <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                     <tr>
-                                        <th className="p-4 whitespace-nowrap">Name</th>
-                                        <th className="p-4 whitespace-nowrap">Email</th>
-                                        <th className="p-4 whitespace-nowrap">Role</th>
-                                        <th className="p-4 whitespace-nowrap">Phone</th>
-                                        <th className="p-4 whitespace-nowrap">City</th>
-                                        <th className="p-4 whitespace-nowrap text-right">Actions</th>
+                                        <th className="p-4 whitespace-nowrap">{t.table_header_name || "Name"}</th>
+                                        <th className="p-4 whitespace-nowrap">{t.table_header_email || "Email"}</th>
+                                        <th className="p-4 whitespace-nowrap">{t.table_header_role || "Role"}</th>
+                                        <th className="p-4 whitespace-nowrap">{t.table_header_phone || "Phone"}</th>
+                                        <th className="p-4 whitespace-nowrap">{t.table_header_city || "City"}</th>
+                                        <th className="p-4 whitespace-nowrap text-right">{t.table_header_actions || "Actions"}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -427,7 +427,7 @@ const AdminDashboard = () => {
                                                 <button
                                                     onClick={() => setSelectedUserForHistory(u)}
                                                     className="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 p-2 rounded hover:bg-purple-200 transition"
-                                                    title="Membership History"
+                                                    title={t.membership_history_title || "Membership History"}
                                                 >
                                                     <FaHistory />
                                                 </button>
@@ -476,6 +476,7 @@ const AdminDashboard = () => {
                         <MembershipHistoryModal
                             user={selectedUserForHistory}
                             onClose={() => setSelectedUserForHistory(null)}
+                            t={t}
                         />
                     )}
                 </div>
