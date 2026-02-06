@@ -429,7 +429,7 @@ export const DataProvider = ({ children }) => {
 
     return (
         <DataContext.Provider value={{
-            news, programs, events, projects, testimonials,
+            news, programs, events, projects, testimonials, users,
             addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
             getLocalizedContent, loading,
             // New exports

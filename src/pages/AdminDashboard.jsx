@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import Modal from '../components/Modal';
 import DashboardStats from '../components/admin/DashboardStats';
 import PostForm from '../components/admin/PostForm';
+import DashboardOverview from '../components/admin/DashboardOverview';
 
 import { useLanguage } from '../context/LanguageContext';
 
@@ -764,86 +765,99 @@ const AdminDashboard = () => {
                     {activeTab === 'overview' && (
                         <div className="animate-fade-in">
                             <DashboardStats
-                                data={{ news, programs, projects, events, users: [], donations: [] }} // Pass empty users/donations for now until fetched or context updated to provide them all time
+                                data={{ news, programs, projects, events, users, donations: [] }}
                                 t={t}
                             />
-                            {/* Shortlists for overview could go here */}
+                            <DashboardOverview
+                                t={t}
+                                news={news}
+                                events={events}
+                                projects={projects}
+                                users={users}
+                                testimonials={testimonials}
+                                onNavigate={setActiveTab}
+                                onAdd={handleAdd}
+                                language={language}
+                            />
                         </div>
                     )}
 
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300 min-h-[500px]">
-                        {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={() => handleAdd('news')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} />}
-                        {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={() => handleAdd('programs')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} />}
-                        {activeTab === 'projects' && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={() => handleAdd('projects')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} />}
-                        {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={() => handleAdd('events')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} />}
+                    {activeTab !== 'overview' && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300 min-h-[500px]">
+                            {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={() => handleAdd('news')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} />}
+                            {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={() => handleAdd('programs')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} />}
+                            {activeTab === 'projects' && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={() => handleAdd('projects')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} />}
+                            {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={() => handleAdd('events')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} />}
 
-                        {activeTab === 'testimonials' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white flex items-center gap-2">
-                                        <FaComments /> {t.manage_testimonials}
-                                    </h2>
-                                    <button
-                                        onClick={() => handleAdd('testimonials')}
-                                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md hover:shadow-lg font-medium"
-                                    >
-                                        <FaPlus size={14} /> {t.add_new_testimonial || "Add Testimonial"}
-                                    </button>
-                                </div>
 
-                                <div className="grid grid-cols-1 gap-4">
-                                    {testimonials.length > 0 ? testimonials.map(item => (
-                                        <div key={item.id} className={`bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border ${item.is_approved ? 'border-gray-100 dark:border-gray-700' : 'border-yellow-300 dark:border-yellow-600'}`}>
-                                            <div className="flex items-center gap-4 w-full sm:w-auto">
-                                                <img src={item.image_url || "https://via.placeholder.com/50"} alt={item.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white dark:ring-gray-600" />
-                                                <div>
-                                                    <h4 className="font-bold dark:text-white flex items-center gap-2">
-                                                        {item.name}
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${item.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                            {item.is_approved ? (t.approved || "Approved") : (t.pending || "Pending")}
-                                                        </span>
-                                                    </h4>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-col">
-                                                        <span>{typeof item.role === 'object' ? (item.role[language] || item.role.en) : item.role}</span>
-                                                        {item.rating && <span className="text-yellow-500 text-xs">{'★'.repeat(item.rating)}</span>}
+                            {activeTab === 'testimonials' && (
+                                <div>
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white flex items-center gap-2">
+                                            <FaComments /> {t.manage_testimonials}
+                                        </h2>
+                                        <button
+                                            onClick={() => handleAdd('testimonials')}
+                                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md hover:shadow-lg font-medium"
+                                        >
+                                            <FaPlus size={14} /> {t.add_new_testimonial || "Add Testimonial"}
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {testimonials.length > 0 ? testimonials.map(item => (
+                                            <div key={item.id} className={`bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border ${item.is_approved ? 'border-gray-100 dark:border-gray-700' : 'border-yellow-300 dark:border-yellow-600'}`}>
+                                                <div className="flex items-center gap-4 w-full sm:w-auto">
+                                                    <img src={item.image_url || "https://via.placeholder.com/50"} alt={item.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white dark:ring-gray-600" />
+                                                    <div>
+                                                        <h4 className="font-bold dark:text-white flex items-center gap-2">
+                                                            {item.name}
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${item.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                                {item.is_approved ? (t.approved || "Approved") : (t.pending || "Pending")}
+                                                            </span>
+                                                        </h4>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-col">
+                                                            <span>{typeof item.role === 'object' ? (item.role[language] || item.role.en) : item.role}</span>
+                                                            {item.rating && <span className="text-yellow-500 text-xs">{'★'.repeat(item.rating)}</span>}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleToggleApproval(item)}
+                                                        className={`p-2 rounded-lg transition-colors ${item.is_approved
+                                                            ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20'
+                                                            : 'text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20'
+                                                            }`}
+                                                        title={item.is_approved ? "Revoke Approval" : "Approve"}
+                                                    >
+                                                        {item.is_approved ? <FaTimes /> : <FaCheck />}
+                                                    </button>
+                                                    <button onClick={() => togglePin('testimonials', item.id, item.is_pinned)} className={`p-2 rounded-full transition ${item.is_pinned ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}>
+                                                        <FaThumbtack className={item.is_pinned ? 'text-blue-600' : ''} />
+                                                    </button>
+                                                    <button onClick={() => handleEdit(item, 'testimonials')} className="text-blue-500 hover:text-blue-700 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 transition-colors">
+                                                        <FaNewspaper />
+                                                    </button>
+                                                    <button onClick={() => handleDelete('testimonials', item.id)} className="text-red-500 hover:text-red-700 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 transition-colors">
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleToggleApproval(item)}
-                                                    className={`p-2 rounded-lg transition-colors ${item.is_approved
-                                                        ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20'
-                                                        : 'text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20'
-                                                        }`}
-                                                    title={item.is_approved ? "Revoke Approval" : "Approve"}
-                                                >
-                                                    {item.is_approved ? <FaTimes /> : <FaCheck />}
-                                                </button>
-                                                <button onClick={() => togglePin('testimonials', item.id, item.is_pinned)} className={`p-2 rounded-full transition ${item.is_pinned ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}>
-                                                    <FaThumbtack className={item.is_pinned ? 'text-blue-600' : ''} />
-                                                </button>
-                                                <button onClick={() => handleEdit(item, 'testimonials')} className="text-blue-500 hover:text-blue-700 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 transition-colors">
-                                                    <FaNewspaper />
-                                                </button>
-                                                <button onClick={() => handleDelete('testimonials', item.id)} className="text-red-500 hover:text-red-700 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 transition-colors">
-                                                    <FaTrash />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )) : <p className="text-gray-500">{t.no_testimonials}</p>}
+                                        )) : <p className="text-gray-500">{t.no_testimonials}</p>}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {activeTab === 'donations' && <div className="text-gray-500 dark:text-gray-400 text-center py-20 flex flex-col items-center gap-4"><FaMoneyBillWave size={40} opacity={0.3} /> {t.donation_management_soon}</div>}
+                            {activeTab === 'donations' && <div className="text-gray-500 dark:text-gray-400 text-center py-20 flex flex-col items-center gap-4"><FaMoneyBillWave size={40} opacity={0.3} /> {t.donation_management_soon}</div>}
 
-                        {activeTab === 'admins' && user?.email === 'oussousselhadji@gmail.com' && (
-                            <AdminManagement />
-                        )}
-                        {activeTab === 'users' && <CommunityManagement />}
-                        {activeTab === 'memberships' && <MembershipRequests />}
-                    </div>
+                            {activeTab === 'admins' && user?.email === 'oussousselhadji@gmail.com' && (
+                                <AdminManagement />
+                            )}
+                            {activeTab === 'users' && <CommunityManagement />}
+                            {activeTab === 'memberships' && <MembershipRequests />}
+                        </div>
+                    )}
                 </main>
             </div>
 
