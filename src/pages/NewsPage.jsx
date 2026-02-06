@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaArrowRight } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 
@@ -70,6 +70,11 @@ const NewsPage = () => {
                                         <div className="p-6 flex-1 flex flex-col">
                                             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                                 <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : 'TBA'}
+                                                {item.location && getLocalizedContent(item.location, language) && (
+                                                    <span className="flex items-center ml-3">
+                                                        <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(item.location, language)}
+                                                    </span>
+                                                )}
                                             </div>
                                             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3">
                                                 {getLocalizedContent(item.title, language)}
@@ -118,6 +123,11 @@ const NewsPage = () => {
                                         <div className="p-6 flex-1 flex flex-col">
                                             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                                 <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : 'TBA'}
+                                                {item.location && getLocalizedContent(item.location, language) && (
+                                                    <span className="flex items-center ml-3">
+                                                        <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(item.location, language)}
+                                                    </span>
+                                                )}
                                             </div>
                                             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3">
                                                 {getLocalizedContent(item.title, language)}

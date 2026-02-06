@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaMapMarkerAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const EventsPage = () => {
@@ -47,6 +47,11 @@ const EventsPage = () => {
                                 <div className="p-8 flex flex-col justify-center flex-1">
                                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                         <FaCalendarAlt className="mr-2" /> {new Date(event.date).toLocaleDateString()}
+                                        {event.location && getLocalizedContent(event.location, language) && (
+                                            <span className="flex items-center ml-4">
+                                                <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(event.location, language)}
+                                            </span>
+                                        )}
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{getLocalizedContent(event.title, language)}</h2>
                                     <p className="text-gray-600 dark:text-gray-300 mb-6">{getLocalizedContent(event.description, language)}</p>

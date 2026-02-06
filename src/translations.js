@@ -441,6 +441,8 @@ export const translations = {
         payment_in_person_desc: "الدفع نقداً وتسليم الاستمارة",
         payment_online: "عبر الإنترنت / عن بعد",
         payment_online_desc: "تحقق من التفاصيل البنكية وارفع الملف",
+        location_label: "الموقع",
+        location_placeholder: "مثال: الدار البيضاء، المغرب",
 
         // Volunteer Dashboard
         overview: "نظرة عامة",
@@ -991,6 +993,8 @@ export const translations = {
         search_placeholder: "Search...",
         add_new_project: "Add Project",
         projects_section_title: "Projects",
+        location_label: "Location",
+        location_placeholder: "e.g., Casablanca, Morocco",
     },
     fr: {
         donate: "Faire un don maintenant",
@@ -1517,5 +1521,7 @@ export const translations = {
         search_placeholder: "Rechercher...",
         add_new_project: "Ajouter un projet",
         projects_section_title: "Projets",
+        location_label: "Lieu",
+        location_placeholder: "ex : Casablanca, Maroc",
     },
 };

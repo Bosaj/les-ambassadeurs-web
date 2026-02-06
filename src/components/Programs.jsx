@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { translations } from '../translations';
-import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight } from 'react-icons/fa';
+import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 
@@ -59,6 +59,11 @@ const Programs = () => {
                             <div className="p-6 flex flex-col flex-1 w-full text-center">
                                 <div className="mb-4 text-blue-900 dark:text-blue-300">
                                     {/* Optional: Icon overlay or category badge could go here */}
+                                    {program.location && getLocalizedContent(program.location, language) && (
+                                        <span className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                                            <FaMapMarkerAlt /> {getLocalizedContent(program.location, language)}
+                                        </span>
+                                    )}
                                 </div>
                                 <h3 className="text-xl font-bold mb-3 text-blue-900 dark:text-white line-clamp-1 border-b-2 border-transparent group-hover:border-red-500 transition-colors inline-block mx-auto pb-1">
                                     {getLocalizedContent(program.title, language)}
@@ -111,6 +116,11 @@ const Programs = () => {
 
                     <div className="prose dark:prose-invert max-w-none">
                         <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-8">
+                            {selectedProgram?.location && getLocalizedContent(selectedProgram.location, language) && (
+                                <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded w-fit">
+                                    <FaMapMarkerAlt /> {getLocalizedContent(selectedProgram.location, language)}
+                                </div>
+                            )}
                             {getLocalizedContent(selectedProgram?.description, language)}
                         </p>
                     </div>

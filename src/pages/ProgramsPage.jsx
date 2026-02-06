@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaHandsHelping, FaThumbtack } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaHandsHelping, FaThumbtack, FaMapMarkerAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 
@@ -66,6 +66,11 @@ const ProgramsPage = () => {
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2 justify-between">
                         <div className="flex items-center">
                             <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : t.ongoing}
+                            {item.location && getLocalizedContent(item.location, language) && (
+                                <span className="flex items-center ml-4">
+                                    <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(item.location, language)}
+                                </span>
+                            )}
                         </div>
                         {item.is_pinned && <div className="flex items-center text-blue-600 gap-1"><FaThumbtack /> {t.pin_item || "Pinned"}</div>}
                     </div>
