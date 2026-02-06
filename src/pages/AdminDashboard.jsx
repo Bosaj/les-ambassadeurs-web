@@ -120,7 +120,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { news, programs, projects, events, testimonials, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions, users, verifyMember } = useData();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
@@ -557,7 +557,7 @@ const AdminDashboard = () => {
                 />
             )}
 
-            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 md:z-30 w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <h2 className="text-2xl font-bold mb-8 flex justify-between items-center">
                     {t.admin_panel}
                     <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-white">
@@ -637,10 +637,10 @@ const AdminDashboard = () => {
                     )}
 
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300 min-h-[500px]">
-                        {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={() => handleAdd('news')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={activeLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} />}
-                        {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={() => handleAdd('programs')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={activeLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} />}
-                        {activeTab === 'projects' && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={() => handleAdd('projects')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={activeLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} />}
-                        {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={() => handleAdd('events')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={activeLang} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} />}
+                        {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={() => handleAdd('news')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} />}
+                        {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={() => handleAdd('programs')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} />}
+                        {activeTab === 'projects' && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={() => handleAdd('projects')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} />}
+                        {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={() => handleAdd('events')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} />}
 
                         {activeTab === 'testimonials' && (
                             <div>
@@ -669,7 +669,7 @@ const AdminDashboard = () => {
                                                         </span>
                                                     </h4>
                                                     <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-col">
-                                                        <span>{typeof item.role === 'object' ? (item.role[activeLang] || item.role.en) : item.role}</span>
+                                                        <span>{typeof item.role === 'object' ? (item.role[language] || item.role.en) : item.role}</span>
                                                         {item.rating && <span className="text-yellow-500 text-xs">{'★'.repeat(item.rating)}</span>}
                                                     </div>
                                                 </div>
