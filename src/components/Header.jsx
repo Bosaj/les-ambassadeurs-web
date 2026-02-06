@@ -67,6 +67,9 @@ const Header = () => {
                                     </span>
                                 </div>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><Link to="/profile" className="hover:text-red-400 transition">{t.profile_title || "Profile"}</Link></span>
+                                {user.role === 'volunteer' && user.membership_status !== 'active' && (
+                                    <span className="flex items-center gap-2 text-xs sm:text-base text-yellow-500 font-bold"><Link to="/membership" className="hover:text-yellow-300 transition glow-sm">{t.become_member || "Become Member"}</Link></span>
+                                )}
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">{t.dashboard || "Dashboard"}</Link></span>
                                 <button onClick={logout} className="flex items-center gap-2 text-xs sm:text-base hover:text-red-400 transition"><FaSignOutAlt /> {t.logout}</button>
                             </>

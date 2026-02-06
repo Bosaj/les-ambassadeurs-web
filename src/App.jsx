@@ -17,6 +17,7 @@ import Signup from './pages/Signup';
 import AdminDashboard from './pages/AdminDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import Profile from './pages/Profile';
+import MembershipPage from './pages/MembershipPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorPage from './pages/ErrorPage';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -41,6 +42,7 @@ function App() {
                                         <Route path="login" element={<Login />} />
                                         <Route path="signup" element={<Signup />} />
                                         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                                        <Route path="membership" element={<ProtectedRoute><MembershipPage /></ProtectedRoute>} />
 
                                         <Route
                                             path="dashboard/admin"
