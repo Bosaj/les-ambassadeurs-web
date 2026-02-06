@@ -131,7 +131,8 @@ export const DataProvider = ({ children }) => {
                     title: postData.title,
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
-                    description: postData.description
+                    description: postData.description,
+                    location: postData.location || {}
                 };
             } else if (['programs', 'events', 'projects'].includes(type)) {
                 table = 'events';
@@ -141,6 +142,7 @@ export const DataProvider = ({ children }) => {
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
                     description: postData.description,
+                    location: postData.location || {},
                     category: categoryMap[type] || 'program',
                     is_pinned: false
                 };
@@ -183,7 +185,8 @@ export const DataProvider = ({ children }) => {
                     title: postData.title,
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
-                    description: postData.description
+                    description: postData.description,
+                    location: postData.location || {}
                 };
             } else if (['programs', 'events', 'projects'].includes(type)) {
                 table = 'events';
@@ -192,6 +195,7 @@ export const DataProvider = ({ children }) => {
                     date: new Date(postData.date).toISOString(),
                     image_url: postData.image,
                     description: postData.description,
+                    location: postData.location || {},
                 };
             } else if (type === 'testimonials') {
                 table = 'testimonials';

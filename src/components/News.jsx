@@ -59,6 +59,11 @@ const News = () => {
                                     <span className="flex items-center gap-1">
                                         <FaCalendarAlt /> <span>{new Date(item.date).toLocaleDateString()}</span>
                                     </span>
+                                    {item.location && (
+                                        <span className="flex items-center gap-1 ml-3">
+                                            <FaMapMarkerAlt /> <span>{getLocalizedContent(item.location, language)}</span>
+                                        </span>
+                                    )}
                                     {item.is_pinned && <span className="flex items-center gap-1 text-blue-600 ml-auto"><FaThumbtack /> {t.pin_item || "Pinned"}</span>}
                                 </div>
                                 <h3 className="text-xl font-bold text-blue-900 dark:text-white mb-3 line-clamp-2">
@@ -108,10 +113,10 @@ const News = () => {
                             <FaCalendarAlt />
                             <span>{selectedNews?.date ? new Date(selectedNews.date).toLocaleDateString() : ''}</span>
                         </span>
-                        {selectedNews?.location && (
+                        {selectedNews?.location && getLocalizedContent(selectedNews.location, language) && (
                             <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full border border-red-100 dark:border-red-800">
                                 <FaMapMarkerAlt />
-                                <span>{selectedNews.location}</span>
+                                <span>{getLocalizedContent(selectedNews.location, language)}</span>
                             </span>
                         )}
                     </div>

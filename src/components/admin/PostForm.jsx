@@ -174,6 +174,24 @@ const PostForm = ({
                                 onChange={e => setFormData({ ...formData, date: e.target.value })}
                             />
                         </div>
+
+                        {/* Location (Trilingual) */}
+                        <div className="flex flex-col gap-1 md:col-span-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {t.location_label || "Location"} ({activeLang.toUpperCase()})
+                            </label>
+                            <input
+                                type="text"
+                                className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
+                                dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                                value={formData.location?.[activeLang] || ''}
+                                onChange={e => setFormData({
+                                    ...formData,
+                                    location: { ...(formData.location || {}), [activeLang]: e.target.value }
+                                })}
+                                placeholder={`${t.location_placeholder || "Location"} in ${activeLang}`}
+                            />
+                        </div>
                     </div>
                 )
             }
