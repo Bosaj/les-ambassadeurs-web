@@ -3,12 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
-import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaTimesCircle, FaCalendarAlt } from 'react-icons/fa';
 
 const Profile = () => {
     const { user, refreshProfile } = useAuth();
     const { t, language } = useLanguage();
     const [loading, setLoading] = useState(false);
+    const [membershipHistory, setMembershipHistory] = useState([]);
     const [formData, setFormData] = useState({
         full_name: '',
         email: '',
@@ -22,19 +23,36 @@ const Profile = () => {
 
     useEffect(() => {
         if (user) {
-            setFormData(prev => ({
-                ...prev,
+            setFormData({
                 full_name: user.full_name || user.name || '',
                 email: user.email || '',
+                password: '', // Clear password field on load
                 username: user.username || '',
                 phone: user.phone_number || user.phone || '',
                 city: user.city || ''
-            }));
+            });
             if (user.avatar_url) {
                 setAvatarPreview(user.avatar_url);
             }
+            fetchMembershipHistory();
         }
     }, [user]);
+
+    const fetchMembershipHistory = async () => {
+        if (!user) return;
+        try {
+            const { data, error } = await supabase
+                .from('annual_memberships')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('year', { ascending: false });
+            if (error) throw error;
+            if (data) setMembershipHistory(data);
+        } catch (error) {
+            console.error("Error fetching membership history:", error.message);
+            toast.error(t.error_fetching_history || "Error fetching membership history.");
+        }
+    };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -232,6 +250,42 @@ const Profile = () => {
                             {loading ? t.processing : <><FaSave /> {t.save_changes}</>}
                         </button>
                     </form>
+                </div>
+            </div>
+
+            {/* Membership History Section */}
+            <div className="max-w-4xl mx-auto mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden animate-fade-in delay-100">
+                <div className="bg-green-600 p-6 text-white text-center">
+                    <FaHistory className="text-4xl mx-auto mb-3" />
+                    <h2 className="text-2xl font-bold">{t.membership_history || "Membership History"}</h2>
+                    <p className="opacity-90">{t.membership_history_desc || "Your annual contribution records"}</p>
+                </div>
+                <div className="p-8">
+                    {membershipHistory.length === 0 ? (
+                        <div className="text-center text-gray-500 dark:text-gray-400 py-6">
+                            <p>{t.no_history || "No membership payments recorded yet."}</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {membershipHistory.map((record) => (
+                                <div key={record.year} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-xl">
+                                            <FaCalendarAlt />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg dark:text-white">{record.year}</h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: {record.amount} DH</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full font-bold text-sm">
+                                        <FaCheckCircle />
+                                        <span>{t.paid || "Paid"}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

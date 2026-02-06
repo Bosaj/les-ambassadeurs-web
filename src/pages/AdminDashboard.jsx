@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash,
     FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck,
-    FaEnvelope, FaPhone, FaEye, FaHandHoldingHeart, FaChartPie, FaSearch, FaPlus, FaCheckCircle, FaClock
+    FaEnvelope, FaPhone, FaEye, FaHandHoldingHeart, FaChartPie, FaSearch, FaPlus, FaCheckCircle, FaClock, FaHistory, FaCalendarAlt, FaTimesCircle
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -14,6 +14,117 @@ import DashboardStats from '../components/admin/DashboardStats';
 import PostForm from '../components/admin/PostForm';
 
 import { useLanguage } from '../context/LanguageContext';
+
+// Membership History Modal Component
+const MembershipHistoryModal = ({ user, onClose }) => {
+    const [history, setHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const currentYear = new Date().getFullYear();
+    const startYear = 2024;
+    const years = Array.from({ length: currentYear - startYear + 2 }, (_, i) => startYear + i); // Up to next year
+
+    useEffect(() => {
+        fetchHistory();
+    }, [user]);
+
+    const fetchHistory = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('annual_memberships')
+                .select('*')
+                .eq('user_id', user.id);
+            if (error) throw error;
+            setHistory(data || []);
+        } catch (error) {
+            console.error("Error fetching history:", error);
+            toast.error("Failed to load history");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const togglePayment = async (year, existingRecord) => {
+        try {
+            if (existingRecord) {
+                // Remove payment
+                const { error } = await supabase
+                    .from('annual_memberships')
+                    .delete()
+                    .eq('id', existingRecord.id);
+                if (error) throw error;
+                toast.success(`Removed payment for ${year}`);
+            } else {
+                // Add payment
+                const { error } = await supabase
+                    .from('annual_memberships')
+                    .insert({
+                        user_id: user.id,
+                        year: year,
+                        amount: 50,
+                        status: 'paid'
+                    });
+                if (error) throw error;
+                toast.success(`Marked ${year} as Paid`);
+            }
+            fetchHistory(); // Refresh
+        } catch (error) {
+            console.error("Error toggling payment:", error);
+            toast.error("Failed to update payment");
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                <div className="bg-blue-900 p-6 text-white flex justify-between items-center">
+                    <div>
+                        <h3 className="text-xl font-bold flex items-center gap-2">
+                            <FaHistory /> Membership History
+                        </h3>
+                        <p className="text-sm opacity-80">{user.full_name}</p>
+                    </div>
+                    <button onClick={onClose} className="text-white/70 hover:text-white transition">
+                        <FaTimesCircle className="text-2xl" />
+                    </button>
+                </div>
+
+                <div className="p-6 max-h-[60vh] overflow-y-auto">
+                    {loading ? (
+                        <div className="text-center py-8">Loading history...</div>
+                    ) : (
+                        <div className="space-y-3">
+                            {years.map(year => {
+                                const record = history.find(h => h.year === year);
+                                const isPaid = !!record;
+
+                                return (
+                                    <div key={year} className={`flex items-center justify-between p-4 rounded-xl border-2 transition ${isPaid ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${isPaid ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                                <FaCalendarAlt />
+                                            </div>
+                                            <div>
+                                                <div className="font-bold dark:text-white">{year}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">Annual Fee: 50 DH</div>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => togglePayment(year, record)}
+                                            className={`px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2 ${isPaid ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                        >
+                                            {isPaid ? 'Remove' : 'Mark Paid'}
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTerm, setSearchTerm, activeLang }) => {
 
@@ -262,7 +373,8 @@ const AdminDashboard = () => {
     const CommunityManagement = () => {
         const [users, setUsers] = useState([]);
         const [attendees, setAttendees] = useState([]);
-        const [view, setView] = useState('members'); // 'members' or 'attendance'
+        const [view, setView] = useState('members');
+        const [selectedUserForHistory, setSelectedUserForHistory] = useState(null);
 
         useEffect(() => {
             const fetchData = async () => {
@@ -311,7 +423,14 @@ const AdminDashboard = () => {
                                             <td className="p-4 whitespace-nowrap"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{u.role}</span></td>
                                             <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.phone_number || '-'}</td>
                                             <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.city || '-'}</td>
-                                            <td className="p-4 text-right whitespace-nowrap">
+                                            <td className="p-4 text-right whitespace-nowrap flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => setSelectedUserForHistory(u)}
+                                                    className="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 p-2 rounded hover:bg-purple-200 transition"
+                                                    title="Membership History"
+                                                >
+                                                    <FaHistory />
+                                                </button>
                                                 <button
                                                     onClick={() => handleViewUser(u)}
                                                     className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 p-2 rounded hover:bg-blue-200 transition"
@@ -327,6 +446,7 @@ const AdminDashboard = () => {
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
+                            {/* ... attendees table ... */}
                             <table className="w-full text-left min-w-[800px]">
                                 <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                     <tr>
@@ -350,6 +470,13 @@ const AdminDashboard = () => {
                                 </tbody>
                             </table>
                         </div>
+                    )}
+
+                    {selectedUserForHistory && (
+                        <MembershipHistoryModal
+                            user={selectedUserForHistory}
+                            onClose={() => setSelectedUserForHistory(null)}
+                        />
                     )}
                 </div>
             </div>
