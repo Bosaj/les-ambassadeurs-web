@@ -474,6 +474,10 @@ export const translations = {
 
         // Admin Dashboard
         manage_projects: "إدارة المشاريع",
+        manage_users: "المستخدمين",
+        manage_programs: "البرامج",
+        tab_news: "الأخبار",
+        tab_events: "الأحداث",
         membership_requests: "طلبات العضوية",
         manage_memberships: "طلبات العضوية",
         search_placeholder: "بحث...",
@@ -1018,6 +1022,10 @@ export const translations = {
 
         // Admin Dashboard
         manage_projects: "Manage Projects",
+        manage_users: "Users",
+        manage_programs: "Programs",
+        tab_news: "News",
+        tab_events: "Events",
         membership_requests: "Membership Requests",
         manage_memberships: "Membership Requests",
         search_placeholder: "Search...",
@@ -1576,6 +1584,10 @@ export const translations = {
 
         // Admin Dashboard
         manage_projects: "Gérer les projets",
+        manage_users: "Utilisateurs",
+        manage_programs: "Programmes",
+        tab_news: "Actualités",
+        tab_events: "Événements",
         membership_requests: "Demandes d'adhésion",
         manage_memberships: "Demandes d'adhésion",
         search_placeholder: "Rechercher...",
