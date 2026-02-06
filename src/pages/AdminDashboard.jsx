@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -5,7 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import {
     FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash,
     FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck,
-    FaEnvelope, FaPhone, FaEye, FaHandHoldingHeart, FaChartPie, FaSearch, FaPlus, FaCheckCircle, FaClock
+    FaEnvelope, FaPhone, FaEye, FaHandHoldingHeart, FaChartPie, FaSearch, FaPlus, FaCheckCircle, FaClock,
+    FaChartLine, FaCalendarAlt, FaTimesCircle, FaFilter, FaDownload, FaEdit
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -64,7 +66,10 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                             <th className="p-4 whitespace-nowrap font-semibold">{t.table_image}</th>
                             <th className="p-4 min-w-[30%] font-semibold">{t.table_title}</th>
                             <th className="p-4 whitespace-nowrap font-semibold">{t.table_date}</th>
+                            <th className="p-4 whitespace-nowrap font-semibold">{t.location || "Location"}</th>
                             {type === 'events' && <th className="p-4 whitespace-nowrap font-semibold">{t.table_attendees}</th>}
+                            {type === 'programs' && <th className="p-4 whitespace-nowrap font-semibold">{t.joined || "Joined"}</th>}
+                            {type === 'projects' && <th className="p-4 whitespace-nowrap font-semibold">{t.supported || "Supported"}</th>}
                             <th className="p-4 whitespace-nowrap text-center font-semibold">{t.pin_item}</th>
                             <th className="p-4 whitespace-nowrap text-right font-semibold">{t.table_actions}</th>
                         </tr>
@@ -83,11 +88,15 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                                 <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-sm">
                                     {item.date ? new Date(item.date).toLocaleDateString() : '-'}
                                 </td>
+                                <td className="p-4 text-gray-500 dark:text-gray-400 text-sm font-medium">
+                                    {(item.location?.[activeLang] || item.location?.en || item.location?.fr || item.location?.ar || (typeof item.location === 'string' ? item.location : '-'))}
+                                </td>
                                 {type === 'events' && <td className="p-4 whitespace-nowrap text-center text-sm">{item.attendees?.length || 0}</td>}
+                                {(type === 'programs' || type === 'projects') && <td className="p-4 whitespace-nowrap text-center text-sm">{item.attendees?.length || 0}</td>}
                                 <td className="p-4 whitespace-nowrap text-center">
                                     <button
                                         onClick={() => togglePin(type, item.id, item.is_pinned)}
-                                        className={`p-2 rounded-full transition-all ${item.is_pinned ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-500'}`}
+                                        className={`p - 2 rounded - full transition - all ${item.is_pinned ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-500'} `}
                                         title={item.is_pinned ? "Unpin" : "Pin to top"}
                                     >
                                         <FaThumbtack size={14} />
@@ -96,7 +105,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                                 <td className="p-4 whitespace-nowrap text-right">
                                     <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                         <button onClick={() => onEdit(item)} className="text-blue-500 hover:text-blue-700 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors" title={t.edit_btn}>
-                                            <FaNewspaper size={14} />
+                                            <FaEdit size={14} />
                                         </button>
                                         <button onClick={() => onDelete(type, item.id)} className="text-red-500 hover:text-red-700 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" title={t.delete_btn}>
                                             <FaTrash size={14} />
@@ -106,7 +115,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                             </tr>
                         )) : (
                             <tr>
-                                <td colspan="6" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                <td colSpan="6" className="p-8 text-center text-gray-500 dark:text-gray-400">
                                     No items found.
                                 </td>
                             </tr>
@@ -256,28 +265,140 @@ const AdminDashboard = () => {
         const [users, setUsers] = useState([]);
         const [attendees, setAttendees] = useState([]);
         const [view, setView] = useState('members'); // 'members' or 'attendance'
+        const [selectedUser, setSelectedUser] = useState(null);
+        const [showMembershipModal, setShowMembershipModal] = useState(false);
+        const [membershipHistory, setMembershipHistory] = useState([]);
 
+        // Fetch data
         useEffect(() => {
             const fetchData = async () => {
                 const { data: profiles } = await supabase.from('profiles').select('*');
                 if (profiles) setUsers(profiles);
 
                 const { data: att } = await supabase.from('event_attendees').select(`
-                    *,
-                    events (title, date)
-                `).order('created_at', { ascending: false });
+    *,
+    events(title, date)
+        `).order('created_at', { ascending: false });
                 if (att) setAttendees(att);
             };
             fetchData();
         }, []);
 
+        const fetchMembershipHistory = async (userId) => {
+            const { data, error } = await supabase
+                .from('annual_memberships')
+                .select('*')
+                .eq('user_id', userId);
+
+            if (error) {
+                console.error("Error fetching membership history:", error);
+            } else {
+                setMembershipHistory(data || []);
+            }
+        };
+
+        const handleManageMembership = (user) => {
+            setSelectedUser(user);
+            fetchMembershipHistory(user.id);
+            setShowMembershipModal(true);
+        };
+
+        const toggleMembershipYear = async (year, currentStatus) => {
+            if (!selectedUser) return;
+
+            if (currentStatus === 'paid') {
+                // Remove payment
+                const { error } = await supabase
+                    .from('annual_memberships')
+                    .delete()
+                    .eq('user_id', selectedUser.id)
+                    .eq('year', year);
+
+                if (!error) {
+                    toast.success(`Removed payment for ${year}`);
+                    fetchMembershipHistory(selectedUser.id);
+                }
+            } else {
+                // Add payment
+                const { error } = await supabase
+                    .from('annual_memberships')
+                    .insert({
+                        user_id: selectedUser.id,
+                        year: year,
+                        amount: 50,
+                        status: 'paid'
+                    });
+
+                if (!error) {
+                    toast.success(`Marked ${year} as Paid`);
+                    fetchMembershipHistory(selectedUser.id);
+                }
+            }
+        };
+
+        const renderMembershipModal = () => {
+            if (!showMembershipModal || !selectedUser) return null;
+
+            const startYear = 2024;
+            const currentYear = new Date().getFullYear();
+            const years = [];
+            for (let y = startYear; y <= currentYear + 1; y++) {
+                years.push(y);
+            }
+
+            return (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+                        <button
+                            onClick={() => setShowMembershipModal(false)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
+                        >
+                            <FaTimesCircle className="text-2xl" />
+                        </button>
+
+                        <h3 className="text-2xl font-bold mb-2 dark:text-white flex items-center gap-2">
+                            <FaMoneyBillWave className="text-green-500" /> Membership History
+                        </h3>
+                        <p className="text-gray-500 mb-6">Manage annual payments (50 DH) for <strong>{selectedUser.full_name}</strong></p>
+
+                        <div className="space-y-3">
+                            {years.map(year => {
+                                const record = membershipHistory.find(m => m.year === year);
+                                const isPaid = !!record;
+
+                                return (
+                                    <div key={year} className="flex items-center justify-between p-3 rounded-lg border dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        <span className="font-bold text-lg dark:text-gray-300">{year}</span>
+                                        <button
+                                            onClick={() => toggleMembershipYear(year, isPaid ? 'paid' : null)}
+                                            className={`px - 4 py - 2 rounded - full font - bold text - sm transition - all flex items - center gap - 2
+                                                 ${isPaid
+                                                    ? 'bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-700'
+                                                    : 'bg-gray-100 text-gray-400 hover:bg-green-100 hover:text-green-700'
+                                                } `}
+                                        >
+                                            {isPaid ? (
+                                                <><FaCheckCircle /> Paid</>
+                                            ) : (
+                                                <><FaTimesCircle /> Unpaid</>
+                                            )}
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         return (
             <div>
                 <div className="flex gap-4 mb-6">
-                    <button onClick={() => setView('members')} className={`px-4 py-2 rounded font-medium ${view === 'members' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                    <button onClick={() => setView('members')} className={`px - 4 py - 2 rounded font - medium ${view === 'members' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} `}>
                         {t.registered_users || "Registered Members"}
                     </button>
-                    <button onClick={() => setView('attendance')} className={`px-4 py-2 rounded font-medium ${view === 'attendance' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                    <button onClick={() => setView('attendance')} className={`px - 4 py - 2 rounded font - medium ${view === 'attendance' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} `}>
                         {t.attendance_history || "Attendance History"}
                     </button>
                 </div>
@@ -301,10 +422,17 @@ const AdminDashboard = () => {
                                         <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                             <td className="p-4 font-medium dark:text-white whitespace-nowrap">{u.full_name}</td>
                                             <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.email}</td>
-                                            <td className="p-4 whitespace-nowrap"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{u.role}</span></td>
+                                            <td className="p-4 whitespace-nowrap"><span className={`px - 2 py - 1 rounded text - xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'} `}>{u.role}</span></td>
                                             <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.phone_number || '-'}</td>
                                             <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.city || '-'}</td>
-                                            <td className="p-4 text-right whitespace-nowrap">
+                                            <td className="p-4 text-right whitespace-nowrap flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleManageMembership(u)}
+                                                    className="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300 p-2 rounded hover:bg-green-200 transition"
+                                                    title="Manage Membership"
+                                                >
+                                                    <FaMoneyBillWave />
+                                                </button>
                                                 <button
                                                     onClick={() => handleViewUser(u)}
                                                     className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 p-2 rounded hover:bg-blue-200 transition"
@@ -345,6 +473,7 @@ const AdminDashboard = () => {
                         </div>
                     )}
                 </div>
+                {renderMembershipModal()}
             </div>
         );
     };
@@ -557,7 +686,7 @@ const AdminDashboard = () => {
                 />
             )}
 
-            <aside className={`fixed inset-y-0 left-0 z-50 md:z-30 w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed inset - y - 0 left - 0 z - 50 md: z - 30 w - 64 bg - blue - 900 dark: bg - gray - 800 text - white p - 6 transform transition - transform duration - 300 ease -in -out md: translate - x - 0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} `}>
                 <h2 className="text-2xl font-bold mb-8 flex justify-between items-center">
                     {t.admin_panel}
                     <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-white">
@@ -565,35 +694,35 @@ const AdminDashboard = () => {
                     </button>
                 </h2>
                 <nav className="space-y-2">
-                    <button onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'overview' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'overview' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaChartPie /> {t.overview || "Overview"}
                     </button>
-                    <button onClick={() => { setActiveTab('news'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'news' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('news'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'news' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaNewspaper /> {t.manage_news}
                     </button>
-                    <button onClick={() => { setActiveTab('programs'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('programs'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaCalendarPlus /> {t.manage_programs}
                     </button>
-                    <button onClick={() => { setActiveTab('projects'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'projects' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('projects'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'projects' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaHandHoldingHeart /> {t.manage_projects || "Manage Projects"}
                     </button>
-                    <button onClick={() => { setActiveTab('events'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'events' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('events'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'events' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaCalendarCheck /> {t.manage_events}
                     </button>
-                    <button onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'users' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'users' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaUsers /> {t.manage_users || "Manage Community"}
                     </button>
-                    <button onClick={() => { setActiveTab('memberships'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'memberships' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('memberships'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'memberships' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaUserShield /> {t.manage_memberships || "Membership Requests"}
                     </button>
-                    <button onClick={() => { setActiveTab('donations'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'donations' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('donations'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'donations' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaMoneyBillWave /> {t.donations}
                     </button>
-                    <button onClick={() => { setActiveTab('testimonials'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                    <button onClick={() => { setActiveTab('testimonials'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 transition - colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                         <FaComments /> {t.manage_testimonials}
                     </button>
                     {user?.email === 'oussousselhadji@gmail.com' && (
-                        <button onClick={() => { setActiveTab('admins'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                        <button onClick={() => { setActiveTab('admins'); setIsSidebarOpen(false); }} className={`w - full text - left p - 3 rounded flex items - center gap - 3 text - yellow - 300 transition - colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'} `}>
                             <FaUserShield /> {t.manage_admins}
                         </button>
                     )}
@@ -658,13 +787,13 @@ const AdminDashboard = () => {
 
                                 <div className="grid grid-cols-1 gap-4">
                                     {testimonials.length > 0 ? testimonials.map(item => (
-                                        <div key={item.id} className={`bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border ${item.is_approved ? 'border-gray-100 dark:border-gray-700' : 'border-yellow-300 dark:border-yellow-600'}`}>
+                                        <div key={item.id} className={`bg - gray - 50 dark: bg - gray - 700 / 50 p - 4 rounded - xl shadow - sm flex flex - col sm: flex - row justify - between items - start sm: items - center gap - 4 border ${item.is_approved ? 'border-gray-100 dark:border-gray-700' : 'border-yellow-300 dark:border-yellow-600'} `}>
                                             <div className="flex items-center gap-4 w-full sm:w-auto">
                                                 <img src={item.image_url || "https://via.placeholder.com/50"} alt={item.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white dark:ring-gray-600" />
                                                 <div>
                                                     <h4 className="font-bold dark:text-white flex items-center gap-2">
                                                         {item.name}
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${item.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                        <span className={`text - [10px] px - 2 py - 0.5 rounded - full ${item.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} `}>
                                                             {item.is_approved ? (t.approved || "Approved") : (t.pending || "Pending")}
                                                         </span>
                                                     </h4>
@@ -677,15 +806,15 @@ const AdminDashboard = () => {
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleToggleApproval(item)}
-                                                    className={`p-2 rounded-lg transition-colors ${item.is_approved
+                                                    className={`p - 2 rounded - lg transition - colors ${item.is_approved
                                                         ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20'
                                                         : 'text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20'
-                                                        }`}
+                                                        } `}
                                                     title={item.is_approved ? "Revoke Approval" : "Approve"}
                                                 >
                                                     {item.is_approved ? <FaTimes /> : <FaCheck />}
                                                 </button>
-                                                <button onClick={() => togglePin('testimonials', item.id, item.is_pinned)} className={`p-2 rounded-full transition ${item.is_pinned ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}>
+                                                <button onClick={() => togglePin('testimonials', item.id, item.is_pinned)} className={`p - 2 rounded - full transition ${item.is_pinned ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-blue-500'} `}>
                                                     <FaThumbtack className={item.is_pinned ? 'text-blue-600' : ''} />
                                                 </button>
                                                 <button onClick={() => handleEdit(item, 'testimonials')} className="text-blue-500 hover:text-blue-700 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 transition-colors">
@@ -716,7 +845,7 @@ const AdminDashboard = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCancelEdit}
-                title={editingId ? `${t.edit_btn} ${formType}` : `${t.add_btn} ${formType}`}
+                title={editingId ? `${t.edit_btn} ${formType} ` : `${t.add_btn} ${formType} `}
             >
                 <PostForm
                     type={formType}
@@ -734,7 +863,7 @@ const AdminDashboard = () => {
             <Modal
                 isOpen={!!selectedUser}
                 onClose={() => setSelectedUser(null)}
-                title={selectedUser ? `User Details: ${selectedUser.full_name}` : 'User Details'}
+                title={selectedUser ? `User Details: ${selectedUser.full_name} ` : 'User Details'}
             >
                 {selectedUser && (
                     <div className="space-y-6">
@@ -750,10 +879,10 @@ const AdminDashboard = () => {
                                     {selectedUser.phone_number && <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded flex items-center gap-1"><FaPhone className="text-[10px]" /> {selectedUser.phone_number}</span>}
                                 </div>
                             </div>
-                        </div>
+                        </div >
 
                         {/* Tabs */}
-                        <div className="flex border-b dark:border-gray-700">
+                        < div className="flex border-b dark:border-gray-700" >
                             <button onClick={() => setActiveUserTab('activities')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'activities' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
                                 Activities ({userDetails.activities?.length || 0})
                             </button>
@@ -763,76 +892,78 @@ const AdminDashboard = () => {
                             <button onClick={() => setActiveUserTab('suggestions')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'suggestions' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
                                 Suggestions ({userDetails.suggestions?.length || 0})
                             </button>
-                        </div>
+                        </div >
 
                         {/* Loading State */}
-                        {userDetailsLoading ? (
-                            <div className="py-8 text-center text-gray-500">Loading details...</div>
-                        ) : (
-                            <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
-                                {/* Activities Tab */}
-                                {activeUserTab === 'activities' && (
-                                    <div className="space-y-3">
-                                        {userDetails.activities?.length > 0 ? userDetails.activities.map(activity => (
-                                            <div key={activity.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
-                                                <div>
-                                                    <h4 className="font-bold text-gray-800 dark:text-white">{activity.events?.title?.en || activity.events?.title?.fr || activity.events?.title?.ar || 'Event'}</h4>
-                                                    <p className="text-xs text-gray-500">{new Date(activity.events?.date).toLocaleDateString()} • {activity.events?.category || 'Event'}</p>
-                                                </div>
-                                                <span className={`text-xs px-2 py-1 rounded capitalize ${activity.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                                    activity.status === 'attended' ? 'bg-purple-100 text-purple-800' :
-                                                        activity.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                            'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                    {activity.status || 'pending'}
-                                                </span>
-                                            </div>
-                                        )) : <p className="text-gray-500 text-center py-4">No activities found.</p>}
-                                    </div>
-                                )}
-
-                                {/* Donations Tab */}
-                                {activeUserTab === 'donations' && (
-                                    <div className="space-y-3">
-                                        {userDetails.donations?.length > 0 ? userDetails.donations.map(donation => (
-                                            <div key={donation.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
-                                                <div>
-                                                    <h4 className="font-bold text-green-600">{donation.amount} MAD</h4>
-                                                    <p className="text-xs text-gray-500">Via {donation.method}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="text-xs text-gray-400 block">{new Date(donation.created_at).toLocaleDateString()}</span>
-                                                    <span className={`text-xs px-2 py-0.5 rounded capitalize ${donation.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{donation.status || 'pending'}</span>
-                                                </div>
-                                            </div>
-                                        )) : <p className="text-gray-500 text-center py-4">No donations found.</p>}
-                                    </div>
-                                )}
-
-                                {/* Suggestions Tab */}
-                                {activeUserTab === 'suggestions' && (
-                                    <div className="space-y-3">
-                                        {userDetails.suggestions?.length > 0 ? userDetails.suggestions.map(suggestion => (
-                                            <div key={suggestion.id} className="p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <h4 className="font-bold text-gray-800 dark:text-white">{suggestion.title}</h4>
-                                                    <span className="text-xs text-gray-400">{new Date(suggestion.created_at).toLocaleDateString()}</span>
-                                                </div>
-                                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{suggestion.description}</p>
-                                                {suggestion.proposed_date && (
-                                                    <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded inline-block">
-                                                        Proposed Date: {new Date(suggestion.proposed_date).toLocaleDateString()}
+                        {
+                            userDetailsLoading ? (
+                                <div className="py-8 text-center text-gray-500">Loading details...</div>
+                            ) : (
+                                <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                                    {/* Activities Tab */}
+                                    {activeUserTab === 'activities' && (
+                                        <div className="space-y-3">
+                                            {userDetails.activities?.length > 0 ? userDetails.activities.map(activity => (
+                                                <div key={activity.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
+                                                    <div>
+                                                        <h4 className="font-bold text-gray-800 dark:text-white">{activity.events?.title?.en || activity.events?.title?.fr || activity.events?.title?.ar || 'Event'}</h4>
+                                                        <p className="text-xs text-gray-500">{new Date(activity.events?.date).toLocaleDateString()} • {activity.events?.category || 'Event'}</p>
                                                     </div>
-                                                )}
-                                            </div>
-                                        )) : <p className="text-gray-500 text-center py-4">No suggestions found.</p>}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                                    <span className={`text-xs px-2 py-1 rounded capitalize ${activity.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                                        activity.status === 'attended' ? 'bg-purple-100 text-purple-800' :
+                                                            activity.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                                'bg-yellow-100 text-yellow-800'
+                                                        }`}>
+                                                        {activity.status || 'pending'}
+                                                    </span>
+                                                </div>
+                                            )) : <p className="text-gray-500 text-center py-4">No activities found.</p>}
+                                        </div>
+                                    )}
+
+                                    {/* Donations Tab */}
+                                    {activeUserTab === 'donations' && (
+                                        <div className="space-y-3">
+                                            {userDetails.donations?.length > 0 ? userDetails.donations.map(donation => (
+                                                <div key={donation.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
+                                                    <div>
+                                                        <h4 className="font-bold text-green-600">{donation.amount} MAD</h4>
+                                                        <p className="text-xs text-gray-500">Via {donation.method}</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-xs text-gray-400 block">{new Date(donation.created_at).toLocaleDateString()}</span>
+                                                        <span className={`text-xs px-2 py-0.5 rounded capitalize ${donation.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{donation.status || 'pending'}</span>
+                                                    </div>
+                                                </div>
+                                            )) : <p className="text-gray-500 text-center py-4">No donations found.</p>}
+                                        </div>
+                                    )}
+
+                                    {/* Suggestions Tab */}
+                                    {activeUserTab === 'suggestions' && (
+                                        <div className="space-y-3">
+                                            {userDetails.suggestions?.length > 0 ? userDetails.suggestions.map(suggestion => (
+                                                <div key={suggestion.id} className="p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <h4 className="font-bold text-gray-800 dark:text-white">{suggestion.title}</h4>
+                                                        <span className="text-xs text-gray-400">{new Date(suggestion.created_at).toLocaleDateString()}</span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{suggestion.description}</p>
+                                                    {suggestion.proposed_date && (
+                                                        <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded inline-block">
+                                                            Proposed Date: {new Date(suggestion.proposed_date).toLocaleDateString()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )) : <p className="text-gray-500 text-center py-4">No suggestions found.</p>}
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        }
+                    </div >
                 )}
-            </Modal>
+            </Modal >
         </div >
     );
 };

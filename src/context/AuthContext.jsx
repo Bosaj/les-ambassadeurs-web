@@ -19,6 +19,18 @@ export const AuthProvider = ({ children }) => {
                 console.error('Error fetching profile:', error);
             }
 
+            if (profile && !profile.email && authUser.email) {
+                // Lazy sync: If profile exists but has no email, update it
+                const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({ email: authUser.email })
+                    .eq('id', authUser.id);
+
+                if (!updateError) {
+                    profile.email = authUser.email; // Update local object
+                }
+            }
+
             const activeUser = { ...authUser, ...profile };
             setUser(activeUser);
             return activeUser; // Return for direct usage in login/signup
@@ -68,20 +80,42 @@ export const AuthProvider = ({ children }) => {
         return await fetchProfile(data.user);
     };
 
-    const signup = async (name, email, password, phone) => {
+    const signup = async (name, email, password, phone, city) => {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: {
                     full_name: name,
-                    role: 'volunteer', // Default for signup form
-                    phone: phone
+                    role: 'volunteer',
+                    phone: phone,
+                    city: city
                 }
             }
         });
+
         if (error) throw error;
+
         if (data.user) {
+            // Explicitly update profile to ensure data persistence for admin dashboard
+            try {
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({
+                        full_name: name,
+                        phone_number: phone,
+                        city: city,
+                        role: 'volunteer'
+                    })
+                    .eq('id', data.user.id);
+
+                if (profileError) {
+                    console.error("Error updating profile details:", profileError);
+                }
+            } catch (err) {
+                console.error("Profile update exception:", err);
+            }
+
             return await fetchProfile(data.user);
         }
     };
