@@ -93,8 +93,8 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                                 <td className="p-4 text-gray-500 dark:text-gray-400 text-sm font-medium">
                                     {(item.location?.[activeLang] || item.location?.en || item.location?.fr || item.location?.ar || (typeof item.location === 'string' ? item.location : '-'))}
                                 </td>
-                                {type === 'events' && <td className="p-4 whitespace-nowrap text-center text-sm">{item.attendees?.length || 0}</td>}
-                                {(type === 'programs' || type === 'projects') && <td className="p-4 whitespace-nowrap text-center text-sm">{item.attendees?.length || 0}</td>}
+                                {type === 'events' && <td className="p-4 whitespace-nowrap text-center text-sm">{item.attendees?.filter(a => a.status !== 'rejected').length || 0}</td>}
+                                {(type === 'programs' || type === 'projects') && <td className="p-4 whitespace-nowrap text-center text-sm">{item.attendees?.filter(a => a.status !== 'rejected').length || 0}</td>}
                                 <td className="p-4 whitespace-nowrap text-center">
                                     <button
                                         onClick={() => togglePin(type, item.id, item.is_pinned)}
@@ -237,7 +237,7 @@ const AdminDashboard = () => {
                     <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.invite_new_admin}</h3>
                     <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
                         <input
-                            type="email" required placeholder="User Email"
+                            type="email" required placeholder={t.user_email || "User Email"}
                             className="flex-1 border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                             value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
                         />
@@ -247,11 +247,11 @@ const AdminDashboard = () => {
                     </form>
                 </div>
                 <div>
-                    <h3 className="font-bold mb-4 text-gray-800 dark:text-white">Pending Requests</h3>
+                    <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.pending_requests || "Pending Requests"}</h3>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden overflow-x-auto">
-                        {requests.length === 0 ? <p className="p-4 text-center">No pending requests</p> : (
+                        {requests.length === 0 ? <p className="p-4 text-center">{t.no_pending_requests || "No pending requests"}</p> : (
                             <table className="w-full text-left min-w-[300px]">
-                                <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="p-3 whitespace-nowrap">Name</th><th className="p-3 text-right whitespace-nowrap">Actions</th></tr></thead>
+                                <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="p-3 whitespace-nowrap">{t.table_header_name || "Name"}</th><th className="p-3 text-right whitespace-nowrap">{t.actions || "Actions"}</th></tr></thead>
                                 <tbody>{requests.map(r => (
                                     <tr key={r.id} className="border-t dark:border-gray-600"><td className="p-3 dark:text-white whitespace-nowrap">{r.full_name}</td><td className="p-3 text-right whitespace-nowrap"><button onClick={() => handleApprove(r.id)} className="text-green-500 mr-2"><FaCheck /></button><button onClick={() => handleDeny(r.id)} className="text-red-500"><FaTimes /></button></td></tr>
                                 ))}</tbody>

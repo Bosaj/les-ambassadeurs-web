@@ -5,12 +5,37 @@ import { translations } from '../translations';
 import { FaCalendarAlt, FaMapMarkerAlt, FaArrowRight, FaThumbtack } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import Modal from './Modal';
+import ConfirmationModal from './ConfirmationModal';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const News = () => {
     const { language } = useLanguage();
-    const { news, events, getLocalizedContent } = useData();
+    const { news, events, getLocalizedContent, registerForEvent, cancelRegistration } = useData();
     const t = translations[language];
+    const { user } = useAuth();
     const [selectedNews, setSelectedNews] = useState(null);
+    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+
+    const handleCancelClick = (eventId) => {
+        setConfirmModal({ isOpen: true, id: eventId });
+    };
+
+    const performCancelRegistration = async () => {
+        const eventId = confirmModal.id;
+        const toastId = toast.loading(t.cancelling || "Cancelling...");
+        try {
+            await cancelRegistration('event', eventId, user.email);
+            toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
+            setSelectedNews(null);
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred || "Error occurred", { id: toastId });
+        } finally {
+            setConfirmModal({ isOpen: false, id: null });
+        }
+    };
 
     // Combine News and Events for the "Latest News & Events" section
     // Sort by date descending
@@ -128,20 +153,92 @@ const News = () => {
                     </div>
 
                     {/* Optional: Add call to action if it's an event */}
+                    {/* Optional: Add call to action if it's an event */}
                     {selectedNews?.type === 'event' && (
-                        <div className="flex justify-end mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
-                            <Link
-                                to="/contact" // Or registration link
-                                className="px-6 py-2.5 rounded-full bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 transition"
-                                onClick={() => setSelectedNews(null)}
-                            >
+                        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                            {/* Registration Logic similar to ProgramsPage */}
+                            <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
                                 {t.join_event || "Join Event"}
-                            </Link>
+                            </h4>
+
+                            {(user && selectedNews.attendees && selectedNews.attendees.some(a => a.email === user.email)) ? (
+                                <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg flex flex-col items-center gap-2">
+                                    <span className="flex items-center gap-2 font-bold">
+                                        <FaArrowRight className={`ml-1 ${language === 'ar' ? 'rotate-180' : ''}`} /> {t.already_registered || "You are registered."}
+                                    </span>
+                                    <button
+                                        onClick={() => handleCancelClick(selectedNews.id)}
+                                        className="text-red-500 hover:text-red-700 underline text-sm"
+                                    >
+                                        {t.cancel_registration || "Cancel Registration"}
+                                    </button>
+                                </div>
+                            ) : (
+                                <form
+                                    onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        const formData = user ? { name: user.full_name, email: user.email } : guestForm;
+                                        try {
+                                            await registerForEvent('event', selectedNews.id, formData);
+                                            toast.success(t.successfully_joined || "Successfully joined!");
+                                            setSelectedNews(null);
+                                            setGuestForm({ name: '', email: '' });
+                                        } catch (err) {
+                                            toast.error(t.error_occurred || "Error occurred");
+                                        }
+                                    }}
+                                    className="space-y-4"
+                                >
+                                    {!user && (
+                                        <>
+                                            <div>
+                                                <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name || "Full Name"}</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                                    value={guestForm.name}
+                                                    onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                                                    placeholder={t.enter_name_placeholder || "Enter your name"}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address || "Email Address"}</label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                                    value={guestForm.email}
+                                                    onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                                                    placeholder={t.enter_email_placeholder || "Enter your email"}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700 transition"
+                                    >
+                                        {user ? (t.confirm_registration || "Confirm Registration") : (t.join_verb || "Join")}
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     )}
                 </div>
             </Modal>
-        </section>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={performCancelRegistration}
+                title={t.confirm_cancel_registration || "Cancel Registration"}
+                message={t.confirm_cancel_message || "Are you sure you want to cancel?"}
+                isDangerous={true}
+            />
+        </section >
     );
 };
 

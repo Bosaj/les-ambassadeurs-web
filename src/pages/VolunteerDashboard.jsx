@@ -8,8 +8,9 @@ import { supabase } from '../lib/supabase';
 import {
     FaUserShield, FaSignOutAlt, FaHandHoldingHeart, FaCalendarCheck,
     FaStar, FaHistory, FaListAlt, FaLightbulb, FaCheckCircle,
-    FaClock, FaTimesCircle, FaMoneyBillWave
+    FaClock, FaTimesCircle, FaMoneyBillWave, FaTimes
 } from 'react-icons/fa';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const VolunteerDashboard = () => {
     const { user, logout } = useAuth();
@@ -22,7 +23,8 @@ const VolunteerDashboard = () => {
         getLocalizedContent,
         fetchUserActivities,
         fetchUserDonations,
-        submitSuggestion
+        submitSuggestion,
+        cancelRegistration
     } = useData();
     const navigate = useNavigate();
 
@@ -30,7 +32,9 @@ const VolunteerDashboard = () => {
     const [userActivities, setUserActivities] = useState([]);
     const [userDonations, setUserDonations] = useState([]);
     const [testimonial, setTestimonial] = useState('');
+
     const [rating, setRating] = useState(5);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
 
     // Suggestion Form State
     const [suggestionForm, setSuggestionForm] = useState({
@@ -91,6 +95,29 @@ const VolunteerDashboard = () => {
         } catch (error) {
             console.error(error);
             toast.error(t.error_occurred || "Failed to join event", { id: toastId });
+        }
+    };
+
+
+
+    const handleCancelEvent = (activity) => {
+        setConfirmModal({ isOpen: true, data: activity });
+    };
+
+    const performCancelEvent = async () => {
+        const activity = confirmModal.data;
+        if (!activity) return;
+
+        const toastId = toast.loading(t.cancelling || "Cancelling registration...");
+        try {
+            await cancelRegistration(activity.events?.category || 'event', activity.events?.id, user.email);
+            toast.success(t.registration_cancelled || "Registration cancelled successfully", { id: toastId });
+            loadUserData(); // Reload activities
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred || "Failed to cancel", { id: toastId });
+        } finally {
+            setConfirmModal({ isOpen: false, data: null });
         }
     };
 
@@ -326,6 +353,14 @@ const VolunteerDashboard = () => {
                                             </div>
                                             <div>
                                                 {getStatusBadge(activity.status)}
+                                                {activity.status === 'pending' && (
+                                                    <button
+                                                        onClick={() => handleCancelEvent(activity)}
+                                                        className="block mt-2 text-xs text-red-500 hover:text-red-700 underline mx-auto"
+                                                    >
+                                                        {t.cancel_registration || "Cancel"}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -413,6 +448,15 @@ const VolunteerDashboard = () => {
 
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={performCancelEvent}
+                title={t.confirm_cancel_registration || "Cancel Registration"}
+                message={t.confirm_cancel_message || "Are you sure you want to cancel your registration for this event?"}
+                isDangerous={true}
+            />
         </div>
     );
 };
