@@ -56,11 +56,11 @@ const Footer = () => {
                             {t.quick_links}
                         </h3>
                         <ul className="space-y-2">
-                            <li><button onClick={(e) => handleNavigation(e, 'hero')} className="text-gray-400 hover:text-white transition text-left">{t.home}</button></li>
-                            <li><button onClick={(e) => handleNavigation(e, 'about')} className="text-gray-400 hover:text-white transition text-left">{t.about}</button></li>
-                            <li><button onClick={(e) => handleNavigation(e, 'programs')} className="text-gray-400 hover:text-white transition text-left">{t.programs}</button></li>
-                            <li><button onClick={(e) => handleNavigation(e, 'branches')} className="text-gray-400 hover:text-white transition text-left">{t.branches}</button></li>
-                            <li><button onClick={(e) => handleNavigation(e, 'news')} className="text-gray-400 hover:text-white transition text-left">{t.news}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'hero')} className="text-gray-400 hover:text-white transition text-start">{t.home}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'about')} className="text-gray-400 hover:text-white transition text-start">{t.about}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'programs')} className="text-gray-400 hover:text-white transition text-start">{t.programs}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'branches')} className="text-gray-400 hover:text-white transition text-start">{t.branches}</button></li>
+                            <li><button onClick={(e) => handleNavigation(e, 'news')} className="text-gray-400 hover:text-white transition text-start">{t.news}</button></li>
                         </ul>
                     </div>
 
