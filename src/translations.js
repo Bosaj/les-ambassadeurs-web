@@ -968,6 +968,7 @@ export const translations = {
         developer_contact: "Contact Developer",
         try_again: "Try Again",
         developer_label: "Developer",
+        support_label: "Support Team",
         approved: "Approved",
         pending: "Pending",
         testimonial_approved: "Testimonial Approved",
