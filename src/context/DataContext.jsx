@@ -65,7 +65,7 @@ export const DataProvider = ({ children }) => {
             // Fetch All Events/Programs/Projects (with pinning)
             const { data: allEventsData, error: eventsError } = await supabase
                 .from('events')
-                .select('*, attendees:event_attendees(id, name, email)')
+                .select('*, attendees:event_attendees(id, name, email, status)')
                 .order('is_pinned', { ascending: false })
                 .order('date', { ascending: false });
 
@@ -121,20 +121,6 @@ export const DataProvider = ({ children }) => {
 
     // Helper to get localized string is now imported from utils
 
-    const updateAttendanceStatus = async (attendeeId, newStatus) => {
-        try {
-            const { error } = await supabase
-                .from('event_attendees')
-                .update({ status: newStatus })
-                .eq('id', attendeeId);
-
-            if (error) throw error;
-            return true;
-        } catch (error) {
-            console.error("Error updating attendance status:", error);
-            throw error;
-        }
-    };
 
     const addPost = async (type, postData) => {
         try {
@@ -295,20 +281,16 @@ export const DataProvider = ({ children }) => {
         try {
             console.log(`Registering for event ${eventId}`, userDetails);
 
-            // 1. Database Insert
+            // 1. Database Insert/Upsert
             const safeName = userDetails.name || userDetails.email || 'Anonymous';
-            console.log("DEBUG: Inserting attendee (safeguarded):", {
-                event_id: eventId,
-                name: safeName,
-                email: userDetails.email,
-            });
             const { error, data } = await supabase
                 .from('event_attendees')
-                .insert([{
+                .upsert([{
                     event_id: eventId,
                     name: safeName,
                     email: userDetails.email,
-                }])
+                    status: 'pending' // Reset status to pending on re-registration
+                }], { onConflict: 'event_id, email' })
                 .select();
 
             if (error) {
@@ -316,22 +298,20 @@ export const DataProvider = ({ children }) => {
                 throw error;
             }
 
-            console.log("Registration successful:", data);
-
             // 2. Optimistic Update
             const updateList = (list) => {
                 return list.map(item => {
                     if (item.id === eventId) {
                         const newAttendee = {
                             id: data?.[0]?.id || Date.now(),
-                            name: userDetails.name,
-                            email: userDetails.email
+                            name: safeName,
+                            email: userDetails.email,
+                            status: 'pending'
                         };
                         const updatedItem = {
                             ...item,
                             attendees: [...(item.attendees || []), newAttendee]
                         };
-                        console.log("Updated local item:", updatedItem);
                         return updatedItem;
                     }
                     return item;
@@ -346,6 +326,77 @@ export const DataProvider = ({ children }) => {
 
         } catch (error) {
             console.error("Error registering:", error);
+            throw error;
+        }
+    };
+
+    const cancelRegistration = async (type, eventId, email) => {
+        try {
+            console.log(`Cancelling registration for event ${eventId} and email ${email}`);
+
+            // 1. Database Delete
+            const { error } = await supabase
+                .from('event_attendees')
+                .delete()
+                .match({ event_id: eventId, email: email });
+
+            if (error) throw error;
+
+            // 2. Optimistic Update
+            const updateList = (list) => {
+                return list.map(item => {
+                    if (item.id === eventId) {
+                        const updatedItem = {
+                            ...item,
+                            attendees: (item.attendees || []).filter(a => a.email !== email)
+                        };
+                        return updatedItem;
+                    }
+                    return item;
+                });
+            };
+
+            setPrograms(prev => updateList(prev));
+            setEvents(prev => updateList(prev));
+            setProjects(prev => updateList(prev));
+
+            return true;
+        } catch (error) {
+            console.error("Error cancelling registration:", error);
+            throw error;
+        }
+    };
+
+    const updateAttendanceStatus = async (attendeeId, status) => {
+        try {
+            const { data, error } = await supabase
+                .from('event_attendees')
+                .update({ status })
+                .eq('id', attendeeId)
+                .select();
+
+            if (error) throw error;
+
+            // Optimistic Update for global state
+            const updateList = (list) => {
+                return list.map(item => {
+                    if (item.attendees && item.attendees.some(a => a.id === attendeeId)) {
+                        return {
+                            ...item,
+                            attendees: item.attendees.map(a => a.id === attendeeId ? { ...a, status } : a)
+                        };
+                    }
+                    return item;
+                });
+            };
+
+            setPrograms(prev => updateList(prev));
+            setEvents(prev => updateList(prev));
+            setProjects(prev => updateList(prev));
+
+            return data;
+        } catch (error) {
+            console.error("Error updating attendance status:", error);
             throw error;
         }
     };
@@ -450,7 +501,7 @@ export const DataProvider = ({ children }) => {
             getLocalizedContent, loading,
             // New exports
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
-            verifyMember, updateAttendanceStatus
+            verifyMember, updateAttendanceStatus, cancelRegistration
         }}>
             {children}
         </DataContext.Provider>

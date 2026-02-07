@@ -4,17 +4,19 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaMapMarkerAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const EventsPage = () => {
-    const { events, registerForEvent, getLocalizedContent } = useData();
+    const { events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
     const { user } = useAuth();
     const { language, t } = useLanguage();
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, event: null });
 
     const handleJoinClick = (event) => {
         if (user) {
-            if (event.attendees.some(a => a.email === user.email)) {
+            if (event.attendees.some(a => a.email === user.email && a.status !== 'rejected')) {
                 toast.error(t.you_are_registered);
                 return;
             }
@@ -22,6 +24,24 @@ const EventsPage = () => {
             toast.success(t.successfully_joined);
         } else {
             setSelectedEvent(event);
+        }
+    };
+
+    const handleCancelClick = (event) => {
+        setConfirmModal({ isOpen: true, event });
+    };
+
+    const performCancelRegistration = async () => {
+        const { event } = confirmModal;
+        const toastId = toast.loading(t.cancelling || "Cancelling...");
+        try {
+            await cancelRegistration('events', event.id, user.email);
+            toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred || "Error occurred", { id: toastId });
+        } finally {
+            setConfirmModal({ isOpen: false, event: null });
         }
     };
 
@@ -40,7 +60,7 @@ const EventsPage = () => {
 
                 <div className="space-y-8">
                     {events.length > 0 ? events.map((event) => {
-                        const isJoined = user && event.attendees.some(a => a.email === user.email);
+                        const isJoined = user && event.attendees.some(a => a.email === user.email && a.status !== 'rejected');
                         return (
                             <div key={event.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300">
                                 <img src={event.image_url || event.image} alt={getLocalizedContent(event.title, language)} className="h-64 md:h-auto md:w-1/3 object-cover" />
@@ -56,11 +76,15 @@ const EventsPage = () => {
                                     <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{getLocalizedContent(event.title, language)}</h2>
                                     <p className="text-gray-600 dark:text-gray-300 mb-6">{getLocalizedContent(event.description, language)}</p>
                                     <div className="flex items-center gap-6">
-                                        <span className="text-blue-900 dark:text-blue-300 font-semibold">{event.attendees ? event.attendees.length : 0} {t.attendees}</span>
+                                        <span className="text-blue-900 dark:text-blue-300 font-semibold">{event.attendees ? event.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}</span>
                                         {isJoined ? (
-                                            <span className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2 border px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800">
-                                                <FaCheckCircle /> {t.joined}
-                                            </span>
+                                            <button
+                                                onClick={() => handleCancelClick(event)}
+                                                className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2 border px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all group"
+                                            >
+                                                <span className="group-hover:hidden flex items-center gap-2"><FaCheckCircle /> {t.joined}</span>
+                                                <span className="hidden group-hover:flex items-center gap-2"><FaTimes /> {t.cancel_registration || "Cancel"}</span>
+                                            </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleJoinClick(event)}
@@ -78,6 +102,16 @@ const EventsPage = () => {
                     )}
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={performCancelRegistration}
+                title={t.confirm_cancel_registration || "Cancel Registration"}
+                message={t.confirm_cancel_message || "Are you sure you want to cancel?"}
+                isDangerous={true}
+            />
 
             {/* Guest Modal */}
             {selectedEvent && (

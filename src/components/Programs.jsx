@@ -2,16 +2,42 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { translations } from '../translations';
-import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight, FaMapMarkerAlt, FaCheckCircle, FaUserPlus } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Modal from './Modal';
+import ConfirmationModal from './ConfirmationModal';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Programs = () => {
     const { language } = useLanguage();
-    const { programs, projects, getLocalizedContent } = useData(); // Fetch dynamic programs & projects
+    const { programs, projects, getLocalizedContent, registerForEvent, cancelRegistration } = useData(); // Fetch dynamic programs & projects
     const t = translations[language];
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [selectedProgram, setSelectedProgram] = useState(null);
+    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
+
+    const handleCancelClick = (eventId, type) => {
+        setConfirmModal({ isOpen: true, data: { eventId, type } });
+    };
+
+    const performCancelRegistration = async () => {
+        const { eventId, type } = confirmModal.data;
+        const toastId = toast.loading(t.cancelling || "Cancelling...");
+        try {
+            await cancelRegistration(type, eventId, user?.email);
+            toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
+            setSelectedProgram(null);
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred || "Error occurred", { id: toastId });
+        } finally {
+            setConfirmModal({ isOpen: false, data: null });
+        }
+    };
+
 
     // Dynamic programs & projects from DB (3 of each as requested)
     const latestPrograms = programs.slice(0, 3).map(p => ({ ...p, type: 'programs' }));
@@ -77,16 +103,21 @@ const Programs = () => {
                                 <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-6 flex-1 text-sm leading-relaxed">
                                     {getLocalizedContent(item.description, language)}
                                 </p>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedProgram(item);
-                                    }}
-                                    className="mt-auto inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
-                                >
-                                    <span>{t.learn_more}</span>
-                                    <FaArrowRight className={`ml-1 ${language === 'ar' ? 'rotate-180' : ''}`} />
-                                </button>
+                                <div className="flex items-center justify-between w-full mt-auto">
+                                    <span className="text-sm text-gray-500 font-medium">
+                                        {item.attendees?.filter(a => a.status !== 'rejected').length || 0} {item.type === 'projects' ? t.supporters : t.participants}
+                                    </span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedProgram(item);
+                                        }}
+                                        className="inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
+                                    >
+                                        <span>{t.learn_more}</span>
+                                        <FaArrowRight className={`ml-1 ${language === 'ar' ? 'rotate-180' : ''}`} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )) : (
@@ -131,25 +162,102 @@ const Programs = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-end mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
-                        <Link
-                            to="/volunteer"
-                            className="px-6 py-2.5 rounded-full border-2 border-blue-900 text-blue-900 dark:border-blue-400 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-gray-800 transition text-center"
-                            onClick={() => setSelectedProgram(null)}
-                        >
-                            {t.volunteer}
-                        </Link>
-                        <Link
-                            to="/donate"
-                            className="px-6 py-2.5 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold shadow-lg hover:shadow-red-500/30 hover:-translate-y-0.5 transition-all text-center"
-                            onClick={() => setSelectedProgram(null)}
-                        >
-                            {t.donate}
-                        </Link>
+                    <div className="flex flex-col gap-6 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                        {/* Join/Support Action */}
+                        <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-600">
+                            <h4 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                                {selectedProgram?.type === 'projects' ? (t.support_project || "Support Project") : (t.join_program || "Join Program")}
+                            </h4>
+
+                            {(user && selectedProgram?.attendees && selectedProgram.attendees.some(a => a.email === user.email && a.status !== 'rejected')) ? (
+                                <div className="p-4 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-lg flex flex-col items-center gap-3 font-semibold">
+                                    <div className="flex items-center gap-2">
+                                        <FaCheckCircle className="text-xl" />
+                                        {selectedProgram?.type === 'projects' ? (t.already_supporting || "You are supporting this project.") : (t.already_registered || "You are registered.")}
+                                    </div>
+                                    <button
+                                        onClick={() => handleCancelClick(selectedProgram.id, selectedProgram.type || 'program')}
+                                        className="text-red-500 hover:text-red-700 underline text-sm font-medium transition-colors"
+                                    >
+                                        {t.cancel_registration || "Cancel Registration"}
+                                    </button>
+                                </div>
+                            ) : (
+                                <form
+                                    onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        const formData = user ? { name: user.full_name, email: user.email } : guestForm;
+                                        try {
+                                            await registerForEvent(selectedProgram.type || 'program', selectedProgram.id, formData);
+                                            toast.success(selectedProgram.type === 'projects' ? (t.successfully_supported || "Successfully supported!") : (t.successfully_joined || "Successfully joined!"));
+                                            setSelectedProgram(null);
+                                            setGuestForm({ name: '', email: '' });
+                                        } catch (err) {
+                                            toast.error(t.error_occurred || "Error occurred");
+                                        }
+                                    }}
+                                    className="space-y-4"
+                                >
+                                    {!user && (
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t.full_name || "Full Name"}</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="w-full border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white"
+                                                    value={guestForm.name}
+                                                    onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                                                    placeholder={t.enter_name_placeholder || "Your Name"}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t.email_address || "Email Address"}</label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    className="w-full border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white"
+                                                    value={guestForm.email}
+                                                    onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                                                    placeholder={t.enter_email_placeholder || "Your Email"}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        className={`w-full py-3 rounded-xl font-bold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 ${selectedProgram?.type === 'projects' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                    >
+                                        {selectedProgram?.type === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
+                                        {user
+                                            ? (selectedProgram?.type === 'projects' ? (t.confirm_support || "Confirm Support") : (t.confirm_registration || "Confirm Registration"))
+                                            : (selectedProgram?.type === 'projects' ? (t.support_verb || "Support") : (t.join_verb || "Join"))}
+                                    </button>
+                                </form>
+                            )}
+                        </div>
+
+                        {/* Secondary Actions */}
+                        <div className="flex justify-center gap-4 text-sm text-gray-500">
+                            <Link to="/volunteer" className="hover:text-blue-600 hover:underline">{t.volunteer}</Link>
+                            <span>•</span>
+                            <Link to="/donate" className="hover:text-red-600 hover:underline">{t.donate}</Link>
+                        </div>
                     </div>
                 </div>
             </Modal>
-        </section>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={performCancelRegistration}
+                title={t.confirm_cancel_registration || "Cancel Registration"}
+                message={t.confirm_cancel_message || "Are you sure you want to cancel?"}
+                isDangerous={true}
+            />
+        </section >
     );
 };
 

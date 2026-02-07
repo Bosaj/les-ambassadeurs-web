@@ -5,18 +5,20 @@ import { useLanguage } from '../context/LanguageContext';
 import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const NewsPage = () => {
-    const { news, events, registerForEvent, getLocalizedContent } = useData();
+    const { news, events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
     const { user } = useAuth();
     const { language, t } = useLanguage();
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, event: null });
 
     const handleRegisterClick = (event) => {
         if (user) {
             // Auto register logged in user
-            if (event.attendees && event.attendees.some(a => a.email === user.email)) {
+            if (event.attendees && event.attendees.some(a => a.email === user.email && a.status !== 'rejected')) {
                 toast.error(t.you_are_registered);
                 return;
             }
@@ -28,6 +30,24 @@ const NewsPage = () => {
         } else {
             // Open modal for guest
             setSelectedEvent(event);
+        }
+    };
+
+    const handleCancelClick = (event) => {
+        setConfirmModal({ isOpen: true, event });
+    };
+
+    const performCancelRegistration = async () => {
+        const { event } = confirmModal;
+        const toastId = toast.loading(t.cancelling || "Cancelling...");
+        try {
+            await cancelRegistration('events', event.id, user.email);
+            toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred || "Error occurred", { id: toastId });
+        } finally {
+            setConfirmModal({ isOpen: false, event: null });
         }
     };
 
@@ -112,7 +132,7 @@ const NewsPage = () => {
                     ) : (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {events.map((item) => {
-                                const isRegistered = user && item.attendees && item.attendees.some(a => a.email === user.email);
+                                const isRegistered = user && item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected');
                                 return (
                                     <div key={item.id} className="bg-transparent rounded-xl flex flex-col hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
                                         <img
@@ -137,12 +157,16 @@ const NewsPage = () => {
                                             </p>
                                             <div className="flex justify-between items-center mt-auto pt-4 border-t dark:border-gray-700">
                                                 <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
-                                                    {item.attendees ? item.attendees.length : 0} {t.attendees}
+                                                    {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}
                                                 </span>
                                                 {isRegistered ? (
-                                                    <span className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2">
-                                                        <FaCheckCircle /> {t.joined}
-                                                    </span>
+                                                    <button
+                                                        onClick={() => handleCancelClick(item)}
+                                                        className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2 hover:bg-red-50 hover:text-red-500 transition-colors group px-3 py-1 rounded"
+                                                    >
+                                                        <span className="group-hover:hidden flex items-center gap-2"><FaCheckCircle /> {t.joined}</span>
+                                                        <span className="hidden group-hover:flex items-center gap-2"><FaTimes /> {t.cancel_registration || "Cancel"}</span>
+                                                    </button>
                                                 ) : (
                                                     <button
                                                         onClick={() => handleRegisterClick(item)}
@@ -160,6 +184,16 @@ const NewsPage = () => {
                     )}
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={performCancelRegistration}
+                title={t.confirm_cancel_registration || "Cancel Registration"}
+                message={t.confirm_cancel_message || "Are you sure you want to cancel?"}
+                isDangerous={true}
+            />
 
             {/* Guest Registration Modal */}
             <Modal

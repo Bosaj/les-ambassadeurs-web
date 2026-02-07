@@ -6,9 +6,10 @@ import { useLanguage } from '../context/LanguageContext';
 import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaHandsHelping, FaThumbtack, FaMapMarkerAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const ProgramsPage = () => {
-    const { programs, projects, registerForEvent, getLocalizedContent } = useData();
+    const { programs, projects, registerForEvent, getLocalizedContent, cancelRegistration } = useData();
     const { user } = useAuth();
     const { language, t } = useLanguage();
     const location = useLocation();
@@ -17,6 +18,7 @@ const ProgramsPage = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [selectedType, setSelectedType] = useState('programs'); // 'programs' or 'projects'
     const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
 
     useEffect(() => {
         if (location.state?.selectedProgram) {
@@ -27,7 +29,8 @@ const ProgramsPage = () => {
 
     const handleJoinClick = (item, type) => {
         if (user) {
-            if (item.attendees && item.attendees.some(a => a.email === user.email)) {
+            // Check if user is already registered AND not rejected
+            if (item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected')) {
                 toast.error(type === 'projects' ? t.already_supporting : t.already_registered);
                 return;
             }
@@ -36,6 +39,25 @@ const ProgramsPage = () => {
         } else {
             setSelectedItem(item);
             setSelectedType(type);
+        }
+    };
+
+    const handleCancelClick = (item, type) => {
+        setConfirmModal({ isOpen: true, data: { item, type } });
+    };
+
+    const performCancelRegistration = async () => {
+        const { item, type } = confirmModal.data;
+        const toastId = toast.loading(t.cancelling || "Cancelling...");
+        try {
+            await cancelRegistration(type, item.id, user.email);
+            toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
+            setSelectedItem(null); // Close modal
+        } catch (error) {
+            console.error(error);
+            toast.error(t.error_occurred || "Error occurred", { id: toastId });
+        } finally {
+            setConfirmModal({ isOpen: false, data: null });
         }
     };
 
@@ -52,7 +74,7 @@ const ProgramsPage = () => {
     };
 
     const renderCard = (item, type) => {
-        const isJoined = user && item.attendees && item.attendees.some(a => a.email === user.email);
+        const isJoined = user && item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected');
         const isProject = type === 'projects';
 
         return (
@@ -82,12 +104,17 @@ const ProgramsPage = () => {
                     </p>
                     <div className="flex items-center gap-6 mt-auto">
                         <span className="text-blue-900 dark:text-blue-300 font-semibold">
-                            {item.attendees ? item.attendees.length : 0} {isProject ? t.supporters : t.participants}
+                            {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {isProject ? t.supporters : t.participants}
                         </span>
                         {isJoined ? (
-                            <span className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2 border px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800">
-                                <FaCheckCircle /> {isProject ? t.supported : t.joined}
-                            </span>
+                            <button
+                                onClick={() => handleCancelClick(item, type)}
+                                className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2 border px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all group"
+                                title={t.cancel_registration || "Click to cancel"}
+                            >
+                                <span className="group-hover:hidden flex items-center gap-2"><FaCheckCircle /> {isProject ? t.supported : t.joined}</span>
+                                <span className="hidden group-hover:flex items-center gap-2"><FaTimes /> {t.cancel_registration || "Cancel"}</span>
+                            </button>
                         ) : (
                             <button
                                 onClick={() => handleJoinClick(item, type)}
@@ -142,34 +169,78 @@ const ProgramsPage = () => {
                 title={`${selectedType === 'projects' ? t.support_verb : t.join_verb} ${getLocalizedContent(selectedItem?.title, language)}`}
                 heroImage={selectedItem?.image_url}
             >
-                <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2">
-                    <div>
-                        <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
-                        <input
-                            type="text"
-                            required
-                            className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                            value={guestForm.name}
-                            onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                            placeholder={t.enter_name_placeholder}
-                        />
+                {user ? (
+                    <div className="text-center space-y-6 pt-4">
+                        {(selectedItem?.attendees && selectedItem.attendees.some(a => a.email === user.email)) ? (
+                            <div className="p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl flex flex-col items-center gap-3">
+                                <FaCheckCircle className="text-5xl" />
+                                <span className="text-lg font-bold">
+                                    {selectedType === 'projects' ? (t.already_supporting || "You are supporting this project") : (t.already_registered || "You are registered")}
+                                </span>
+                                <button
+                                    onClick={() => handleCancelClick(selectedItem, selectedType)}
+                                    className="mt-2 text-red-500 hover:text-red-700 underline text-sm font-medium transition-colors"
+                                >
+                                    {t.cancel_registration || "Cancel Registration"}
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    {selectedType === 'projects'
+                                        ? (t.confirm_support_text || "Click below to support this project as")
+                                        : (t.confirm_join_text || "Click below to store your registration as")}
+                                    <span className="block font-bold text-gray-900 dark:text-white mt-1">{user.full_name || user.email}</span>
+                                </p>
+                                <button
+                                    onClick={() => handleJoinClick(selectedItem, selectedType)}
+                                    className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2`}
+                                >
+                                    {selectedType === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
+                                    {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
+                                </button>
+                            </>
+                        )}
                     </div>
-                    <div>
-                        <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
-                        <input
-                            type="email"
-                            required
-                            className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                            value={guestForm.email}
-                            onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                            placeholder={t.enter_email_placeholder}
-                        />
-                    </div>
-                    <button type="submit" className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3 rounded-lg font-bold transition shadow-lg mt-4`}>
-                        {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
-                    </button>
-                </form>
+                ) : (
+                    <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2">
+                        <div>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                value={guestForm.name}
+                                onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                                placeholder={t.enter_name_placeholder}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
+                            <input
+                                type="email"
+                                required
+                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                value={guestForm.email}
+                                onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                                placeholder={t.enter_email_placeholder}
+                            />
+                        </div>
+                        <button type="submit" className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3 rounded-lg font-bold transition shadow-lg mt-4`}>
+                            {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
+                        </button>
+                    </form>
+                )}
             </Modal>
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={performCancelRegistration}
+                title={t.confirm_cancel_registration || "Cancel Registration"}
+                message={t.confirm_cancel_message || "Are you sure you want to cancel?"}
+                isDangerous={true}
+            />
         </div>
     );
 };
