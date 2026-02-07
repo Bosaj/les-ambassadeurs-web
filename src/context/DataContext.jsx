@@ -116,9 +116,25 @@ export const DataProvider = ({ children }) => {
 
     useEffect(() => {
         fetchData();
+        fetchUsers();
     }, []);
 
     // Helper to get localized string is now imported from utils
+
+    const updateAttendanceStatus = async (attendeeId, newStatus) => {
+        try {
+            const { error } = await supabase
+                .from('event_attendees')
+                .update({ status: newStatus })
+                .eq('id', attendeeId);
+
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("Error updating attendance status:", error);
+            throw error;
+        }
+    };
 
     const addPost = async (type, postData) => {
         try {
@@ -434,7 +450,7 @@ export const DataProvider = ({ children }) => {
             getLocalizedContent, loading,
             // New exports
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
-            verifyMember
+            verifyMember, updateAttendanceStatus
         }}>
             {children}
         </DataContext.Provider>

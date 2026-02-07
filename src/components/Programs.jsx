@@ -8,13 +8,15 @@ import Modal from './Modal';
 
 const Programs = () => {
     const { language } = useLanguage();
-    const { programs, getLocalizedContent } = useData(); // Fetch dynamic programs
+    const { programs, projects, getLocalizedContent } = useData(); // Fetch dynamic programs & projects
     const t = translations[language];
     const navigate = useNavigate();
     const [selectedProgram, setSelectedProgram] = useState(null);
 
-    // Dynamic programs from DB
-    const displayPrograms = programs.slice(0, 4); // Limit to 4 for home page?
+    // Dynamic programs & projects from DB (3 of each as requested)
+    const latestPrograms = programs.slice(0, 3).map(p => ({ ...p, type: 'programs' }));
+    const latestProjects = projects.slice(0, 3).map(p => ({ ...p, type: 'projects' }));
+    const displayItems = [...latestPrograms, ...latestProjects];
 
     return (
         <section id="programs" className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
@@ -30,20 +32,20 @@ const Programs = () => {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-8">
-                    {displayPrograms.length > 0 ? displayPrograms.map((program, index) => (
+                    {displayItems.length > 0 ? displayItems.map((item, index) => (
                         <div
-                            key={program.id || index}
+                            key={item.id || index}
                             className="bg-transparent rounded-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group flex flex-col items-center w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-2rem)] max-w-sm overflow-hidden border border-gray-200 dark:border-gray-700"
                             onClick={() => {
-                                navigate('/programs', { state: { selectedProgram: program } });
+                                navigate('/programs', { state: { selectedProgram: item, type: item.type } });
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
                         >
                             <div className="w-full h-48 bg-gray-200 dark:bg-gray-600 relative overflow-hidden">
-                                {program.image_url ? (
+                                {item.image_url ? (
                                     <img
-                                        src={program.image_url}
-                                        alt={getLocalizedContent(program.title, language)}
+                                        src={item.image_url}
+                                        alt={getLocalizedContent(item.title, language)}
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
                                 ) : (
@@ -54,27 +56,31 @@ const Programs = () => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                                     <span className="text-white font-semibold">{t.learn_more}</span>
                                 </div>
+                                {/* Type Badge */}
+                                <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/60 text-xs font-bold px-2 py-1 rounded shadow text-blue-900 dark:text-white">
+                                    {item.type === 'programs' ? (t.programs_section_title || "Program") : (t.projects_section_title || "Project")}
+                                </div>
                             </div>
 
                             <div className="p-6 flex flex-col flex-1 w-full text-center">
                                 <div className="mb-4 text-blue-900 dark:text-blue-300">
                                     {/* Optional: Icon overlay or category badge could go here */}
-                                    {program.location && getLocalizedContent(program.location, language) && (
+                                    {item.location && getLocalizedContent(item.location, language) && (
                                         <span className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold mb-2">
-                                            <FaMapMarkerAlt /> {getLocalizedContent(program.location, language)}
+                                            <FaMapMarkerAlt /> {getLocalizedContent(item.location, language)}
                                         </span>
                                     )}
                                 </div>
                                 <h3 className="text-xl font-bold mb-3 text-blue-900 dark:text-white line-clamp-1 border-b-2 border-transparent group-hover:border-red-500 transition-colors inline-block mx-auto pb-1">
-                                    {getLocalizedContent(program.title, language)}
+                                    {getLocalizedContent(item.title, language)}
                                 </h3>
                                 <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-6 flex-1 text-sm leading-relaxed">
-                                    {getLocalizedContent(program.description, language)}
+                                    {getLocalizedContent(item.description, language)}
                                 </p>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setSelectedProgram(program);
+                                        setSelectedProgram(item);
                                     }}
                                     className="mt-auto inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
                                 >

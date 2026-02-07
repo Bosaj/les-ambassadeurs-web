@@ -21,7 +21,7 @@ const ProgramsPage = () => {
     useEffect(() => {
         if (location.state?.selectedProgram) {
             setSelectedItem(location.state.selectedProgram);
-            setSelectedType('programs'); // Assuming standard programs for now
+            setSelectedType(location.state.type || 'programs');
         }
     }, [location.state]);
 
