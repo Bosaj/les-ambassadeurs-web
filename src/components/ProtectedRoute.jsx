@@ -16,6 +16,11 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     }
 
     if (requiredRole && user.role !== requiredRole) {
+        // Allow admin to access volunteer routes (since admins are also volunteers)
+        if (user.role === 'admin' && requiredRole === 'volunteer') {
+            return children;
+        }
+
         // Redirect based on their actul role if they try to access wrong dashboard
         if (user.role === 'admin') return <Navigate to="/dashboard/admin" replace />;
         if (user.role === 'volunteer') return <Navigate to="/dashboard/volunteer" replace />;

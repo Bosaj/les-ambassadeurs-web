@@ -446,14 +446,22 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const fetchUserDonations = async (email) => {
-        if (!email) return [];
+    const fetchUserDonations = async (email, userId = null) => {
+        if (!email && !userId) return [];
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('donations')
                 .select('*')
-                .eq('email', email)
                 .order('created_at', { ascending: false });
+
+            if (userId) {
+                // If we have a user ID, fetch by ID OR email to be comprehensive
+                query = query.or(`email.eq.${email},user_id.eq.${userId}`);
+            } else {
+                query = query.eq('email', email);
+            }
+
+            const { data, error } = await query;
 
             if (error) throw error;
             return data || [];
@@ -491,7 +499,6 @@ export const DataProvider = ({ children }) => {
             if (data && data.length > 0) {
                 return true;
             } else {
-                console.warn("Update operation returned no updated rows. Check RLS policies.");
                 return false;
             }
         } catch (err) {
@@ -499,6 +506,22 @@ export const DataProvider = ({ children }) => {
             return false;
         }
     };
+
+    const deleteDonation = async (id) => {
+        try {
+            const { error } = await supabase
+                .from('donations')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            return true;
+        } catch (err) {
+            console.error("Error deleting donation:", err);
+            return false;
+        }
+    };
+
 
     const submitSuggestion = async (suggestionData) => {
         try {
@@ -537,9 +560,8 @@ export const DataProvider = ({ children }) => {
             news, programs, events, projects, testimonials, users,
             addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
             getLocalizedContent, loading,
-            // New exports
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
-            verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus
+            verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus, deleteDonation
         }}>
             {children}
         </DataContext.Provider>
