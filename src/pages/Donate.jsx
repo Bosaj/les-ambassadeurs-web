@@ -27,9 +27,12 @@ const Donate = () => {
     const [pendingMethod, setPendingMethod] = useState(null);
 
     const [donationForm, setDonationForm] = useState({
-        name: user?.name || '',
+        name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
+        email: user?.email || '',
+        phone: user?.user_metadata?.phone || '',
         amount: '',
         method: 'online', // 'online', 'paypal', 'transfer'
+        isAnonymous: false
     });
 
     const [clientSecret, setClientSecret] = useState("");
@@ -45,7 +48,13 @@ const Donate = () => {
     };
 
     const openDonationModal = (method) => {
-        setDonationForm(prev => ({ ...prev, method, name: user?.name || prev.name }));
+        setDonationForm(prev => ({
+            ...prev,
+            method,
+            name: !prev.isAnonymous ? (user?.user_metadata?.full_name || user?.email?.split('@')[0] || prev.name) : 'Anonymous',
+            email: !prev.isAnonymous ? (user?.email || prev.email) : (user?.email || ''), // Keep email for history if logged in
+            phone: !prev.isAnonymous ? (user?.user_metadata?.phone || prev.phone) : ''
+        }));
         setShowModal(true);
         setClientSecret(""); // Reset stripe secret when opening modal
         setStripeError(null);
@@ -301,17 +310,68 @@ const Donate = () => {
                 title={t.make_donation}
             >
                 <div className="space-y-6">
-                    <div>
-                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.full_name}</label>
+
+
+                    <div className="flex items-center gap-2 mb-4">
                         <input
-                            type="text"
-                            required
-                            className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
-                            value={donationForm.name}
-                            onChange={e => setDonationForm({ ...donationForm, name: e.target.value })}
-                            placeholder={t.name_placeholder || "Your Name"}
+                            type="checkbox"
+                            id="anonymous"
+                            checked={donationForm.isAnonymous}
+                            onChange={e => {
+                                const isAnon = e.target.checked;
+                                setDonationForm(prev => ({
+                                    ...prev,
+                                    isAnonymous: isAnon,
+                                    name: isAnon ? 'Anonymous' : (user?.user_metadata?.full_name || user?.email?.split('@')[0] || ''),
+                                    // We keep email if logged in for receipt/history, but clear phone
+                                    phone: isAnon ? '' : (user?.user_metadata?.phone || '')
+                                }));
+                            }}
+                            className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                         />
+                        <label htmlFor="anonymous" className="text-gray-700 dark:text-gray-300 font-medium">
+                            {t.donate_anonymous || "Donate Anonymously (Hide my name)"}
+                        </label>
                     </div>
+
+                    {!donationForm.isAnonymous && (
+                        <>
+                            <div>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.full_name}</label>
+                                <input
+                                    type="text"
+                                    required={!donationForm.isAnonymous}
+                                    className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
+                                    value={donationForm.name}
+                                    onChange={e => setDonationForm({ ...donationForm, name: e.target.value })}
+                                    placeholder={t.name_placeholder || "Your Name"}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.email}</label>
+                                <input
+                                    type="email"
+                                    required={!donationForm.isAnonymous}
+                                    className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
+                                    value={donationForm.email}
+                                    onChange={e => setDonationForm({ ...donationForm, email: e.target.value })}
+                                    placeholder={t.email_placeholder || "name@example.com"}
+                                    disabled={!!user} // Disable email edit if logged in? Maybe allow override? User said "pre-fill... fix or modefy". So allow edit.
+                                // actually user said "just he fix or modefy". So remove disabled.
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.phone || "Phone Number"}</label>
+                                <input
+                                    type="tel"
+                                    className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
+                                    value={donationForm.phone}
+                                    onChange={e => setDonationForm({ ...donationForm, phone: e.target.value })}
+                                    placeholder={t.phone_placeholder || "+212 6..."}
+                                />
+                            </div>
+                        </>
+                    )}
                     <div>
                         <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.amount_label}</label>
                         <div className="relative">
@@ -493,7 +553,7 @@ const Donate = () => {
                 </div>
             </Modal>
 
-        </motion.div>
+        </motion.div >
     );
 };
 

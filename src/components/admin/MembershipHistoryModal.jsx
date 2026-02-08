@@ -70,7 +70,7 @@ const MembershipHistoryModal = ({ user, onClose, t }) => {
                         </h2>
                         <p className="text-sm opacity-80">{user.full_name}</p>
                     </div>
-                    <button onClick={onClose} className="text-white/70 hover:text-white transition">
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition">
                         <FaTimesCircle className="text-2xl" />
                     </button>
                 </div>

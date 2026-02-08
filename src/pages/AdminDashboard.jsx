@@ -170,7 +170,7 @@ const AdminDashboard = () => {
         try {
             const [activities, donations, suggestions] = await Promise.all([
                 fetchUserActivities(userProfile.email),
-                fetchUserDonations(userProfile.email),
+                fetchUserDonations(userProfile.email, userProfile.id),
                 fetchUserSuggestions(userProfile.id)
             ]);
             setUserDetails({ activities, donations, suggestions });
@@ -509,11 +509,12 @@ const AdminDashboard = () => {
                     <button onClick={() => { setActiveTab('testimonials'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
                         <FaComments /> {t.manage_testimonials}
                     </button>
-                    {user?.email === 'oussousselhadji@gmail.com' && (
-                        <button onClick={() => { setActiveTab('admins'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                            <FaUserShield /> {t.manage_admins}
-                        </button>
-                    )}
+                    <button onClick={() => { setActiveTab('admins'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                        <FaUserShield /> {t.manage_admins}
+                    </button>
+                    <button onClick={() => navigate('/dashboard/volunteer')} className="w-full text-left p-3 rounded flex items-center gap-3 text-green-300 hover:bg-blue-800 dark:hover:bg-gray-700 transition-colors">
+                        <FaHandHoldingHeart /> {t.volunteer_view || "Volunteer View"}
+                    </button>
                     <button onClick={handleLogout} className="w-full text-left p-3 rounded flex items-center gap-3 text-red-200 hover:bg-blue-800 dark:hover:bg-gray-700 mt-8 transition-colors">
                         <FaSignOutAlt /> {t.logout}
                     </button>

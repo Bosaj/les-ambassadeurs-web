@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FaMoneyBillWave, FaCheck, FaTimes, FaSearch, FaFileInvoiceDollar, FaUser, FaEnvelope, FaCalendarAlt, FaCreditCard } from 'react-icons/fa';
+import { FaMoneyBillWave, FaCheck, FaTimes, FaSearch, FaFileInvoiceDollar, FaUser, FaEnvelope, FaCalendarAlt, FaCreditCard, FaTrash } from 'react-icons/fa';
 import { useData } from '../../context/DataContext';
 import toast from 'react-hot-toast';
 import Modal from '../Modal';
 
 const DonationsList = ({ t }) => {
-    const { fetchAllDonations, updateDonationStatus } = useData();
+    const { fetchAllDonations, updateDonationStatus, deleteDonation } = useData();
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -37,21 +37,35 @@ const DonationsList = ({ t }) => {
         if (!id || !type) return;
 
         const toastId = toast.loading(t.processing || "Processing...");
-        const success = await updateDonationStatus(id, type);
 
-        if (success) {
-            toast.success(t.updated_successfully || "Updated successfully", { id: toastId });
-            // Update local state to reflect change immediately without reload if possible, 
-            // but loadDonations() is safer ensuring DB sync.
-            // We can also optimistically update the list:
-            setDonations(prev => prev.map(d => d.id === id ? { ...d, status: type } : d));
-
-            if (selectedDonation && selectedDonation.id === id) {
-                setSelectedDonation(prev => ({ ...prev, status: type }));
+        if (type === 'delete') {
+            const success = await deleteDonation(id);
+            if (success) {
+                toast.success(t.deleted_successfully || "Deleted successfully", { id: toastId });
+                setDonations(prev => prev.filter(d => d.id !== id));
+                if (selectedDonation && selectedDonation.id === id) {
+                    setSelectedDonation(null);
+                }
+            } else {
+                toast.error(t.error_deleting || "Error deleting", { id: toastId });
             }
         } else {
-            toast.error(t.error_updating || "Error updating", { id: toastId });
-            loadDonations(); // Revert on error
+            const success = await updateDonationStatus(id, type);
+
+            if (success) {
+                toast.success(t.updated_successfully || "Updated successfully", { id: toastId });
+                // Update local state to reflect change immediately without reload if possible, 
+                // but loadDonations() is safer ensuring DB sync.
+                // We can also optimistically update the list:
+                setDonations(prev => prev.map(d => d.id === id ? { ...d, status: type } : d));
+
+                if (selectedDonation && selectedDonation.id === id) {
+                    setSelectedDonation(prev => ({ ...prev, status: type }));
+                }
+            } else {
+                toast.error(t.error_updating || "Error updating", { id: toastId });
+                loadDonations(); // Revert on error
+            }
         }
         closeConfirmModal();
     };
@@ -187,6 +201,13 @@ const DonationsList = ({ t }) => {
                                                 >
                                                     <FaFileInvoiceDollar />
                                                 </button>
+                                                <button
+                                                    onClick={() => openConfirmModal(donation.id, 'delete')}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    title={t.delete || "Delete"}
+                                                >
+                                                    <FaTrash />
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -319,13 +340,18 @@ const DonationsList = ({ t }) => {
                 <Modal
                     isOpen={confirmModal.isOpen}
                     onClose={closeConfirmModal}
-                    title={confirmModal.type === 'verified' ? (t.confirm_verify_title || "Confirm Verification") : (t.confirm_reject_title || "Confirm Rejection")}
+                    title={
+                        confirmModal.type === 'delete' ? (t.confirm_delete_title || "Confirm Deletion") :
+                            confirmModal.type === 'verified' ? (t.confirm_verify_title || "Confirm Verification") :
+                                (t.confirm_reject_title || "Confirm Rejection")
+                    }
                 >
                     <div className="p-6">
                         <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">
-                            {confirmModal.type === 'verified'
-                                ? (t.confirm_verify_msg || "Are you sure you want to verify this donation?")
-                                : (t.confirm_reject_msg || "Are you sure you want to reject this donation?")}
+                            {confirmModal.type === 'delete' ? (t.confirm_delete_msg || "Are you sure you want to delete this donation permanently?") :
+                                confirmModal.type === 'verified'
+                                    ? (t.confirm_verify_msg || "Are you sure you want to verify this donation?")
+                                    : (t.confirm_reject_msg || "Are you sure you want to reject this donation?")}
                         </p>
                         <div className="flex justify-center gap-4">
                             <button
@@ -337,9 +363,11 @@ const DonationsList = ({ t }) => {
                             <button
                                 onClick={handleConfirmAction}
                                 className={`px-4 py-2 text-white rounded-lg transition shadow-md font-bold
-                                ${confirmModal.type === 'verified' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+                                ${confirmModal.type === 'delete' ? 'bg-red-600 hover:bg-red-700' :
+                                        confirmModal.type === 'verified' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                             >
-                                {confirmModal.type === 'verified' ? (t.yes_verify || "Yes, Verify") : (t.yes_reject || "Yes, Reject")}
+                                {confirmModal.type === 'delete' ? (t.yes_delete || "Yes, Delete") :
+                                    confirmModal.type === 'verified' ? (t.yes_verify || "Yes, Verify") : (t.yes_reject || "Yes, Reject")}
                             </button>
                         </div>
                     </div>
