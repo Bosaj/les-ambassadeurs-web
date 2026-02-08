@@ -409,7 +409,8 @@ export const DataProvider = ({ children }) => {
                     donor_name: donationData.name,
                     amount: donationData.amount,
                     method: donationData.method,
-                    email: donationData.email, // Ensure email is saved
+                    email: donationData.email,
+                    proof_url: donationData.proof_url, // Save proof URL
                     status: 'pending'
                 }]);
 
@@ -479,13 +480,20 @@ export const DataProvider = ({ children }) => {
 
     const updateDonationStatus = async (id, status) => {
         try {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('donations')
                 .update({ status })
-                .eq('id', id);
+                .eq('id', id)
+                .select();
 
             if (error) throw error;
-            return true;
+
+            if (data && data.length > 0) {
+                return true;
+            } else {
+                console.warn("Update operation returned no updated rows. Check RLS policies.");
+                return false;
+            }
         } catch (err) {
             console.error("Error updating donation status:", err);
             return false;

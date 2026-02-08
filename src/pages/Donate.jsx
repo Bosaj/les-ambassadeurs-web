@@ -3,9 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-
+import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
-import { FaHeart, FaCreditCard, FaPaypal, FaUniversity, FaLock } from 'react-icons/fa';
+import { FaHeart, FaCreditCard, FaPaypal, FaUniversity, FaLock, FaCheck } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 
@@ -23,6 +23,9 @@ const Donate = () => {
     const { user } = useAuth();
 
     const [showModal, setShowModal] = useState(false);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [pendingMethod, setPendingMethod] = useState(null);
+
     const [donationForm, setDonationForm] = useState({
         name: user?.name || '',
         amount: '',
@@ -33,10 +36,28 @@ const Donate = () => {
     const [stripeError, setStripeError] = useState(null);
 
     const handleDonateClick = (method) => {
+        if (user) {
+            openDonationModal(method);
+        } else {
+            setPendingMethod(method);
+            setShowLoginPrompt(true);
+        }
+    };
+
+    const openDonationModal = (method) => {
         setDonationForm(prev => ({ ...prev, method, name: user?.name || prev.name }));
         setShowModal(true);
         setClientSecret(""); // Reset stripe secret when opening modal
         setStripeError(null);
+    };
+
+    const handleGuestContinue = () => {
+        setShowLoginPrompt(false);
+        openDonationModal(pendingMethod);
+    };
+
+    const handleLoginRedirect = () => {
+        navigate('/login', { state: { from: '/donate' } });
     };
 
     const navigate = useNavigate();
@@ -131,14 +152,52 @@ const Donate = () => {
         handleSuccess(details, 'paypal');
     };
 
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileUpload = async (e) => {
+        try {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            setUploading(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { data, error } = await supabase.storage
+                .from('donations')
+                .upload(filePath, file);
+
+            if (error) throw error;
+
+            const { data: publicUrlData } = supabase.storage
+                .from('donations')
+                .getPublicUrl(filePath);
+
+            setDonationForm(prev => ({ ...prev, proof_url: publicUrlData.publicUrl }));
+            toast.success(t.proof_uploaded || "Proof Uploaded");
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            toast.error("Error uploading file. Please try again.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
     // Fallback manual submit for transfer
     const handleManualSubmit = async (e) => {
         if (e) e.preventDefault();
+
+        if (!donationForm.proof_url) {
+            toast.error(t.upload_proof_req || "Please upload a proof of payment");
+            return;
+        }
+
         try {
             await addDonation(donationForm);
             toast.success(t.donation_success);
             setShowModal(false);
-            setDonationForm({ name: '', amount: '', method: 'online' });
+            setDonationForm({ name: '', amount: '', method: 'online', proof_url: null });
         } catch (error) {
             toast.error(t.donation_error);
         }
@@ -247,7 +306,7 @@ const Donate = () => {
                         <input
                             type="text"
                             required
-                            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white transition"
+                            className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
                             value={donationForm.name}
                             onChange={e => setDonationForm({ ...donationForm, name: e.target.value })}
                             placeholder={t.name_placeholder || "Your Name"}
@@ -260,7 +319,7 @@ const Donate = () => {
                                 type="number"
                                 required
                                 min="10"
-                                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white transition px-4"
+                                className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm px-4 text-lg font-mono"
                                 value={donationForm.amount}
                                 onChange={e => setDonationForm({ ...donationForm, amount: e.target.value })}
                                 placeholder="e.g. 100"
@@ -269,36 +328,36 @@ const Donate = () => {
                     </div>
                     <div>
                         <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.payment_method}</label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-3">
                             <button
                                 type="button"
                                 onClick={() => handleDonateClick('online')}
-                                className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'online'
-                                    ? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                className={`p-4 rounded-xl border-2 text-sm font-bold flex flex-col items-center gap-2 transition-all duration-200 ${donationForm.method === 'online'
+                                    ? 'border-red-500 bg-red-50 text-red-600 shadow-md transform scale-[1.02] dark:bg-red-900/20 dark:text-red-400'
+                                    : 'border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
                                     }`}
                             >
-                                <FaCreditCard /> {t.credit_card_stripe || "Card"}
+                                <FaCreditCard className="text-xl" /> {t.credit_card_stripe || "Card"}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handleDonateClick('paypal')}
-                                className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'paypal'
-                                    ? 'border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                className={`p-4 rounded-xl border-2 text-sm font-bold flex flex-col items-center gap-2 transition-all duration-200 ${donationForm.method === 'paypal'
+                                    ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md transform scale-[1.02] dark:bg-blue-900/20 dark:text-blue-400'
+                                    : 'border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
                                     }`}
                             >
-                                <FaPaypal /> PayPal
+                                <FaPaypal className="text-xl" /> PayPal
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handleDonateClick('transfer')}
-                                className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'transfer'
-                                    ? 'border-blue-900 bg-blue-50 text-blue-900 dark:bg-blue-900/20 dark:text-blue-400'
-                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                className={`p-4 rounded-xl border-2 text-sm font-bold flex flex-col items-center gap-2 transition-all duration-200 ${donationForm.method === 'transfer'
+                                    ? 'border-blue-900 bg-blue-50 text-blue-900 shadow-md transform scale-[1.02] dark:bg-blue-900/20 dark:text-blue-400'
+                                    : 'border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
                                     }`}
                             >
-                                <FaUniversity /> {t.bank_transfer || "Transfer"}
+                                <FaUniversity className="text-xl" /> {t.bank_transfer || "Transfer"}
                             </button>
                         </div>
                     </div>
@@ -360,16 +419,80 @@ const Donate = () => {
                         )}
 
                         {donationForm.method === 'transfer' && (
-                            <button
-                                onClick={handleManualSubmit}
-                                className="w-full bg-blue-900 text-white font-bold py-4 rounded-lg hover:bg-blue-800 transition shadow-lg mt-4 flex justify-center items-center gap-2"
-                            >
-                                <FaUniversity /> {t.record_transfer || "Record Transfer"}
-                            </button>
+                            <div className="mt-4 space-y-4">
+                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        {t.upload_proof || "Upload Payment Proof (PDF/Image)"}
+                                    </label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                        {t.proof_upload_desc || "Please upload your bank transfer receipt or screenshot."}
+                                    </p>
+
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        onChange={handleFileUpload}
+                                        disabled={uploading}
+                                        className="block w-full text-sm text-gray-500
+                                            file:mr-4 file:py-2 file:px-4
+                                            file:rounded-full file:border-0
+                                            file:text-sm file:font-semibold
+                                            file:bg-blue-50 file:text-blue-700
+                                            hover:file:bg-blue-100
+                                            dark:file:bg-gray-700 dark:file:text-gray-300
+                                        "
+                                    />
+                                    {uploading && <p className="text-xs text-blue-600 mt-2">{t.uploading || "Uploading..."}</p>}
+                                    {donationForm.proof_url && (
+                                        <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                                            <FaCheck /> {t.proof_uploaded || "Proof Uploaded"}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={handleManualSubmit}
+                                    disabled={uploading || !donationForm.proof_url}
+                                    className={`w-full text-white font-bold py-4 rounded-lg transition shadow-lg flex justify-center items-center gap-2
+                                        ${uploading || !donationForm.proof_url
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-blue-900 hover:bg-blue-800'}`}
+                                >
+                                    <FaUniversity /> {t.record_transfer || "Record Transfer"}
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
             </Modal>
+
+            {/* Login Prompt Modal */}
+            <Modal
+                isOpen={showLoginPrompt}
+                onClose={() => setShowLoginPrompt(false)}
+                title={t.login_prompt_title || "Sign in to track your donation?"}
+            >
+                <div className="space-y-6">
+                    <p className="text-gray-600 dark:text-gray-300">
+                        {t.login_prompt_desc || "Signing in allows you to track your donation history and download receipts. You can also donate as a guest."}
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={handleLoginRedirect}
+                            className="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-md"
+                        >
+                            {t.login_btn || "Log In"}
+                        </button>
+                        <button
+                            onClick={handleGuestContinue}
+                            className="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                        >
+                            {t.continue_guest || "Continue as Guest"}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
         </motion.div>
     );
 };
