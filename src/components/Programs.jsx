@@ -16,7 +16,18 @@ const Programs = () => {
     const t = translations[language];
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [selectedProgram, setSelectedProgram] = useState(null);
+    const [selectedProgramId, setSelectedProgramId] = useState(null); // Store object with { id, type } or null
+
+    // Derive selected item from global state to ensure updates (like attendees) are reflected immediately
+    const selectedProgram = selectedProgramId
+        ? (selectedProgramId.type === 'projects'
+            ? projects.find(p => p.id === selectedProgramId.id)
+            : programs.find(p => p.id === selectedProgramId.id))
+        : null;
+
+    // Merge type if found (consistency with displayItems)
+    const activeItem = selectedProgram ? { ...selectedProgram, type: selectedProgramId.type } : null;
+
     const [guestForm, setGuestForm] = useState({ name: '', email: '' });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
 
@@ -30,7 +41,7 @@ const Programs = () => {
         try {
             await cancelRegistration(type, eventId, user?.email);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
-            setSelectedProgram(null);
+            // Don't close modal, let it update via global state
         } catch (error) {
             console.error(error);
             toast.error(t.error_occurred || "Error occurred", { id: toastId });
@@ -114,7 +125,7 @@ const Programs = () => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setSelectedProgram(item);
+                                            setSelectedProgramId({ id: item.id, type: item.type });
                                         }}
                                         className="inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
                                     >
@@ -142,14 +153,14 @@ const Programs = () => {
             </div>
 
             <Modal
-                isOpen={!!selectedProgram}
-                onClose={() => setSelectedProgram(null)}
-                title={getLocalizedContent(selectedProgram?.title, language)}
-                heroImage={selectedProgram?.image_url}
+                isOpen={!!activeItem}
+                onClose={() => setSelectedProgramId(null)}
+                title={getLocalizedContent(activeItem?.title, language)}
+                heroImage={activeItem?.image_url}
             >
                 <div className="relative">
                     {/* Hero image is handled by Modal component now */
-                        !selectedProgram?.image_url && (
+                        !activeItem?.image_url && (
                             <div className="flex justify-center items-center h-48 bg-blue-50 dark:bg-gray-800 rounded-lg mb-6">
                                 <FaHandsHelping className="text-blue-900/40 text-6xl" />
                             </div>
@@ -157,20 +168,20 @@ const Programs = () => {
 
                     <div className="prose dark:prose-invert max-w-none">
                         <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-8">
-                            {selectedProgram?.location && getLocalizedContent(selectedProgram.location, language) && (
+                            {activeItem?.location && getLocalizedContent(activeItem.location, language) && (
                                 <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded w-fit">
-                                    <FaMapMarkerAlt /> {getLocalizedContent(selectedProgram.location, language)}
+                                    <FaMapMarkerAlt /> {getLocalizedContent(activeItem.location, language)}
                                 </div>
                             )}
                             {/* Attendees List in Modal */}
                             <div className="flex items-center gap-2 mb-4 bg-blue-50 dark:bg-blue-900/10 p-2 rounded-lg w-fit border border-blue-100 dark:border-blue-800">
                                 <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
-                                    {selectedProgram?.attendees?.filter(a => a.status !== 'rejected').length || 0} {selectedProgram?.type === 'projects' ? t.supporters : t.participants}
+                                    {activeItem?.attendees?.filter(a => a.status !== 'rejected').length || 0} {activeItem?.type === 'projects' ? t.supporters : t.participants}
                                 </span>
-                                <AttendeesList attendees={selectedProgram?.attendees} />
+                                <AttendeesList attendees={activeItem?.attendees} />
                             </div>
 
-                            {getLocalizedContent(selectedProgram?.description, language)}
+                            {getLocalizedContent(activeItem?.description, language)}
                         </p>
                     </div>
 
@@ -178,17 +189,17 @@ const Programs = () => {
                         {/* Join/Support Action */}
                         <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-600">
                             <h4 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
-                                {selectedProgram?.type === 'projects' ? (t.support_project || "Support Project") : (t.join_program || "Join Program")}
+                                {activeItem?.type === 'projects' ? (t.support_project || "Support Project") : (t.join_program || "Join Program")}
                             </h4>
 
-                            {(user && selectedProgram?.attendees && selectedProgram.attendees.some(a => a.email === user.email && a.status !== 'rejected')) ? (
+                            {(user && activeItem?.attendees && activeItem.attendees.some(a => a.email === user.email && a.status !== 'rejected')) ? (
                                 <div className="p-4 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-lg flex flex-col items-center gap-3 font-semibold">
                                     <div className="flex items-center gap-2">
                                         <FaCheckCircle className="text-xl" />
-                                        {selectedProgram?.type === 'projects' ? (t.already_supporting || "You are supporting this project.") : (t.already_registered || "You are registered.")}
+                                        {activeItem?.type === 'projects' ? (t.already_supporting || "You are supporting this project.") : (t.already_registered || "You are registered.")}
                                     </div>
                                     <button
-                                        onClick={() => handleCancelClick(selectedProgram.id, selectedProgram.type || 'program')}
+                                        onClick={() => handleCancelClick(activeItem.id, activeItem.type || 'program')}
                                         className="text-red-500 hover:text-red-700 underline text-sm font-medium transition-colors"
                                     >
                                         {t.cancel_registration || "Cancel Registration"}
@@ -200,9 +211,9 @@ const Programs = () => {
                                         e.preventDefault();
                                         const formData = user ? { name: user.full_name, email: user.email } : guestForm;
                                         try {
-                                            await registerForEvent(selectedProgram.type || 'program', selectedProgram.id, formData);
-                                            toast.success(selectedProgram.type === 'projects' ? (t.successfully_supported || "Successfully supported!") : (t.successfully_joined || "Successfully joined!"));
-                                            setSelectedProgram(null);
+                                            await registerForEvent(activeItem.type || 'program', activeItem.id, formData);
+                                            toast.success(activeItem.type === 'projects' ? (t.successfully_supported || "Successfully supported!") : (t.successfully_joined || "Successfully joined!"));
+                                            // Keep modal open, data will update via global state
                                             setGuestForm({ name: '', email: '' });
                                         } catch (err) {
                                             toast.error(t.error_occurred || "Error occurred");
@@ -239,12 +250,12 @@ const Programs = () => {
 
                                     <button
                                         type="submit"
-                                        className={`w-full py-3 rounded-xl font-bold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 ${selectedProgram?.type === 'projects' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                        className={`w-full py-3 rounded-xl font-bold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 ${activeItem?.type === 'projects' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                                     >
-                                        {selectedProgram?.type === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
+                                        {activeItem?.type === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
                                         {user
-                                            ? (selectedProgram?.type === 'projects' ? (t.confirm_support || "Confirm Support") : (t.confirm_registration || "Confirm Registration"))
-                                            : (selectedProgram?.type === 'projects' ? (t.support_verb || "Support") : (t.join_verb || "Join"))}
+                                            ? (activeItem?.type === 'projects' ? (t.confirm_support || "Confirm Support") : (t.confirm_registration || "Confirm Registration"))
+                                            : (activeItem?.type === 'projects' ? (t.support_verb || "Support") : (t.join_verb || "Join"))}
                                     </button>
                                 </form>
                             )}

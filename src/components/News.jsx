@@ -15,7 +15,18 @@ const News = () => {
     const { news, events, getLocalizedContent, registerForEvent, cancelRegistration } = useData();
     const t = translations[language];
     const { user } = useAuth();
-    const [selectedNews, setSelectedNews] = useState(null);
+    const [selectedNewsId, setSelectedNewsId] = useState(null); // { id, type }
+
+    // Derive active item from global state
+    const activeNews = selectedNewsId
+        ? (selectedNewsId.type === 'news'
+            ? news.find(n => n.id === selectedNewsId.id)
+            : events.find(e => e.id === selectedNewsId.id))
+        : null;
+
+    // Merge type
+    const currentNewsItem = activeNews ? { ...activeNews, type: selectedNewsId.type } : null;
+
     const [guestForm, setGuestForm] = useState({ name: '', email: '' });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
 
@@ -27,9 +38,9 @@ const News = () => {
         const eventId = confirmModal.id;
         const toastId = toast.loading(t.cancelling || "Cancelling...");
         try {
-            await cancelRegistration('event', eventId, user.email);
+            await cancelRegistration('event', eventId, user?.email);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
-            setSelectedNews(null);
+            // Don't close modal, it will update automatically
         } catch (error) {
             console.error(error);
             toast.error(t.error_occurred || "Error occurred", { id: toastId });
@@ -67,7 +78,7 @@ const News = () => {
                         <div
                             key={item.id || index}
                             className="bg-transparent rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer"
-                            onClick={() => setSelectedNews(item)}
+                            onClick={() => setSelectedNewsId({ id: item.id, type: item.type })}
                         >
                             <div className="relative">
                                 <img
@@ -113,7 +124,7 @@ const News = () => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setSelectedNews(item);
+                                            setSelectedNewsId({ id: item.id, type: item.type });
                                         }}
                                         className="inline-flex items-center text-red-500 hover:text-red-600 font-medium hover:underline ml-auto"
                                     >
@@ -142,54 +153,54 @@ const News = () => {
 
             {/* Modal */}
             <Modal
-                isOpen={!!selectedNews}
-                onClose={() => setSelectedNews(null)}
-                title={getLocalizedContent(selectedNews?.title, language)}
-                heroImage={selectedNews?.image_url || selectedNews?.image}
+                isOpen={!!currentNewsItem}
+                onClose={() => setSelectedNewsId(null)}
+                title={getLocalizedContent(currentNewsItem?.title, language)}
+                heroImage={currentNewsItem?.image_url || currentNewsItem?.image}
             >
                 <div className="relative">
                     <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
                         <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">
                             <FaCalendarAlt />
-                            <span>{selectedNews?.date ? new Date(selectedNews.date).toLocaleDateString() : ''}</span>
+                            <span>{currentNewsItem?.date ? new Date(currentNewsItem.date).toLocaleDateString() : ''}</span>
                         </span>
-                        {selectedNews?.location && getLocalizedContent(selectedNews.location, language) && (
+                        {currentNewsItem?.location && getLocalizedContent(currentNewsItem.location, language) && (
                             <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full border border-red-100 dark:border-red-800">
                                 <FaMapMarkerAlt />
-                                <span>{getLocalizedContent(selectedNews.location, language)}</span>
+                                <span>{getLocalizedContent(currentNewsItem.location, language)}</span>
                             </span>
                         )}
-                        {selectedNews?.type === 'event' && (
+                        {currentNewsItem?.type === 'event' && (
                             <div className="flex items-center gap-2 ml-auto">
                                 <span className="text-blue-900 dark:text-blue-300 font-semibold text-xs">
-                                    {selectedNews.attendees ? selectedNews.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}
+                                    {currentNewsItem.attendees ? currentNewsItem.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}
                                 </span>
-                                <AttendeesList attendees={selectedNews.attendees} />
+                                <AttendeesList attendees={currentNewsItem.attendees} />
                             </div>
                         )}
                     </div>
 
                     <div className="prose dark:prose-invert max-w-none">
                         <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                            {getLocalizedContent(selectedNews?.description, language)}
+                            {getLocalizedContent(currentNewsItem?.description, language)}
                         </p>
                     </div>
 
                     {/* Optional: Add call to action if it's an event */}
-                    {selectedNews?.type === 'event' && (
+                    {currentNewsItem?.type === 'event' && (
                         <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
                             {/* Registration Logic similar to ProgramsPage */}
                             <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
                                 {t.join_event || "Join Event"}
                             </h4>
 
-                            {(user && selectedNews.attendees && selectedNews.attendees.some(a => a.email === user.email)) ? (
+                            {(user && currentNewsItem.attendees && currentNewsItem.attendees.some(a => a.email === user.email)) ? (
                                 <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg flex flex-col items-center gap-2">
                                     <span className="flex items-center gap-2 font-bold">
                                         <FaArrowRight className={`ml-1 ${language === 'ar' ? 'rotate-180' : ''}`} /> {t.already_registered || "You are registered."}
                                     </span>
                                     <button
-                                        onClick={() => handleCancelClick(selectedNews.id)}
+                                        onClick={() => handleCancelClick(currentNewsItem.id)}
                                         className="text-red-500 hover:text-red-700 underline text-sm"
                                     >
                                         {t.cancel_registration || "Cancel Registration"}
@@ -201,9 +212,9 @@ const News = () => {
                                         e.preventDefault();
                                         const formData = user ? { name: user.full_name, email: user.email } : guestForm;
                                         try {
-                                            await registerForEvent('event', selectedNews.id, formData);
+                                            await registerForEvent('event', currentNewsItem.id, formData);
                                             toast.success(t.successfully_joined || "Successfully joined!");
-                                            setSelectedNews(null);
+                                            // Close modal removed to let it update
                                             setGuestForm({ name: '', email: '' });
                                         } catch (err) {
                                             toast.error(t.error_occurred || "Error occurred");
