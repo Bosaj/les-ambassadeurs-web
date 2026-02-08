@@ -1,2 +1,6 @@
 VITE_SUPABASE_URL=your_actual_url
 VITE_SUPABASE_ANON_KEY=your_actual_anon_key
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+PAYPAL_CLIENT_ID=your_client_id
+PAYPAL_CLIENT_SECRET=your_client_secret
+PAYPAL_ENVIRONMENT=SANDBOX 
