@@ -16,17 +16,35 @@ const ProgramsPage = () => {
     const location = useLocation();
 
     // Generic selection state
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [selectedType, setSelectedType] = useState('programs'); // 'programs' or 'projects'
+    const [selectedItemId, setSelectedItemId] = useState(null); // stores { id, type } or null (or just the object if passed from nav, but we should standardize)
+    // Actually, to align with the pattern, let's just store the ID and Type if mostly possible, 
+    // BUT we need to handle the initial navigation state which passes the full object. 
+    // Better strategy: Store the 'ID' and 'Type' in state, and look it up. 
+    // If navigation passes an item, we extract ID and Type from it.
+
+    const [modalState, setModalState] = useState({ id: null, type: 'programs' });
     const [guestForm, setGuestForm] = useState({ name: '', email: '' });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
 
     useEffect(() => {
         if (location.state?.selectedProgram) {
-            setSelectedItem(location.state.selectedProgram);
-            setSelectedType(location.state.type || 'programs');
+            setModalState({
+                id: location.state.selectedProgram.id,
+                type: location.state.type || 'programs'
+            });
         }
     }, [location.state]);
+
+    // Derive the selected item from the global data to ensure it is always fresh (live attendees count, status)
+    const selectedItem = modalState.id
+        ? (modalState.type === 'projects'
+            ? projects.find(p => p.id === modalState.id)
+            : programs.find(p => p.id === modalState.id))
+        : null;
+
+    // Use selectedType for consistency in the UI
+    const selectedType = modalState.type;
+
 
     const handleJoinClick = (item, type) => {
         if (user) {
@@ -35,11 +53,15 @@ const ProgramsPage = () => {
                 toast.error(type === 'projects' ? t.already_supporting : t.already_registered);
                 return;
             }
+            // For logged in user, just register immediately
             registerForEvent(type, item.id, { name: user.full_name || user.user_metadata?.full_name || user.email, email: user.email });
             toast.success(type === 'projects' ? t.successfully_supported : t.successfully_joined);
+            // If they clicked join from the card, we don't open the modal usually (based on previous code logic), 
+            // but if they are in the modal code below, it handles it. 
+            // The previous code had `handleJoinClick` doing TWO things: registering if logged in, OR opening modal if not.
+            // Let's keep that logic but use `setModalState` instead of `setSelectedItem`.
         } else {
-            setSelectedItem(item);
-            setSelectedType(type);
+            setModalState({ id: item.id, type });
         }
     };
 
@@ -53,7 +75,7 @@ const ProgramsPage = () => {
         try {
             await cancelRegistration(type, item.id, user.email);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
-            setSelectedItem(null); // Close modal
+            // Don't close modal, let it update
         } catch (error) {
             console.error(error);
             toast.error(t.error_occurred || "Error occurred", { id: toastId });
@@ -67,7 +89,7 @@ const ProgramsPage = () => {
         try {
             await registerForEvent(selectedType, selectedItem.id, guestForm);
             toast.success(selectedType === 'projects' ? t.successfully_supported : t.successfully_joined);
-            setSelectedItem(null);
+            // Don't close, let it update
             setGuestForm({ name: '', email: '' });
         } catch (error) {
             toast.error(t.error_occurred);
@@ -79,7 +101,11 @@ const ProgramsPage = () => {
         const isProject = type === 'projects';
 
         return (
-            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div
+                key={item.id}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+                onClick={() => setModalState({ id: item.id, type })}
+            >
                 <img
                     src={item.image_url || "https://via.placeholder.com/400"}
                     alt={getLocalizedContent(item.title, language)}
@@ -112,8 +138,11 @@ const ProgramsPage = () => {
                         </div>
                         {isJoined ? (
                             <button
-                                onClick={() => handleCancelClick(item, type)}
-                                className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2 border px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all group"
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent opening modal
+                                    handleCancelClick(item, type);
+                                }}
+                                className="flex items-center text-green-600 dark:text-green-400 font-bold gap-2 border px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all group z-10"
                                 title={t.cancel_registration || "Click to cancel"}
                             >
                                 <span className="group-hover:hidden flex items-center gap-2"><FaCheckCircle /> {isProject ? t.supported : t.joined}</span>
@@ -121,7 +150,12 @@ const ProgramsPage = () => {
                             </button>
                         ) : (
                             <button
-                                onClick={() => handleJoinClick(item, type)}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent opening modal (or maybe let it open?)
+                                    // Actually, let's open the modal for consistency if they click the button, 
+                                    // OR register immediately if logged in. The logic in handleJoinClick handles this.
+                                    handleJoinClick(item, type);
+                                }}
                                 className={`${isProject ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white px-6 py-2 rounded-lg transition flex items-center gap-2 font-medium shadow-md`}
                             >
                                 {isProject ? <FaHandsHelping /> : <FaUserPlus />}
@@ -169,71 +203,81 @@ const ProgramsPage = () => {
             {/* Guest Modal */}
             <Modal
                 isOpen={!!selectedItem}
-                onClose={() => setSelectedItem(null)}
+                onClose={() => setModalState({ id: null, type: 'programs' })}
                 title={`${selectedType === 'projects' ? t.support_verb : t.join_verb} ${getLocalizedContent(selectedItem?.title, language)}`}
                 heroImage={selectedItem?.image_url}
             >
-                {user ? (
-                    <div className="text-center space-y-6 pt-4">
-                        {(selectedItem?.attendees && selectedItem.attendees.some(a => a.email === user.email)) ? (
-                            <div className="p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl flex flex-col items-center gap-3">
-                                <FaCheckCircle className="text-5xl" />
-                                <span className="text-lg font-bold">
-                                    {selectedType === 'projects' ? (t.already_supporting || "You are supporting this project") : (t.already_registered || "You are registered")}
-                                </span>
-                                <button
-                                    onClick={() => handleCancelClick(selectedItem, selectedType)}
-                                    className="mt-2 text-red-500 hover:text-red-700 underline text-sm font-medium transition-colors"
-                                >
-                                    {t.cancel_registration || "Cancel Registration"}
-                                </button>
+                {/* Modal Content - mostly same but ensuring it uses selectedItem derived from state */}
+                {selectedItem && (
+                    <div className="space-y-6">
+                        {/* Display Description in Modal too, good for context */}
+                        <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300">
+                            <p>{getLocalizedContent(selectedItem.description, language)}</p>
+                        </div>
+
+                        {user ? (
+                            <div className="text-center space-y-6 pt-4 border-t dark:border-gray-700">
+                                {(selectedItem.attendees && selectedItem.attendees.some(a => a.email === user.email && a.status !== 'rejected')) ? (
+                                    <div className="p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl flex flex-col items-center gap-3">
+                                        <FaCheckCircle className="text-5xl" />
+                                        <span className="text-lg font-bold">
+                                            {selectedType === 'projects' ? (t.already_supporting || "You are supporting this project") : (t.already_registered || "You are registered")}
+                                        </span>
+                                        <button
+                                            onClick={() => handleCancelClick(selectedItem, selectedType)}
+                                            className="mt-2 text-red-500 hover:text-red-700 underline text-sm font-medium transition-colors"
+                                        >
+                                            {t.cancel_registration || "Cancel Registration"}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="text-gray-600 dark:text-gray-300">
+                                            {selectedType === 'projects'
+                                                ? (t.confirm_support_text || "Click below to support this project as")
+                                                : (t.confirm_join_text || "Click below to store your registration as")}
+                                            <span className="block font-bold text-gray-900 dark:text-white mt-1">{user.full_name || user.email}</span>
+                                        </p>
+                                        <button
+                                            onClick={() => handleJoinClick(selectedItem, selectedType)}
+                                            className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2`}
+                                        >
+                                            {selectedType === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
+                                            {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         ) : (
-                            <>
-                                <p className="text-gray-600 dark:text-gray-300">
-                                    {selectedType === 'projects'
-                                        ? (t.confirm_support_text || "Click below to support this project as")
-                                        : (t.confirm_join_text || "Click below to store your registration as")}
-                                    <span className="block font-bold text-gray-900 dark:text-white mt-1">{user.full_name || user.email}</span>
-                                </p>
-                                <button
-                                    onClick={() => handleJoinClick(selectedItem, selectedType)}
-                                    className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2`}
-                                >
-                                    {selectedType === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
+                            <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2 border-t dark:border-gray-700">
+                                <div>
+                                    <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                        value={guestForm.name}
+                                        onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
+                                        placeholder={t.enter_name_placeholder}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
+                                        value={guestForm.email}
+                                        onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
+                                        placeholder={t.enter_email_placeholder}
+                                    />
+                                </div>
+                                <button type="submit" className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3 rounded-lg font-bold transition shadow-lg mt-4`}>
                                     {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
                                 </button>
-                            </>
+                            </form>
                         )}
                     </div>
-                ) : (
-                    <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2">
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
-                            <input
-                                type="text"
-                                required
-                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                value={guestForm.name}
-                                onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                                placeholder={t.enter_name_placeholder}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
-                            <input
-                                type="email"
-                                required
-                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                value={guestForm.email}
-                                onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                                placeholder={t.enter_email_placeholder}
-                            />
-                        </div>
-                        <button type="submit" className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3 rounded-lg font-bold transition shadow-lg mt-4`}>
-                            {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
-                        </button>
-                    </form>
                 )}
             </Modal>
             {/* Confirmation Modal */}
