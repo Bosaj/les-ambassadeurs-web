@@ -555,13 +555,30 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const fetchMembershipHistory = async (userId) => {
+        if (!userId) return [];
+        try {
+            const { data, error } = await supabase
+                .from('annual_memberships')
+                .select('*')
+                .eq('user_id', userId)
+                .order('year', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Error fetching membership history:", err);
+            return [];
+        }
+    };
+
     return (
         <DataContext.Provider value={{
             news, programs, events, projects, testimonials, users,
             addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
             getLocalizedContent, loading,
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
-            verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus, deleteDonation
+            verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus, deleteDonation, fetchMembershipHistory
         }}>
             {children}
         </DataContext.Provider>

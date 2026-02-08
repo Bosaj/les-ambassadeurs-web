@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaMapMarkerAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../components/ConfirmationModal';
+import AttendeesList from '../components/AttendeesList';
 
 const EventsPage = () => {
     const { events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
@@ -76,7 +77,10 @@ const EventsPage = () => {
                                     <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{getLocalizedContent(event.title, language)}</h2>
                                     <p className="text-gray-600 dark:text-gray-300 mb-6">{getLocalizedContent(event.description, language)}</p>
                                     <div className="flex items-center gap-6">
-                                        <span className="text-blue-900 dark:text-blue-300 font-semibold">{event.attendees ? event.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-blue-900 dark:text-blue-300 font-semibold">{event.attendees ? event.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}</span>
+                                            <AttendeesList attendees={event.attendees} />
+                                        </div>
                                         {isJoined ? (
                                             <button
                                                 onClick={() => handleCancelClick(event)}

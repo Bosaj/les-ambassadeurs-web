@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import LogoutAnimation from '../components/LogoutAnimation';
 
 const AuthContext = createContext(null);
 
@@ -120,10 +121,22 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
     const logout = async () => {
+        setIsLoggingOut(true);
+        // Wait for animation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         const { error } = await supabase.auth.signOut();
-        if (error) throw error;
+        if (error) {
+            console.error("Logout error:", error);
+            // Even if error, we probably want to reset state or force partial logout
+        }
+
         setUser(null);
+        setIsLoggingOut(false);
+        // Optional: Redirect specifically if needed, but usually App handles user null
     };
 
     const getURL = () => {
@@ -131,7 +144,6 @@ export const AuthProvider = ({ children }) => {
         // Ensures the URL is correct for both local and production environments
         return url;
     };
-
 
 
     const loginWithGoogle = async () => {
@@ -174,6 +186,8 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember }}>
+            {/* Show animation overlay when logging out */}
+            <LogoutAnimation isVisible={isLoggingOut} />
             {!loading && children}
         </AuthContext.Provider>
     );

@@ -7,6 +7,14 @@ export const handler = async (event) => {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+        console.error('Missing STRIPE_SECRET_KEY');
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Missing Stripe Secret Key in environment' }),
+        };
+    }
+
     try {
         const { amount, currency = 'usd' } = JSON.parse(event.body);
 
