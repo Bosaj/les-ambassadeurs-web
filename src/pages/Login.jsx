@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
@@ -8,8 +8,9 @@ import toast from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
-    const { login, loginWithGoogle } = useAuth();
+    const { login, loginWithGoogle, user } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const { language, t } = useLanguage();
 
     const [email, setEmail] = useState('');
@@ -17,17 +18,19 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    // Get the redirect path from location state or default to dashboard
+    const from = location.state?.from || (user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/volunteer');
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
             const user = await login(email, password);
             toast.success(t.welcome_back);
-            if (user.role === 'admin') {
-                navigate('/dashboard/admin');
-            } else {
-                navigate('/dashboard/volunteer');
-            }
+
+            // Redirect to the original destination or dashboard
+            const redirectPath = location.state?.from || (user.role === 'admin' ? '/dashboard/admin' : '/dashboard/volunteer');
+            navigate(redirectPath, { replace: true });
         } catch {
             toast.error(t.invalid_credentials);
         } finally {
