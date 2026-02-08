@@ -72,7 +72,7 @@ export const DataProvider = ({ children }) => {
             if (eventsError) throw eventsError;
 
             // Debug log
-            console.log("Fetched Events with Attendees:", allEventsData);
+
 
             // Filter into categories
             const p = [];
@@ -279,7 +279,7 @@ export const DataProvider = ({ children }) => {
 
     const registerForEvent = async (type, eventId, userDetails) => {
         try {
-            console.log(`Registering for event ${eventId}`, userDetails);
+
 
             // 1. Database Insert/Upsert
             const safeName = userDetails.name || userDetails.email || 'Anonymous';
@@ -332,7 +332,7 @@ export const DataProvider = ({ children }) => {
 
     const cancelRegistration = async (type, eventId, email) => {
         try {
-            console.log(`Cancelling registration for event ${eventId} and email ${email}`);
+
 
             // 1. Database Delete
             const { error } = await supabase
