@@ -462,6 +462,36 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const fetchAllDonations = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('donations')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Error fetching all donations:", err);
+            return [];
+        }
+    };
+
+    const updateDonationStatus = async (id, status) => {
+        try {
+            const { error } = await supabase
+                .from('donations')
+                .update({ status })
+                .eq('id', id);
+
+            if (error) throw error;
+            return true;
+        } catch (err) {
+            console.error("Error updating donation status:", err);
+            return false;
+        }
+    };
+
     const submitSuggestion = async (suggestionData) => {
         try {
             const { data, error } = await supabase
@@ -501,7 +531,7 @@ export const DataProvider = ({ children }) => {
             getLocalizedContent, loading,
             // New exports
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
-            verifyMember, updateAttendanceStatus, cancelRegistration
+            verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus
         }}>
             {children}
         </DataContext.Provider>
