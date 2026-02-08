@@ -8,9 +8,11 @@ import { supabase } from '../lib/supabase';
 import {
     FaUserShield, FaSignOutAlt, FaHandHoldingHeart, FaCalendarCheck,
     FaStar, FaHistory, FaListAlt, FaLightbulb, FaCheckCircle,
-    FaClock, FaTimesCircle, FaMoneyBillWave, FaTimes
+    FaClock, FaTimesCircle, FaMoneyBillWave, FaTimes, FaIdCard
 } from 'react-icons/fa';
 import ConfirmationModal from '../components/ConfirmationModal';
+import MembershipRenewalModal from '../components/MembershipRenewalModal';
+import AttendeesList from '../components/AttendeesList';
 
 const VolunteerDashboard = () => {
     const { user, logout } = useAuth();
@@ -24,17 +26,20 @@ const VolunteerDashboard = () => {
         fetchUserActivities,
         fetchUserDonations,
         submitSuggestion,
-        cancelRegistration
+        cancelRegistration,
+        fetchMembershipHistory
     } = useData();
     const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState('overview');
     const [userActivities, setUserActivities] = useState([]);
     const [userDonations, setUserDonations] = useState([]);
+    const [membershipHistory, setMembershipHistory] = useState([]);
     const [testimonial, setTestimonial] = useState('');
 
     const [rating, setRating] = useState(5);
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
+    const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
 
     // Suggestion Form State
     const [suggestionForm, setSuggestionForm] = useState({
@@ -58,6 +63,14 @@ const VolunteerDashboard = () => {
             const donations = await fetchUserDonations(user.email);
             setUserDonations(donations);
         }
+        if (activeTab === 'membership' || activeTab === 'overview') {
+            loadMembershipHistory();
+        }
+    };
+
+    const loadMembershipHistory = async () => {
+        const history = await fetchMembershipHistory(user.id);
+        setMembershipHistory(history);
     };
 
     // Combine events and programs for the dashboard list
@@ -108,10 +121,11 @@ const VolunteerDashboard = () => {
         const activity = confirmModal.data;
         if (!activity) return;
 
-        const toastId = toast.loading(t.cancelling || "Cancelling registration...");
+        const isRejected = activity.status === 'rejected';
+        const toastId = toast.loading(isRejected ? (t.processing || "Processing...") : (t.cancelling || "Cancelling registration..."));
         try {
             await cancelRegistration(activity.events?.category || 'event', activity.events?.id, user.email);
-            toast.success(t.registration_cancelled || "Registration cancelled successfully", { id: toastId });
+            toast.success(isRejected ? (t.item_deleted || "Activity removed") : (t.registration_cancelled || "Registration cancelled successfully"), { id: toastId });
             loadUserData(); // Reload activities
         } catch (error) {
             console.error(error);
@@ -184,6 +198,7 @@ const VolunteerDashboard = () => {
                 { id: 'overview', icon: FaListAlt, label: t.overview || 'Overview' },
                 { id: 'activities', icon: FaHistory, label: t.my_activities || 'My Activities' },
                 { id: 'impact', icon: FaHandHoldingHeart, label: t.my_impact || 'My Impact' },
+                { id: 'membership', icon: FaIdCard, label: t.my_membership || 'My Membership' },
                 { id: 'suggestions', icon: FaLightbulb, label: t.suggestions || 'Suggestion Box' },
             ].map(tab => (
                 <button
@@ -273,9 +288,12 @@ const VolunteerDashboard = () => {
                                                             {new Date(event.date).toLocaleDateString()} • {event.category}
                                                         </p>
                                                         <div className="flex justify-between items-center mt-2">
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                {event.attendees?.length || 0} {t.attendees || "attendees"}
-                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                    {event.attendees?.length || 0} {t.attendees || "attendees"}
+                                                                </span>
+                                                                <AttendeesList attendees={event.attendees} size="w-6 h-6" />
+                                                            </div>
                                                         </div>
                                                         <button
                                                             onClick={() => handleJoinEvent(event)}
@@ -353,12 +371,12 @@ const VolunteerDashboard = () => {
                                             </div>
                                             <div>
                                                 {getStatusBadge(activity.status)}
-                                                {activity.status === 'pending' && (
+                                                {(activity.status === 'pending' || activity.status === 'rejected') && (
                                                     <button
                                                         onClick={() => handleCancelEvent(activity)}
                                                         className="block mt-2 text-xs text-red-500 hover:text-red-700 underline mx-auto"
                                                     >
-                                                        {t.cancel_registration || "Cancel"}
+                                                        {activity.status === 'rejected' ? (t.remove_activity || "Remove") : (t.cancel_registration || "Cancel")}
                                                     </button>
                                                 )}
                                             </div>
@@ -397,6 +415,84 @@ const VolunteerDashboard = () => {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {/* MEMBERSHIP TAB */}
+                    {activeTab === 'membership' && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700">
+                            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
+                                <FaIdCard className="text-purple-600" /> {t.membership_history || "Membership History"}
+                            </h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div className="bg-gradient-to-br from-purple-900 to-purple-700 text-white p-6 rounded-xl shadow-lg">
+                                    <h3 className="text-lg opacity-90 mb-2">{t.membership_status || "Current Status"}</h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-3 h-3 rounded-full ${membershipHistory.find(h => h.year === new Date().getFullYear()) ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                                        <span className="text-2xl font-bold">
+                                            {membershipHistory.find(h => h.year === new Date().getFullYear()) ? (t.active_member || "Active") : (t.inactive_member || "Inactive")}
+                                        </span>
+                                    </div>
+                                    <p className="mt-4 text-sm opacity-75">
+                                        {membershipHistory.find(h => h.year === new Date().getFullYear() && h.status === 'paid')
+                                            ? `${t.valid_until || "Valid until"} Dec 31, ${new Date().getFullYear()}`
+                                            : t.renew_membership_msg || "Please renew your membership for this year."}
+                                    </p>
+
+                                    {!membershipHistory.find(h => h.year === new Date().getFullYear() && h.status === 'paid') && (
+                                        <button
+                                            onClick={() => setIsRenewalModalOpen(true)}
+                                            className="mt-4 bg-white text-purple-900 px-4 py-2 rounded-lg font-bold hover:bg-purple-100 transition shadow-md w-full"
+                                        >
+                                            {t.renew_membership || "Renew Membership"}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="overflow-hidden rounded-xl border dark:border-gray-700">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-gray-50 dark:bg-gray-900/50">
+                                        <tr>
+                                            <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">{t.year || "Year"}</th>
+                                            <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">{t.amount || "Amount"}</th>
+                                            <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">{t.status || "Status"}</th>
+                                            <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">{t.payment_date || "Date"}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y dark:divide-gray-700">
+                                        {membershipHistory.length > 0 ? (
+                                            membershipHistory.map((record) => (
+                                                <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+                                                    <td className="p-4 font-bold text-gray-800 dark:text-gray-200">{record.year}</td>
+                                                    <td className="p-4 text-gray-600 dark:text-gray-400">{record.amount} MAD</td>
+                                                    <td className="p-4">
+                                                        {record.status === 'paid' ? (
+                                                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1 w-fit">
+                                                                <FaCheckCircle /> {t.paid || "Paid"}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center gap-1 w-fit">
+                                                                <FaClock /> {t.pending || "Pending"}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-4 text-gray-500 dark:text-gray-400">
+                                                        {new Date(record.created_at).toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                                    {t.no_membership_history || "No membership history found."}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 
@@ -453,11 +549,17 @@ const VolunteerDashboard = () => {
                 isOpen={confirmModal.isOpen}
                 onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
                 onConfirm={performCancelEvent}
-                title={t.confirm_cancel_registration || "Cancel Registration"}
-                message={t.confirm_cancel_message || "Are you sure you want to cancel your registration for this event?"}
+                title={confirmModal.data?.status === 'rejected' ? (t.confirm_remove_activity || "Remove Activity") : (t.confirm_cancel_registration || "Cancel Registration")}
+                message={confirmModal.data?.status === 'rejected' ? (t.confirm_remove_message || "Are you sure you want to remove this rejected activity from your list?") : (t.confirm_cancel_message || "Are you sure you want to cancel your registration for this event?")}
                 isDangerous={true}
             />
-        </div>
+
+            <MembershipRenewalModal
+                isOpen={isRenewalModalOpen}
+                onClose={() => setIsRenewalModalOpen(false)}
+                onRenewalComplete={loadMembershipHistory}
+            />
+        </div >
     );
 };
 

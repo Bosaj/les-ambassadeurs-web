@@ -8,6 +8,7 @@ import Modal from './Modal';
 import ConfirmationModal from './ConfirmationModal';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import AttendeesList from './AttendeesList';
 
 const Programs = () => {
     const { language } = useLanguage();
@@ -104,9 +105,12 @@ const Programs = () => {
                                     {getLocalizedContent(item.description, language)}
                                 </p>
                                 <div className="flex items-center justify-between w-full mt-auto">
-                                    <span className="text-sm text-gray-500 font-medium">
-                                        {item.attendees?.filter(a => a.status !== 'rejected').length || 0} {item.type === 'projects' ? t.supporters : t.participants}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-500 font-medium">
+                                            {item.attendees?.filter(a => a.status !== 'rejected').length || 0} {item.type === 'projects' ? t.supporters : t.participants}
+                                        </span>
+                                        <AttendeesList attendees={item.attendees} />
+                                    </div>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -158,6 +162,14 @@ const Programs = () => {
                                     <FaMapMarkerAlt /> {getLocalizedContent(selectedProgram.location, language)}
                                 </div>
                             )}
+                            {/* Attendees List in Modal */}
+                            <div className="flex items-center gap-2 mb-4 bg-blue-50 dark:bg-blue-900/10 p-2 rounded-lg w-fit border border-blue-100 dark:border-blue-800">
+                                <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+                                    {selectedProgram?.attendees?.filter(a => a.status !== 'rejected').length || 0} {selectedProgram?.type === 'projects' ? t.supporters : t.participants}
+                                </span>
+                                <AttendeesList attendees={selectedProgram?.attendees} />
+                            </div>
+
                             {getLocalizedContent(selectedProgram?.description, language)}
                         </p>
                     </div>

@@ -8,6 +8,7 @@ import Modal from './Modal';
 import ConfirmationModal from './ConfirmationModal';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import AttendeesList from './AttendeesList';
 
 const News = () => {
     const { language } = useLanguage();
@@ -37,13 +38,16 @@ const News = () => {
         }
     };
 
-    // Combine News and Events for the "Latest News & Events" section
-    // Sort by date descending
-    const allItems = [
-        ...(news || []).map(n => ({ ...n, type: 'news', displayCategory: 'News' })),
-        ...(events || []).map(e => ({ ...e, type: 'event', displayCategory: e.category || 'Event' }))
-    ].sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
-    const displayItems = allItems.slice(0, 3);
+    // Separate News and Events, sort by date, and take top 3 of each
+    const sortedNews = (news || []).map(n => ({ ...n, type: 'news', displayCategory: 'News' }))
+        .sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at))
+        .slice(0, 3);
+
+    const sortedEvents = (events || []).map(e => ({ ...e, type: 'event', displayCategory: e.category || 'Event' }))
+        .sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at))
+        .slice(0, 3);
+
+    const displayItems = [...sortedNews, ...sortedEvents];
 
     return (
         <section id="news" className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -97,16 +101,26 @@ const News = () => {
                                 <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">
                                     {getLocalizedContent(item.description, language)}
                                 </p>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedNews(item);
-                                    }}
-                                    className="inline-flex items-center text-red-500 hover:text-red-600 font-medium hover:underline"
-                                >
-                                    <span>{t.read_more}</span>
-                                    <FaArrowRight className={`ml-1 ${language === 'ar' ? 'rotate-180' : ''}`} />
-                                </button>
+                                <div className="flex items-center justify-between mt-4">
+                                    {item.type === 'event' && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+                                                {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0}
+                                            </span>
+                                            <AttendeesList attendees={item.attendees} size="w-6 h-6" />
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedNews(item);
+                                        }}
+                                        className="inline-flex items-center text-red-500 hover:text-red-600 font-medium hover:underline ml-auto"
+                                    >
+                                        <span>{t.read_more}</span>
+                                        <FaArrowRight className={`ml-1 ${language === 'ar' ? 'rotate-180' : ''}`} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )) : (
@@ -126,6 +140,7 @@ const News = () => {
                 </div>
             </div>
 
+            {/* Modal */}
             <Modal
                 isOpen={!!selectedNews}
                 onClose={() => setSelectedNews(null)}
@@ -144,6 +159,14 @@ const News = () => {
                                 <span>{getLocalizedContent(selectedNews.location, language)}</span>
                             </span>
                         )}
+                        {selectedNews?.type === 'event' && (
+                            <div className="flex items-center gap-2 ml-auto">
+                                <span className="text-blue-900 dark:text-blue-300 font-semibold text-xs">
+                                    {selectedNews.attendees ? selectedNews.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}
+                                </span>
+                                <AttendeesList attendees={selectedNews.attendees} />
+                            </div>
+                        )}
                     </div>
 
                     <div className="prose dark:prose-invert max-w-none">
@@ -152,7 +175,6 @@ const News = () => {
                         </p>
                     </div>
 
-                    {/* Optional: Add call to action if it's an event */}
                     {/* Optional: Add call to action if it's an event */}
                     {selectedNews?.type === 'event' && (
                         <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">

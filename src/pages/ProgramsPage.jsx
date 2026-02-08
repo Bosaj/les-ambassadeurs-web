@@ -7,6 +7,7 @@ import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaHandsHelping, FaTh
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import AttendeesList from '../components/AttendeesList';
 
 const ProgramsPage = () => {
     const { programs, projects, registerForEvent, getLocalizedContent, cancelRegistration } = useData();
@@ -103,9 +104,12 @@ const ProgramsPage = () => {
                         {getLocalizedContent(item.description, language)}
                     </p>
                     <div className="flex items-center gap-6 mt-auto">
-                        <span className="text-blue-900 dark:text-blue-300 font-semibold">
-                            {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {isProject ? t.supporters : t.participants}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-blue-900 dark:text-blue-300 font-semibold">
+                                {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {isProject ? t.supporters : t.participants}
+                            </span>
+                            <AttendeesList attendees={item.attendees} />
+                        </div>
                         {isJoined ? (
                             <button
                                 onClick={() => handleCancelClick(item, type)}
