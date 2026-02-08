@@ -1,54 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 
 import { motion } from 'framer-motion';
-import { FaHeart, FaCreditCard, FaPaypal, FaUniversity } from 'react-icons/fa';
+import { FaHeart, FaCreditCard, FaPaypal, FaUniversity, FaLock } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripeCheckout from '../components/StripeCheckout';
 
-// PayPal Button Component
-const PayPalDonationButton = ({ amount, onSuccess, onError }) => {
-    return (
-        <PayPalScriptProvider options={{
-            "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test", // Fallback to test if env var missing
-            currency: "USD", // Or MAD if supported, but USD is safer for sandbox
-            intent: "capture"
-        }}>
-            <PayPalButtons
-                style={{ layout: "vertical", shape: "rect", label: "donate" }}
-                createOrder={(data, actions) => {
-                    return actions.order.create({
-                        purchase_units: [
-                            {
-                                amount: {
-                                    value: amount,
-                                },
-                                description: "Donation to Association Les Ambassadeurs du Bien",
-                            },
-                        ],
-                    });
-                }}
-                onApprove={async (data, actions) => {
-                    try {
-                        const details = await actions.order.capture();
-                        onSuccess(details);
-                    } catch (err) {
-                        console.error("PayPal Capture Error:", err);
-                        onError(err);
-                    }
-                }}
-                onError={(err) => {
-                    console.error("PayPal Error:", err);
-                    onError(err);
-                }}
-            />
-        </PayPalScriptProvider>
-    );
-};
+// Initialize Stripe outside of component
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const Donate = () => {
     const { language, t } = useLanguage();
@@ -62,21 +29,111 @@ const Donate = () => {
         method: 'online', // 'online', 'paypal', 'transfer'
     });
 
+    const [clientSecret, setClientSecret] = useState("");
+    const [stripeError, setStripeError] = useState(null);
+
     const handleDonateClick = (method) => {
         setDonationForm(prev => ({ ...prev, method, name: user?.name || prev.name }));
         setShowModal(true);
+        setClientSecret(""); // Reset stripe secret when opening modal
+        setStripeError(null);
     };
 
-    const handleDonateSubmit = async (e) => {
-        if (e) e.preventDefault();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
-        // Simulate Card Processing if applicable
-        if (donationForm.method === 'online') {
-            const loadingToast = toast.loading("Processing secure payment...");
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate delay
-            toast.dismiss(loadingToast);
+    // Check for Stripe redirect status
+    useEffect(() => {
+        const clientSecret = searchParams.get('payment_intent_client_secret');
+        const redirectStatus = searchParams.get('redirect_status');
+
+        if (clientSecret && redirectStatus === 'succeeded') {
+            toast.success(t.donation_success || "Donation successful! Thank you.");
+        } else if (redirectStatus === 'failed') {
+            toast.error("Payment failed. Please try again.");
         }
+    }, [searchParams, t]);
 
+    // Effect to fetch payment intent when amount changes and method is 'online'
+    useEffect(() => {
+        const fetchPaymentIntent = async () => {
+            if (donationForm.method === 'online' && donationForm.amount >= 10) {
+                try {
+                    const response = await fetch('/.netlify/functions/create-payment-intent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: donationForm.amount,
+                            currency: 'mad'
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        const text = await response.text();
+                        let errorMsg = "Failed to initialize payment";
+                        try {
+                            const errorData = JSON.parse(text);
+                            errorMsg = errorData.error || errorMsg;
+                        } catch (e) {
+                            console.error("Failed to parse error response:", text);
+                            errorMsg += ` (Status: ${response.status})`;
+                        }
+                        throw new Error(errorMsg);
+                    }
+
+                    const data = await response.json();
+                    setClientSecret(data.clientSecret);
+                    setStripeError(null);
+                } catch (error) {
+                    console.error("Error creating payment intent:", error);
+                    // Critical error - redirect to error page
+                    navigate('/error', { state: { error: error.message } });
+                }
+            } else {
+                setClientSecret("");
+                if (donationForm.amount > 0 && donationForm.amount < 10 && donationForm.method === 'online') {
+                    setStripeError("Minimum donation is 10 MAD");
+                }
+            }
+        };
+
+        // Debounce fetching to avoid too many requests while typing
+        const timeoutId = setTimeout(() => {
+            if (showModal && donationForm.method === 'online') {
+                fetchPaymentIntent();
+            }
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [donationForm.amount, donationForm.method, showModal]);
+
+    const handleSuccess = async (details, methodOverride = null) => {
+        try {
+            const donationData = {
+                ...donationForm,
+                method: methodOverride || donationForm.method,
+                status: 'verified', // Or 'processing'
+                transaction_id: details.id
+            };
+
+            await addDonation(donationData);
+            toast.success(t.donation_success);
+            setShowModal(false);
+            setDonationForm({ name: '', amount: '', method: 'online' });
+            setClientSecret("");
+        } catch (error) {
+            console.error(error);
+            toast.error(t.donation_error);
+        }
+    };
+
+    const handlePayPalSuccess = async (details) => {
+        handleSuccess(details, 'paypal');
+    };
+
+    // Fallback manual submit for transfer
+    const handleManualSubmit = async (e) => {
+        if (e) e.preventDefault();
         try {
             await addDonation(donationForm);
             toast.success(t.donation_success);
@@ -85,7 +142,7 @@ const Donate = () => {
         } catch (error) {
             toast.error(t.donation_error);
         }
-    };
+    }
 
     return (
         <motion.div
@@ -112,11 +169,11 @@ const Donate = () => {
                         <div className="space-y-4 text-gray-600 dark:text-gray-300 flex-1">
                             <p className="flex justify-between border-b dark:border-gray-700 pb-2">
                                 <span className="font-semibold">{t.bank_label}</span>
-                                <span>{t.bank_name_value}</span>
+                                <span className="text-right">{t.bank_name_value}</span>
                             </p>
                             <p className="flex justify-between border-b dark:border-gray-700 pb-2">
                                 <span className="font-semibold">{t.account_name_label}</span>
-                                <span>{t.account_name_value}</span>
+                                <span className="text-right">{t.account_name_value}</span>
                             </p>
                             <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded text-center font-mono text-sm break-all dark:text-white">
                                 RIB: 123 456 78901234567890 12
@@ -146,8 +203,9 @@ const Donate = () => {
                             {t.donate_now_btn}
                         </button>
                         <div className="mt-4 flex justify-center gap-4 opacity-60">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6" />
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6" />
+                            <div className="flex gap-2 items-center text-gray-400 text-sm">
+                                <FaLock size={12} /> {t.secure_payment}
+                            </div>
                         </div>
                     </div>
 
@@ -201,13 +259,12 @@ const Donate = () => {
                             <input
                                 type="number"
                                 required
-                                min="1"
+                                min="10"
                                 className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white transition px-4"
                                 value={donationForm.amount}
                                 onChange={e => setDonationForm({ ...donationForm, amount: e.target.value })}
-                                placeholder="0.00"
+                                placeholder="e.g. 100"
                             />
-                            <span className="absolute right-4 top-3.5 text-gray-500 dark:text-gray-400 font-medium">MAD</span>
                         </div>
                     </div>
                     <div>
@@ -215,7 +272,7 @@ const Donate = () => {
                         <div className="grid grid-cols-3 gap-2">
                             <button
                                 type="button"
-                                onClick={() => setDonationForm({ ...donationForm, method: 'online' })}
+                                onClick={() => handleDonateClick('online')}
                                 className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'online'
                                     ? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
                                     : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -225,7 +282,7 @@ const Donate = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setDonationForm({ ...donationForm, method: 'paypal' })}
+                                onClick={() => handleDonateClick('paypal')}
                                 className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'paypal'
                                     ? 'border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                                     : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -235,7 +292,7 @@ const Donate = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setDonationForm({ ...donationForm, method: 'transfer' })}
+                                onClick={() => handleDonateClick('transfer')}
                                 className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'transfer'
                                     ? 'border-blue-900 bg-blue-50 text-blue-900 dark:bg-blue-900/20 dark:text-blue-400'
                                     : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -246,22 +303,71 @@ const Donate = () => {
                         </div>
                     </div>
 
-                    {donationForm.method === 'paypal' ? (
-                        <div className="mt-4">
-                            <PayPalDonationButton
-                                amount={donationForm.amount}
-                                onSuccess={() => handleDonateSubmit()}
-                                onError={() => toast.error("PayPal Error")}
-                            />
-                        </div>
-                    ) : (
-                        <button
-                            onClick={handleDonateSubmit}
-                            className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-lg mt-4 flex justify-center items-center gap-2"
-                        >
-                            <FaHeart /> {t.confirm_donation}
-                        </button>
-                    )}
+                    <div className="min-h-[150px]">
+                        {donationForm.method === 'paypal' && (
+                            <div className="mt-4">
+                                {donationForm.amount > 0 ? (
+                                    <PayPalScriptProvider options={{
+                                        "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test",
+                                        currency: "MAD",
+                                        intent: "capture"
+                                    }}>
+                                        <PayPalButtons
+                                            style={{ layout: "vertical", shape: "rect", label: "donate" }}
+                                            createOrder={(data, actions) => {
+                                                return actions.order.create({
+                                                    purchase_units: [{
+                                                        amount: { value: donationForm.amount },
+                                                        description: t.donation_to || "Donation to Association Les Ambassadeurs du Bien",
+                                                    }],
+                                                });
+                                            }}
+                                            onApprove={async (data, actions) => {
+                                                const details = await actions.order.capture();
+                                                handlePayPalSuccess(details);
+                                            }}
+                                            onError={(err) => toast.error((t.paypal_error || "PayPal Error: ") + err.message)}
+                                        />
+                                    </PayPalScriptProvider>
+                                ) : (
+                                    <div className="text-center text-gray-500 py-4">
+                                        {t.enter_amount_paypal}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {donationForm.method === 'online' && (
+                            <div className="mt-4">
+                                {clientSecret && donationForm.amount > 0 ? (
+                                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                                        <StripeCheckout
+                                            amount={donationForm.amount}
+                                            onSuccess={(details) => handleSuccess(details, 'stripe')}
+                                            onError={(err) => console.error(err)}
+                                        />
+                                    </Elements>
+                                ) : (
+                                    <div className="text-center text-gray-500 py-4">
+                                        {stripeError ? (
+                                            <span className="text-red-500">{stripeError}</span>
+                                        ) : (
+                                            t.enter_amount_stripe
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {donationForm.method === 'transfer' && (
+                            <button
+                                onClick={handleManualSubmit}
+                                className="w-full bg-blue-900 text-white font-bold py-4 rounded-lg hover:bg-blue-800 transition shadow-lg mt-4 flex justify-center items-center gap-2"
+                            >
+                                <FaUniversity /> {t.record_transfer || "Record Transfer"}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </Modal>
         </motion.div>

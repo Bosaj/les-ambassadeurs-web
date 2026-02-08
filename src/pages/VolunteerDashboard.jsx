@@ -82,9 +82,9 @@ const VolunteerDashboard = () => {
 
         const toastId = toast.loading(t.joining_event || "Joining event...");
         try {
-            console.log("DEBUG: handleJoinEvent user:", user);
+
             const userName = user.full_name || user.user_metadata?.full_name || user.email;
-            console.log("DEBUG: Resolved name:", userName);
+
 
             await registerForEvent('events', event.id, {
                 name: userName,

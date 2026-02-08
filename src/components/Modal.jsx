@@ -30,7 +30,7 @@ const Modal = ({ isOpen, onClose, title, children, heroImage }) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-md"
                     />
 
                     {/* Modal Content */}
@@ -44,7 +44,7 @@ const Modal = ({ isOpen, onClose, title, children, heroImage }) => {
                         }}
                         exit={{ scale: 0.95, opacity: 0, y: 20 }}
                         onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-gray-700/50"
+                        className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-gray-700/50"
                     >
                         {/* Header */}
                         {heroImage ? (
