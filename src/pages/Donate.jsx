@@ -4,8 +4,51 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 
 import { motion } from 'framer-motion';
-import { FaHeart, FaCreditCard, FaPaypal, FaUniversity, FaTimes } from 'react-icons/fa';
+import { FaHeart, FaCreditCard, FaPaypal, FaUniversity } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Modal from '../components/Modal';
+
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+
+// PayPal Button Component
+const PayPalDonationButton = ({ amount, onSuccess, onError }) => {
+    return (
+        <PayPalScriptProvider options={{
+            "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test", // Fallback to test if env var missing
+            currency: "USD", // Or MAD if supported, but USD is safer for sandbox
+            intent: "capture"
+        }}>
+            <PayPalButtons
+                style={{ layout: "vertical", shape: "rect", label: "donate" }}
+                createOrder={(data, actions) => {
+                    return actions.order.create({
+                        purchase_units: [
+                            {
+                                amount: {
+                                    value: amount,
+                                },
+                                description: "Donation to Association Les Ambassadeurs du Bien",
+                            },
+                        ],
+                    });
+                }}
+                onApprove={async (data, actions) => {
+                    try {
+                        const details = await actions.order.capture();
+                        onSuccess(details);
+                    } catch (err) {
+                        console.error("PayPal Capture Error:", err);
+                        onError(err);
+                    }
+                }}
+                onError={(err) => {
+                    console.error("PayPal Error:", err);
+                    onError(err);
+                }}
+            />
+        </PayPalScriptProvider>
+    );
+};
 
 const Donate = () => {
     const { language, t } = useLanguage();
@@ -25,7 +68,15 @@ const Donate = () => {
     };
 
     const handleDonateSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
+
+        // Simulate Card Processing if applicable
+        if (donationForm.method === 'online') {
+            const loadingToast = toast.loading("Processing secure payment...");
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate delay
+            toast.dismiss(loadingToast);
+        }
+
         try {
             await addDonation(donationForm);
             toast.success(t.donation_success);
@@ -89,7 +140,7 @@ const Donate = () => {
                             {t.online_payment_desc}
                         </p>
                         <button
-                            onClick={() => handleDonateClick('stripe')}
+                            onClick={() => handleDonateClick('online')}
                             className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-md"
                         >
                             {t.donate_now_btn}
@@ -127,58 +178,92 @@ const Donate = () => {
                 </div>
             </div>
 
-            {/* Donation Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-md relative transition-all duration-300">
-                        <button
-                            onClick={() => setShowModal(false)}
-                            className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"
-                        >
-                            <FaTimes size={20} />
-                        </button>
-                        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">{t.make_donation}</h2>
-                        <form onSubmit={handleDonateSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2">{t.full_name}</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    value={donationForm.name}
-                                    onChange={e => setDonationForm({ ...donationForm, name: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2">{t.amount_label}</label>
-                                <input
-                                    type="number"
-                                    required
-                                    min="1"
-                                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    value={donationForm.amount}
-                                    onChange={e => setDonationForm({ ...donationForm, amount: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2">{t.payment_method}</label>
-                                <select
-                                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    value={donationForm.method}
-                                    onChange={e => setDonationForm({ ...donationForm, method: e.target.value })}
-                                >
-                                    <option value="online">{t.credit_card_stripe}</option>
-                                    <option value="paypal">PayPal</option>
-                                    <option value="transfer">{t.bank_transfer_option}</option>
-                                </select>
-                            </div>
-                            <button type="submit" className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-lg mt-4">
-                                {t.confirm_donation}
-                            </button>
-                        </form>
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                title={t.make_donation}
+            >
+                <div className="space-y-6">
+                    <div>
+                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.full_name}</label>
+                        <input
+                            type="text"
+                            required
+                            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white transition"
+                            value={donationForm.name}
+                            onChange={e => setDonationForm({ ...donationForm, name: e.target.value })}
+                            placeholder={t.name_placeholder || "Your Name"}
+                        />
                     </div>
+                    <div>
+                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.amount_label}</label>
+                        <div className="relative">
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white transition px-4"
+                                value={donationForm.amount}
+                                onChange={e => setDonationForm({ ...donationForm, amount: e.target.value })}
+                                placeholder="0.00"
+                            />
+                            <span className="absolute right-4 top-3.5 text-gray-500 dark:text-gray-400 font-medium">MAD</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.payment_method}</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setDonationForm({ ...donationForm, method: 'online' })}
+                                className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'online'
+                                    ? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    }`}
+                            >
+                                <FaCreditCard /> {t.credit_card_stripe || "Card"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDonationForm({ ...donationForm, method: 'paypal' })}
+                                className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'paypal'
+                                    ? 'border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    }`}
+                            >
+                                <FaPaypal /> PayPal
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDonationForm({ ...donationForm, method: 'transfer' })}
+                                className={`p-3 rounded-lg border text-sm font-medium flex flex-col items-center gap-1 transition ${donationForm.method === 'transfer'
+                                    ? 'border-blue-900 bg-blue-50 text-blue-900 dark:bg-blue-900/20 dark:text-blue-400'
+                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    }`}
+                            >
+                                <FaUniversity /> {t.bank_transfer || "Transfer"}
+                            </button>
+                        </div>
+                    </div>
+
+                    {donationForm.method === 'paypal' ? (
+                        <div className="mt-4">
+                            <PayPalDonationButton
+                                amount={donationForm.amount}
+                                onSuccess={() => handleDonateSubmit()}
+                                onError={() => toast.error("PayPal Error")}
+                            />
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleDonateSubmit}
+                            className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-lg mt-4 flex justify-center items-center gap-2"
+                        >
+                            <FaHeart /> {t.confirm_donation}
+                        </button>
+                    )}
                 </div>
-            )}
+            </Modal>
         </motion.div>
     );
 };

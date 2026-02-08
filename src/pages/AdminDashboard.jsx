@@ -14,6 +14,7 @@ import DashboardStats from '../components/admin/DashboardStats';
 import PostForm from '../components/admin/PostForm';
 import DashboardOverview from '../components/admin/DashboardOverview';
 import CommunityManagement from '../components/admin/CommunityManagement';
+import DonationsList from '../components/admin/DonationsList';
 
 import { useLanguage } from '../context/LanguageContext';
 
@@ -629,7 +630,7 @@ const AdminDashboard = () => {
                                 </div>
                             )}
 
-                            {activeTab === 'donations' && <div className="text-gray-500 dark:text-gray-400 text-center py-20 flex flex-col items-center gap-4"><FaMoneyBillWave size={40} opacity={0.3} /> {t.donation_management_soon}</div>}
+                            {activeTab === 'donations' && <DonationsList t={t} />}
 
                             {activeTab === 'admins' && user?.email === 'oussousselhadji@gmail.com' && (
                                 <AdminManagement />
