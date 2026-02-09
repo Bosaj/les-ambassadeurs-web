@@ -677,7 +677,7 @@ const AdminDashboard = () => {
                                 {selectedUser.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{selectedUser.username}</p>}
                                 <p className="text-gray-500 dark:text-gray-400">{selectedUser.email}</p>
                                 <div className="flex gap-2 mt-1">
-                                    <span className={`text-xs px-2 py-1 rounded ${selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{selectedUser.role}</span>
+                                    <span className={`text-xs px-2 py-1 rounded ${selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{t[`role_${selectedUser.role}`] || selectedUser.role}</span>
                                     {selectedUser.phone_number && <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded flex items-center gap-1"><FaPhone className="text-[10px]" /> {selectedUser.phone_number}</span>}
                                 </div>
                             </div>
@@ -698,7 +698,7 @@ const AdminDashboard = () => {
 
                         {/* Loading State */}
                         {userDetailsLoading ? (
-                            <div className="py-8 text-center text-gray-500">Loading details...</div>
+                            <div className="py-8 text-center text-gray-500">{t.loading_details || "Loading details..."}</div>
                         ) : (
                             <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                                 {/* Activities Tab */}
@@ -718,7 +718,7 @@ const AdminDashboard = () => {
                                                     {t[`status_${activity.status}`] || activity.status || t.status_pending}
                                                 </span>
                                             </div>
-                                        )) : <p className="text-gray-500 text-center py-4">No activities found.</p>}
+                                        )) : <p className="text-gray-500 text-center py-4">{t.no_activities_found}</p>}
                                     </div>
                                 )}
 
@@ -728,7 +728,7 @@ const AdminDashboard = () => {
                                         {userDetails.donations?.length > 0 ? userDetails.donations.map(donation => (
                                             <div key={donation.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
                                                 <div>
-                                                    <h4 className="font-bold text-green-600">{donation.amount} MAD</h4>
+                                                    <h4 className="font-bold text-green-600">{donation.amount} {t.currency_mad || 'DH'}</h4>
                                                     <p className="text-xs text-gray-500">{t.via} {t[`payment_method_${donation.method}`] || donation.method}</p>
                                                 </div>
                                                 <div className="text-right">
@@ -736,7 +736,7 @@ const AdminDashboard = () => {
                                                     <span className={`text-xs px-2 py-0.5 rounded capitalize ${donation.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t[`status_${donation.status}`] || donation.status || t.status_pending}</span>
                                                 </div>
                                             </div>
-                                        )) : <p className="text-gray-500 text-center py-4">No donations found.</p>}
+                                        )) : <p className="text-gray-500 text-center py-4">{t.no_donations_found}</p>}
                                     </div>
                                 )}
 
@@ -756,7 +756,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                        )) : <p className="text-gray-500 text-center py-4">No suggestions found.</p>}
+                                        )) : <p className="text-gray-500 text-center py-4">{t.no_suggestions_found}</p>}
                                     </div>
                                 )}
                             </div>

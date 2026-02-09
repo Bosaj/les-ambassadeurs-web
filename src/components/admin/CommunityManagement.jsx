@@ -145,7 +145,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700 min-h-[400px]">
                 {loading ? (
                     <div className="flex justify-center items-center h-40 text-gray-500">
-                        Loading data...
+                        {t.loading_data || "Loading data..."}
                     </div>
                 ) : (
                     <>

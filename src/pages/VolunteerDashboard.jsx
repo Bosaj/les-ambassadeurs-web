@@ -259,7 +259,7 @@ const VolunteerDashboard = () => {
                                 <div className="bg-blue-900 text-white rounded-xl p-6 shadow-md flex items-center justify-between cursor-pointer transform hover:scale-105 transition" onClick={() => setActiveTab('impact')}>
                                     <div>
                                         <p className="text-lg opacity-80">{t.donations_made || "Total Donated"}</p>
-                                        <h2 className="text-4xl font-bold">{totalDonated} {t.currency_mad || "MAD"}</h2>
+                                        <h2 className="text-4xl font-bold">{totalDonated} {t.currency_mad || "DH"}</h2>
                                     </div>
                                     <FaMoneyBillWave className="text-5xl opacity-50" />
                                 </div>
@@ -396,7 +396,7 @@ const VolunteerDashboard = () => {
                             </h2>
                             <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white p-8 rounded-2xl mb-8 text-center">
                                 <p className="text-xl mb-2 opacity-90">{t.total_contribution || "Total Contribution"}</p>
-                                <h3 className="text-5xl font-bold">{totalDonated} <span className="text-2xl">MAD</span></h3>
+                                <h3 className="text-5xl font-bold">{totalDonated} <span className="text-2xl">{t.currency_mad || "DH"}</span></h3>
                                 <p className="mt-4 text-sm opacity-75">{t.thank_you_diff || "Thank you for making a difference!"}</p>
                             </div>
 
@@ -411,7 +411,7 @@ const VolunteerDashboard = () => {
                                                 <p className="font-bold text-gray-800 dark:text-white">{donation.method === 'stripe' ? (t.payment_card || "Card") : (donation.method === 'paypal' ? "PayPal" : (t.direct_donation || "Direct Donation"))}</p>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(donation.created_at).toLocaleDateString()}</p>
                                             </div>
-                                            <span className="font-bold text-green-600 dark:text-green-400">+{donation.amount} MAD</span>
+                                            <span className="font-bold text-green-600 dark:text-green-400">+{donation.amount} {t.currency_mad || "DH"}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -467,7 +467,7 @@ const VolunteerDashboard = () => {
                                             membershipHistory.map((record) => (
                                                 <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                                                     <td className="p-4 font-bold text-gray-800 dark:text-gray-200">{record.year}</td>
-                                                    <td className="p-4 text-gray-600 dark:text-gray-400">{record.amount} MAD</td>
+                                                    <td className="p-4 text-gray-600 dark:text-gray-400">{record.amount} {t.currency_mad}</td>
                                                     <td className="p-4">
                                                         {record.status === 'paid' ? (
                                                             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1 w-fit">
