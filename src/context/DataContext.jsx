@@ -62,14 +62,32 @@ export const DataProvider = ({ children }) => {
             if (newsError) throw newsError;
             setNews(newsData || []);
 
-            // Fetch All Events/Programs/Projects (with pinning)
-            const { data: allEventsData, error: eventsError } = await supabase
-                .from('events')
-                .select('*, attendees:event_attendees(id, name, email, status, user_id)')
-                .order('is_pinned', { ascending: false })
-                .order('date', { ascending: false });
+            // Fetch All Events/Programs/Projects (with robust error handling for joins)
+            let allEventsData = [];
 
-            if (eventsError) throw eventsError;
+            try {
+                // Try fetching with attendees first
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('*, attendees:event_attendees(id, name, email, status, user_id)')
+                    .order('is_pinned', { ascending: false })
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+                allEventsData = data || [];
+            } catch (joinError) {
+                console.warn("Retrying fetch without join due to error:", joinError);
+                // Fallback: Fetch without join if the above fails (e.g. RLS on joined table)
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('*')
+                    .order('is_pinned', { ascending: false })
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+                allEventsData = data || [];
+            }
+            console.log("Events fetched:", allEventsData);
 
             // Debug log
 
