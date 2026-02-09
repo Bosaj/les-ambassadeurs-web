@@ -100,7 +100,7 @@ const Footer = () => {
 
                 <div className="pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-gray-400 text-sm text-center">
-                        {t.copyright} Website by <a href="https://www.linkedin.com/in/oussama-elhadji" className="underline" target="_blank" rel="noopener noreferrer">Oussama ELHADJI</a>
+                        {t.copyright} {t.website_by} <a href="https://www.linkedin.com/in/oussama-elhadji" className="underline" target="_blank" rel="noopener noreferrer">Oussama ELHADJI</a>
                     </p>
                     <div className="flex gap-6">
                         <a href="#" className="text-gray-400 hover:text-white text-sm transition">{t.privacy_policy}</a>

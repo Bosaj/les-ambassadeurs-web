@@ -1,8 +1,13 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../translations';
 
 const Modal = ({ isOpen, onClose, title, children, heroImage }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
+
     // Lock body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -57,6 +62,7 @@ const Modal = ({ isOpen, onClose, title, children, heroImage }) => {
                                 <button
                                     onClick={onClose}
                                     className="absolute top-4 right-4 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 hover:scale-110 transition-all backdrop-blur-md border border-white/20"
+                                    aria-label={t.close_modal || "Close modal"}
                                 >
                                     <FaTimes className="text-lg" />
                                 </button>
@@ -70,7 +76,7 @@ const Modal = ({ isOpen, onClose, title, children, heroImage }) => {
                                 <button
                                     onClick={onClose}
                                     className="p-2 rounded-full text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                                    aria-label="Close modal"
+                                    aria-label={t.close_modal || "Close modal"}
                                 >
                                     <FaTimes className="text-xl" />
                                 </button>

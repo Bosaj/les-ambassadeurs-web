@@ -12,7 +12,7 @@ const Branches = () => {
         {
             id: 'casablanca',
             cityKey: 'casablanca',
-            address: '123 Mohammed VI Street', // Address might need translation logic if strict
+            addressKey: 'branch_casablanca_address',
             phone: '0522-123456',
             email: 'casablanca@safara.org',
             coordinates: { top: '30%', left: '20%' }
@@ -20,7 +20,7 @@ const Branches = () => {
         {
             id: 'rabat',
             cityKey: 'rabat',
-            address: '45 Hassan II Street',
+            addressKey: 'branch_rabat_address',
             phone: '0537-654321',
             email: 'rabat@safara.org',
             coordinates: { top: '25%', left: '25%' }
@@ -28,7 +28,7 @@ const Branches = () => {
         {
             id: 'oujda',
             cityKey: 'oujda',
-            address: '8 Allal El Fassi Street',
+            addressKey: 'branch_oujda_address',
             phone: '0536-789123',
             email: 'oujda@safara.org',
             coordinates: { top: '35%', left: '40%' }
@@ -36,7 +36,7 @@ const Branches = () => {
         {
             id: 'marrakech',
             cityKey: 'marrakech',
-            address: '22 Mohammed V Street',
+            addressKey: 'branch_marrakech_address',
             phone: '0524-456789',
             email: 'marrakech@safara.org',
             coordinates: { top: '60%', left: '30%' }
@@ -44,7 +44,7 @@ const Branches = () => {
         {
             id: 'essaouira',
             cityKey: 'essaouira',
-            address: '10 Beach Avenue',
+            addressKey: 'branch_essaouira_address',
             phone: '0524-112233',
             email: 'essaouira@safara.org',
             coordinates: { top: '50%', left: '15%' }
@@ -120,7 +120,7 @@ const Branches = () => {
                                     </h4>
                                     <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 flex items-center gap-2">
                                         <FaMapMarkerAlt className="text-red-500" />
-                                        <span>{branch.address}</span>
+                                        <span>{t[branch.addressKey]}</span>
                                     </p>
                                     <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2">
                                         <FaPhone className="text-blue-500" />
