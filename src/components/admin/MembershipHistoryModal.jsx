@@ -92,7 +92,7 @@ const MembershipHistoryModal = ({ user, onClose, t }) => {
                                             </div>
                                             <div>
                                                 <div className="font-bold dark:text-white">{year}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: 50 DH</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: 50 {t.currency_mad || "DH"}</div>
                                             </div>
                                         </div>
 

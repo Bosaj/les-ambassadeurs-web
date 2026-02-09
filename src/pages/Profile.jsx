@@ -275,7 +275,7 @@ const Profile = () => {
                                         </div>
                                         <div>
                                             <h3 className="font-bold text-lg dark:text-white">{record.year}</h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: {record.amount} DH</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: {record.amount} {t.currency_mad}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full font-bold text-sm">

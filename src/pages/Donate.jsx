@@ -122,7 +122,7 @@ const Donate = () => {
             } else {
                 setClientSecret("");
                 if (donationForm.amount > 0 && donationForm.amount < 10 && donationForm.method === 'online') {
-                    setStripeError("Minimum donation is 10 MAD");
+                    setStripeError("Minimum donation is 10 DH");
                 }
             }
         };

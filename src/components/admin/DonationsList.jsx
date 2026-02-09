@@ -107,7 +107,7 @@ const DonationsList = ({ t }) => {
                 <div className="flex items-center gap-4">
                     <div className="text-right">
                         <span className="block text-xs text-gray-500 uppercase font-bold tracking-wider">{t.total_verified || "Total Verified"}</span>
-                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">{totalAmount.toLocaleString()} MAD</span>
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">{totalAmount.toLocaleString()} {t.currency_mad || 'DH'}</span>
                     </div>
                 </div>
             </div>
@@ -149,7 +149,7 @@ const DonationsList = ({ t }) => {
                                             <div className="text-xs text-gray-500">{donation.email}</div>
                                         </td>
                                         <td className="p-4 font-bold text-green-600 dark:text-green-400">
-                                            {parseFloat(donation.amount).toLocaleString()} MAD
+                                            {parseFloat(donation.amount).toLocaleString()} {t.currency_mad || 'DH'}
                                         </td>
                                         <td className="p-4">
                                             <span className={`text-xs px-2 py-1 rounded-full uppercase font-bold tracking-wide
@@ -234,7 +234,7 @@ const DonationsList = ({ t }) => {
                                 <div className="flex flex-col items-center justify-center mb-6">
                                     <span className="text-sm text-gray-500 uppercase font-bold tracking-wider mb-2">{t.amount}</span>
                                     <span className="text-4xl font-bold text-green-600 dark:text-green-400">
-                                        {parseFloat(selectedDonation.amount).toLocaleString()} <span className="text-xl text-gray-400">MAD</span>
+                                        {parseFloat(selectedDonation.amount).toLocaleString()} <span className="text-xl text-gray-400">{t.currency_mad || 'DH'}</span>
                                     </span>
                                 </div>
 

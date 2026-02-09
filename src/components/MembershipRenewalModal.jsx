@@ -207,7 +207,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                                 <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl border border-yellow-200 dark:border-yellow-700">
                                     <FaMoneyBillWave className="text-4xl text-yellow-600 mx-auto mb-3" />
                                     <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">{t.cash_instruction}</p>
-                                    <div className="font-bold text-xl my-4 text-gray-800 dark:text-white">{MEMBERSHIP_FEE} MAD</div>
+                                    <div className="font-bold text-xl my-4 text-gray-800 dark:text-white">{MEMBERSHIP_FEE} {t.currency_mad || 'DH'}</div>
                                     <button
                                         onClick={submitManualPayment}
                                         disabled={loading}
