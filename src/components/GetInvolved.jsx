@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
 import { FaHandsHelping, FaHandHoldingUsd, FaHandshake } from 'react-icons/fa';
@@ -31,9 +32,9 @@ const GetInvolved = () => {
                         <p className="text-gray-700 dark:text-gray-200 mb-6">
                             {t.volunteer_desc}
                         </p>
-                        <a href="#" className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg inline-block transition">
+                        <Link to="/volunteer" className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg inline-block transition">
                             {t.register_now}
-                        </a>
+                        </Link>
                     </div>
 
                     <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-md text-center hover:shadow-lg transition">
@@ -46,9 +47,9 @@ const GetInvolved = () => {
                         <p className="text-gray-700 dark:text-gray-200 mb-6">
                             {t.donate_desc}
                         </p>
-                        <a href="#" className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg inline-block transition">
+                        <Link to="/donate" className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg inline-block transition">
                             {t.donate}
-                        </a>
+                        </Link>
                     </div>
 
                     <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-md text-center hover:shadow-lg transition">
@@ -61,9 +62,9 @@ const GetInvolved = () => {
                         <p className="text-gray-700 dark:text-gray-200 mb-6">
                             {t.partner_desc}
                         </p>
-                        <a href="#" className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg inline-block transition">
+                        <Link to="/" state={{ scrollTo: 'contact' }} className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg inline-block transition">
                             {t.contact_us}
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>

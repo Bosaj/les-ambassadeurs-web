@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { translations } from '../translations';
-import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight, FaMapMarkerAlt, FaCheckCircle, FaUserPlus } from 'react-icons/fa';
+import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight, FaMapMarkerAlt, FaCheckCircle, FaUserPlus, FaCalendarAlt } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 import ConfirmationModal from './ConfirmationModal';
@@ -28,7 +28,7 @@ const Programs = () => {
     // Merge type if found (consistency with displayItems)
     const activeItem = selectedProgram ? { ...selectedProgram, type: selectedProgramId.type } : null;
 
-    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
 
     const handleCancelClick = (eventId, type) => {
@@ -168,11 +168,19 @@ const Programs = () => {
 
                     <div className="prose dark:prose-invert max-w-none">
                         <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-8">
-                            {activeItem?.location && getLocalizedContent(activeItem.location, language) && (
-                                <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded w-fit">
-                                    <FaMapMarkerAlt /> {getLocalizedContent(activeItem.location, language)}
-                                </div>
-                            )}
+                            {/* Date and Location */}
+                            <div className="flex flex-wrap gap-3 mb-4">
+                                {activeItem?.date && (
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+                                        <FaCalendarAlt /> {new Date(activeItem.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'), { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </div>
+                                )}
+                                {activeItem?.location && getLocalizedContent(activeItem.location, language) && (
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                                        <FaMapMarkerAlt /> {getLocalizedContent(activeItem.location, language)}
+                                    </div>
+                                )}
+                            </div>
                             {/* Attendees List in Modal */}
                             <div className="flex items-center gap-2 mb-4 bg-blue-50 dark:bg-blue-900/10 p-2 rounded-lg w-fit border border-blue-100 dark:border-blue-800">
                                 <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
@@ -192,72 +200,53 @@ const Programs = () => {
                                 {activeItem?.type === 'projects' ? (t.support_project || "Support Project") : (t.join_program || "Join Program")}
                             </h4>
 
-                            {(user && activeItem?.attendees && activeItem.attendees.some(a => a.email === user.email && a.status !== 'rejected')) ? (
-                                <div className="p-4 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-lg flex flex-col items-center gap-3 font-semibold">
-                                    <div className="flex items-center gap-2">
-                                        <FaCheckCircle className="text-xl" />
-                                        {activeItem?.type === 'projects' ? (t.already_supporting || "You are supporting this project.") : (t.already_registered || "You are registered.")}
+                            {!user ? (
+                                <div className="text-center py-6">
+                                    <div className="mb-4 text-blue-900 dark:text-blue-300 text-4xl flex justify-center opacity-80">
+                                        <FaUserPlus />
                                     </div>
-                                    <button
-                                        onClick={() => handleCancelClick(activeItem.id, activeItem.type || 'program')}
-                                        className="text-red-500 hover:text-red-700 underline text-sm font-medium transition-colors"
-                                    >
-                                        {t.cancel_registration || "Cancel Registration"}
-                                    </button>
+                                    <h5 className="text-lg font-bold mb-2 text-gray-800 dark:text-white">{t.login_prompt_title}</h5>
+                                    <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">{t.login_prompt_desc}</p>
+                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                        <Link to="/login" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-all shadow-md hover:shadow-lg">
+                                            {t.login_btn}
+                                        </Link>
+                                        <Link to="/register-volunteer" className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-bold transition-all border border-gray-200 dark:border-gray-600">
+                                            {t.sign_up_btn || "Sign Up"}
+                                        </Link>
+                                    </div>
                                 </div>
                             ) : (
-                                <form
-                                    onSubmit={async (e) => {
-                                        e.preventDefault();
-                                        const formData = user ? { name: user.full_name, email: user.email } : guestForm;
-                                        try {
-                                            await registerForEvent(activeItem.type || 'program', activeItem.id, formData);
-                                            toast.success(activeItem.type === 'projects' ? (t.successfully_supported || "Successfully supported!") : (t.successfully_joined || "Successfully joined!"));
-                                            // Keep modal open, data will update via global state
-                                            setGuestForm({ name: '', email: '' });
-                                        } catch (err) {
-                                            toast.error(t.error_occurred || "Error occurred");
-                                        }
-                                    }}
-                                    className="space-y-4"
-                                >
-                                    {!user && (
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t.full_name || "Full Name"}</label>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    className="w-full border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white"
-                                                    value={guestForm.name}
-                                                    onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                                                    placeholder={t.enter_name_placeholder || "Your Name"}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t.email_address || "Email Address"}</label>
-                                                <input
-                                                    type="email"
-                                                    required
-                                                    className="w-full border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white"
-                                                    value={guestForm.email}
-                                                    onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                                                    placeholder={t.enter_email_placeholder || "Your Email"}
-                                                />
-                                            </div>
+                                (activeItem?.attendees?.some(a => a.email === user.email && a.status !== 'rejected')) ? (
+                                    <div className="p-4 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-lg flex flex-col items-center gap-3 font-semibold">
+                                        <div className="flex items-center gap-2">
+                                            <FaCheckCircle className="text-xl" />
+                                            {activeItem?.type === 'projects' ? (t.already_supporting || "You are supporting this project.") : (t.already_registered || "You are registered.")}
                                         </div>
-                                    )}
-
+                                        <button
+                                            onClick={() => handleCancelClick(activeItem.id, activeItem.type || 'program')}
+                                            className="text-red-500 hover:text-red-700 underline text-sm font-medium transition-colors"
+                                        >
+                                            {t.cancel_registration || "Cancel Registration"}
+                                        </button>
+                                    </div>
+                                ) : (
                                     <button
-                                        type="submit"
+                                        onClick={async () => {
+                                            try {
+                                                const formData = { name: user.full_name, email: user.email };
+                                                await registerForEvent(activeItem.type || 'program', activeItem.id, formData);
+                                                toast.success(activeItem.type === 'projects' ? (t.successfully_supported || "Successfully supported!") : (t.successfully_joined || "Successfully joined!"));
+                                            } catch (err) {
+                                                toast.error(t.error_occurred || "Error occurred");
+                                            }
+                                        }}
                                         className={`w-full py-3 rounded-xl font-bold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 ${activeItem?.type === 'projects' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                                     >
                                         {activeItem?.type === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
-                                        {user
-                                            ? (activeItem?.type === 'projects' ? (t.confirm_support || "Confirm Support") : (t.confirm_registration || "Confirm Registration"))
-                                            : (activeItem?.type === 'projects' ? (t.support_verb || "Support") : (t.join_verb || "Join"))}
+                                        {activeItem?.type === 'projects' ? (t.confirm_support || "Confirm Support") : (t.confirm_registration || "Confirm Registration")}
                                     </button>
-                                </form>
+                                )
                             )}
                         </div>
 
