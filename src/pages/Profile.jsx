@@ -16,7 +16,9 @@ const Profile = () => {
         password: '',
         username: '',
         phone: '',
-        city: ''
+        city: '',
+        full_name_ar: '',
+        city_ar: ''
     });
     const [avatarFile, setAvatarFile] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState(null);
@@ -29,7 +31,9 @@ const Profile = () => {
                 password: '', // Clear password field on load
                 username: user.username || '',
                 phone: user.phone_number || user.phone || '',
-                city: user.city || ''
+                city: user.city || '',
+                full_name_ar: user.full_name_ar || '',
+                city_ar: user.city_ar || ''
             });
             if (user.avatar_url) {
                 setAvatarPreview(user.avatar_url);
@@ -109,6 +113,8 @@ const Profile = () => {
             if (avatarUrl !== user.avatar_url) profileUpdates.avatar_url = avatarUrl;
             if (formData.phone !== (user.phone_number || user.phone)) profileUpdates.phone_number = formData.phone;
             if (formData.city !== user.city) profileUpdates.city = formData.city;
+            if (formData.full_name_ar !== user.full_name_ar) profileUpdates.full_name_ar = formData.full_name_ar;
+            if (formData.city_ar !== user.city_ar) profileUpdates.city_ar = formData.city_ar;
 
             if (Object.keys(profileUpdates).length > 0) {
                 const { error: profileError } = await supabase
@@ -182,6 +188,22 @@ const Profile = () => {
                             />
                         </div>
 
+                        {/* Arabic Name */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <FaUser className="text-blue-500" /> {t.full_name_ar}
+                            </label>
+                            <input
+                                type="text"
+                                name="full_name_ar"
+                                value={formData.full_name_ar}
+                                onChange={handleChange}
+                                placeholder={t.full_name_ar_placeholder}
+                                className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition text-right"
+                                dir="rtl"
+                            />
+                        </div>
+
                         {/* Email */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
@@ -239,6 +261,22 @@ const Profile = () => {
                                 onChange={handleChange}
                                 placeholder="Casablanca"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
+                            />
+                        </div>
+
+                        {/* Arabic City */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <FaUser className="text-blue-500" /> {t.city_ar}
+                            </label>
+                            <input
+                                type="text"
+                                name="city_ar"
+                                value={formData.city_ar}
+                                onChange={handleChange}
+                                placeholder={t.city_ar_placeholder}
+                                className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition text-right"
+                                dir="rtl"
                             />
                         </div>
 
