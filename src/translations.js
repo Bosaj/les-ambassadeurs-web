@@ -827,6 +827,13 @@ export const translations = {
         sign_in_title: "Sign In",
         email_placeholder: "Email address",
         password_placeholder: "Password",
+        // Login Prompt
+        login_prompt_title: "Login to track your contribution?",
+        login_prompt_desc: "Logging in allows you to track your donation history. You can also continue as a guest.",
+        login_btn: "Login",
+        continue_guest: "Continue as Guest",
+        confirm_support_text: "Click below to confirm your support as",
+        confirm_join_text: "Click below to confirm your registration as",
         // Volunteer Membership
         my_membership: "My Membership",
         membership_status: "Membership Status",
@@ -1716,6 +1723,8 @@ export const translations = {
         enter_email_placeholder: "Entrez votre email",
         confirm_support: "Confirmer le soutien",
         confirm_join: "Confirmer l'adhésion",
+        confirm_support_text: "Cliquez ci-dessous pour confirmer votre soutien en tant que",
+        confirm_join_text: "Cliquez ci-dessous pour confirmer votre inscription en tant que",
         events_page_title: "Nos Événements",
 
         // Batch 3 Additions (Donate & Volunteer)

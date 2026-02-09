@@ -22,6 +22,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ErrorPage from './pages/ErrorPage';
 import ErrorBoundary from './components/ErrorBoundary';
 
+import ScrollToTopWrapper from './components/ScrollToTopWrapper';
+
 function App() {
     return (
         <LanguageProvider>
@@ -29,6 +31,7 @@ function App() {
                 <DataProvider>
                     <AuthProvider>
                         <Router>
+                            <ScrollToTopWrapper />
                             <ErrorBoundary>
                                 <Routes>
                                     <Route path="/" element={<Layout />}>

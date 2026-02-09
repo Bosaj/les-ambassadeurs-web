@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -23,7 +23,7 @@ const ProgramsPage = () => {
     // If navigation passes an item, we extract ID and Type from it.
 
     const [modalState, setModalState] = useState({ id: null, type: 'programs' });
-    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
 
     useEffect(() => {
@@ -84,17 +84,7 @@ const ProgramsPage = () => {
         }
     };
 
-    const handleGuestSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await registerForEvent(selectedType, selectedItem.id, guestForm);
-            toast.success(selectedType === 'projects' ? t.successfully_supported : t.successfully_joined);
-            // Don't close, let it update
-            setGuestForm({ name: '', email: '' });
-        } catch (error) {
-            toast.error(t.error_occurred);
-        }
-    };
+
 
     const renderCard = (item, type) => {
         const isJoined = user && item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected');
@@ -215,7 +205,37 @@ const ProgramsPage = () => {
                             <p>{getLocalizedContent(selectedItem.description, language)}</p>
                         </div>
 
-                        {user ? (
+                        {/* Date and Location */}
+                        <div className="flex flex-wrap gap-3 mb-4">
+                            {selectedItem?.date && (
+                                <div className="flex items-center gap-2 text-sm font-semibold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+                                    <FaCalendarAlt /> {new Date(selectedItem.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'), { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </div>
+                            )}
+                            {selectedItem?.location && getLocalizedContent(selectedItem.location, language) && (
+                                <div className="flex items-center gap-2 text-sm font-semibold text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                                    <FaMapMarkerAlt /> {getLocalizedContent(selectedItem.location, language)}
+                                </div>
+                            )}
+                        </div>
+
+                        {!user ? (
+                            <div className="text-center py-6 border-t dark:border-gray-700 pt-8">
+                                <div className="mb-4 text-blue-900 dark:text-blue-300 text-5xl flex justify-center opacity-80">
+                                    <FaUserPlus />
+                                </div>
+                                <h5 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">{t.login_prompt_title}</h5>
+                                <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-sm mx-auto">{t.login_prompt_desc}</p>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <Link to="/login" className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                        {t.login_btn}
+                                    </Link>
+                                    <Link to="/register-volunteer" className="px-8 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-xl font-bold transition-all border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md">
+                                        {t.sign_up_btn || "Sign Up"}
+                                    </Link>
+                                </div>
+                            </div>
+                        ) : (
                             <div className="text-center space-y-6 pt-4 border-t dark:border-gray-700">
                                 {(selectedItem.attendees && selectedItem.attendees.some(a => a.email === user.email && a.status !== 'rejected')) ? (
                                     <div className="p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl flex flex-col items-center gap-3">
@@ -236,46 +256,18 @@ const ProgramsPage = () => {
                                             {selectedType === 'projects'
                                                 ? (t.confirm_support_text || "Click below to support this project as")
                                                 : (t.confirm_join_text || "Click below to store your registration as")}
-                                            <span className="block font-bold text-gray-900 dark:text-white mt-1">{user.full_name || user.email}</span>
+                                            <span className="block font-bold text-gray-900 dark:text-white mt-1 text-lg">{user.full_name || user.email}</span>
                                         </p>
                                         <button
                                             onClick={() => handleJoinClick(selectedItem, selectedType)}
-                                            className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2`}
+                                            className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-4 rounded-xl font-bold transition shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 text-lg`}
                                         >
-                                            {selectedType === 'projects' ? <FaHandsHelping /> : <FaUserPlus />}
+                                            {selectedType === 'projects' ? <FaHandsHelping className="text-2xl" /> : <FaUserPlus className="text-2xl" />}
                                             {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
                                         </button>
                                     </>
                                 )}
                             </div>
-                        ) : (
-                            <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2 border-t dark:border-gray-700">
-                                <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                        value={guestForm.name}
-                                        onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                                        placeholder={t.enter_name_placeholder}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                        value={guestForm.email}
-                                        onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                                        placeholder={t.enter_email_placeholder}
-                                    />
-                                </div>
-                                <button type="submit" className={`w-full ${selectedType === 'projects' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-900 hover:bg-blue-800'} text-white py-3 rounded-lg font-bold transition shadow-lg mt-4`}>
-                                    {selectedType === 'projects' ? t.confirm_support : t.confirm_registration}
-                                </button>
-                            </form>
                         )}
                     </div>
                 )}

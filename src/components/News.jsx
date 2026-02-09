@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { translations } from '../translations';
-import { FaCalendarAlt, FaMapMarkerAlt, FaArrowRight, FaThumbtack } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaArrowRight, FaThumbtack, FaUserPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import Modal from './Modal';
 import ConfirmationModal from './ConfirmationModal';
@@ -27,7 +27,7 @@ const News = () => {
     // Merge type
     const currentNewsItem = activeNews ? { ...activeNews, type: selectedNewsId.type } : null;
 
-    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
+
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
 
     const handleCancelClick = (eventId) => {
@@ -207,55 +207,38 @@ const News = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <form
-                                    onSubmit={async (e) => {
-                                        e.preventDefault();
-                                        const formData = user ? { name: user.full_name, email: user.email } : guestForm;
-                                        try {
-                                            await registerForEvent('event', currentNewsItem.id, formData);
-                                            toast.success(t.successfully_joined || "Successfully joined!");
-                                            // Close modal removed to let it update
-                                            setGuestForm({ name: '', email: '' });
-                                        } catch (err) {
-                                            toast.error(t.error_occurred || "Error occurred");
-                                        }
-                                    }}
-                                    className="space-y-4"
-                                >
-                                    {!user && (
-                                        <>
-                                            <div>
-                                                <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name || "Full Name"}</label>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                                    value={guestForm.name}
-                                                    onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                                                    placeholder={t.enter_name_placeholder || "Enter your name"}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address || "Email Address"}</label>
-                                                <input
-                                                    type="email"
-                                                    required
-                                                    className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                                    value={guestForm.email}
-                                                    onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                                                    placeholder={t.enter_email_placeholder || "Enter your email"}
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
+                                !user ? (
+                                    <div className="text-center py-6">
+                                        <div className="mb-4 text-blue-900 dark:text-blue-300 text-4xl flex justify-center opacity-80">
+                                            <FaUserPlus />
+                                        </div>
+                                        <h5 className="text-lg font-bold mb-2 text-gray-800 dark:text-white">{t.login_prompt_title}</h5>
+                                        <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">{t.login_prompt_desc}</p>
+                                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                            <Link to="/login" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-all shadow-md hover:shadow-lg">
+                                                {t.login_btn}
+                                            </Link>
+                                            <Link to="/register-volunteer" className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-bold transition-all border border-gray-200 dark:border-gray-600">
+                                                {t.sign_up_btn || "Sign Up"}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ) : (
                                     <button
-                                        type="submit"
+                                        onClick={async () => {
+                                            try {
+                                                const formData = { name: user.full_name, email: user.email };
+                                                await registerForEvent('event', currentNewsItem.id, formData);
+                                                toast.success(t.successfully_joined || "Successfully joined!");
+                                            } catch (err) {
+                                                toast.error(t.error_occurred || "Error occurred");
+                                            }
+                                        }}
                                         className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700 transition"
                                     >
-                                        {user ? (t.confirm_registration || "Confirm Registration") : (t.join_verb || "Join")}
+                                        {t.join_verb || "Join"}
                                     </button>
-                                </form>
+                                )
                             )}
                         </div>
                     )}
