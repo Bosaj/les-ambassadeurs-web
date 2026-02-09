@@ -165,11 +165,11 @@ const CommunityManagement = ({ t, onViewUser }) => {
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {users.length > 0 ? users.map(u => (
                                             <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                                <td className="p-4 font-medium dark:text-white whitespace-nowrap">{u.full_name}</td>
+                                                <td className="p-4 font-medium dark:text-white whitespace-nowrap">{(language === 'ar' && u.full_name_ar) ? u.full_name_ar : u.full_name}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.email}</td>
                                                 <td className="p-4 whitespace-nowrap"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{t[`role_${u.role}`] || u.role}</span></td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.phone_number || '-'}</td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.city ? (t[`city_${u.city.toLowerCase()}`] || u.city) : '-'}</td>
+                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{(language === 'ar' && u.city_ar) ? u.city_ar : (u.city ? (t[`city_${u.city.toLowerCase()}`] || u.city) : '-')}</td>
                                                 <td className="p-4 text-right whitespace-nowrap flex justify-end gap-2">
                                                     <button
                                                         onClick={() => setSelectedUserForHistory(u)}

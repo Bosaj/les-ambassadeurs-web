@@ -254,7 +254,7 @@ const AdminDashboard = () => {
                             <table className="w-full text-left min-w-[300px]">
                                 <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="p-3 whitespace-nowrap">{t.table_header_name || "Name"}</th><th className="p-3 text-right whitespace-nowrap">{t.actions || "Actions"}</th></tr></thead>
                                 <tbody>{requests.map(r => (
-                                    <tr key={r.id} className="border-t dark:border-gray-600"><td className="p-3 dark:text-white whitespace-nowrap">{r.full_name}</td><td className="p-3 text-right whitespace-nowrap"><button onClick={() => handleApprove(r.id)} className="text-green-500 mr-2"><FaCheck /></button><button onClick={() => handleDeny(r.id)} className="text-red-500"><FaTimes /></button></td></tr>
+                                    <tr key={r.id} className="border-t dark:border-gray-600"><td className="p-3 dark:text-white whitespace-nowrap">{(language === 'ar' && r.full_name_ar) ? r.full_name_ar : r.full_name}</td><td className="p-3 text-right whitespace-nowrap"><button onClick={() => handleApprove(r.id)} className="text-green-500 mr-2"><FaCheck /></button><button onClick={() => handleDeny(r.id)} className="text-red-500"><FaTimes /></button></td></tr>
                                 ))}</tbody>
                             </table>
                         )}
@@ -665,15 +665,15 @@ const AdminDashboard = () => {
             <Modal
                 isOpen={!!selectedUser}
                 onClose={() => setSelectedUser(null)}
-                title={selectedUser ? `${t.user_details}: ${selectedUser.full_name}` : t.user_details}
+                title={selectedUser ? `${t.user_details}: ${(language === 'ar' && selectedUser.full_name_ar) ? selectedUser.full_name_ar : selectedUser.full_name}` : t.user_details}
             >
                 {selectedUser && (
                     <div className="space-y-6">
                         {/* Profile Info */}
                         <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                            <img src={selectedUser.avatar_url || `https://ui-avatars.com/api/?name=${selectedUser.full_name}`} alt={selectedUser.full_name} className="w-16 h-16 rounded-full" />
+                            <img src={selectedUser.avatar_url || `https://ui-avatars.com/api/?name=${(language === 'ar' && selectedUser.full_name_ar) ? selectedUser.full_name_ar : selectedUser.full_name}`} alt={selectedUser.full_name} className="w-16 h-16 rounded-full" />
                             <div>
-                                <h3 className="font-bold text-lg dark:text-white">{selectedUser.full_name}</h3>
+                                <h3 className="font-bold text-lg dark:text-white">{(language === 'ar' && selectedUser.full_name_ar) ? selectedUser.full_name_ar : selectedUser.full_name}</h3>
                                 {selectedUser.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{selectedUser.username}</p>}
                                 <p className="text-gray-500 dark:text-gray-400">{selectedUser.email}</p>
                                 <div className="flex gap-2 mt-1">

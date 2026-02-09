@@ -96,7 +96,7 @@ const VolunteerDashboard = () => {
         const toastId = toast.loading(t.joining_event || "Joining event...");
         try {
 
-            const userName = user.full_name || user.user_metadata?.full_name || user.email;
+            const userName = (language === 'ar' && user.full_name_ar) ? user.full_name_ar : (user.full_name || user.user_metadata?.full_name || user.email);
 
 
             await registerForEvent('events', event.id, {
@@ -231,7 +231,7 @@ const VolunteerDashboard = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t.welcome}, {user?.full_name || user?.email?.split('@')[0]}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t.welcome}, {(language === 'ar' && user?.full_name_ar) ? user.full_name_ar : (user?.full_name || user?.email?.split('@')[0])}</h1>
                         <p className="text-gray-600 dark:text-gray-400">{t.volunteer_dashboard}</p>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto">

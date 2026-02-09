@@ -63,7 +63,7 @@ const Header = () => {
                                         <FaUser />
                                     )}
                                     <span className="text-xs sm:text-base font-bold text-yellow-300">
-                                        {t.welcome}, {user.username || user.full_name?.split(' ')[0] || user.name?.split(' ')[0] || user.email?.split('@')[0]}
+                                        {t.welcome}, {(language === 'ar' && user.full_name_ar) ? user.full_name_ar.split(' ')[0] : (user.username || user.full_name?.split(' ')[0] || user.name?.split(' ')[0] || user.email?.split('@')[0])}
                                     </span>
                                 </div>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><Link to="/profile" className="hover:text-red-400 transition">{t.profile_title}</Link></span>
