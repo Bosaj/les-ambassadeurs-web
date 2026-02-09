@@ -66,15 +66,15 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                 <table className="w-full text-left min-w-[800px]">
                     <thead>
                         <tr className="border-b dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50">
-                            <th className="p-4 whitespace-nowrap font-semibold">{t.table_image}</th>
-                            <th className="p-4 min-w-[30%] font-semibold">{t.table_title}</th>
-                            <th className="p-4 whitespace-nowrap font-semibold">{t.table_date}</th>
+                            <th className="p-4 whitespace-nowrap font-semibold">{t.table_image || "Image"}</th>
+                            <th className="p-4 min-w-[30%] font-semibold">{t.table_title || "Title"}</th>
+                            <th className="p-4 whitespace-nowrap font-semibold">{t.table_date || "Date"}</th>
                             <th className="p-4 whitespace-nowrap font-semibold">{t.location || "Location"}</th>
                             {type === 'events' && <th className="p-4 whitespace-nowrap font-semibold">{t.attendees || "Attendees"}</th>}
                             {type === 'programs' && <th className="p-4 whitespace-nowrap font-semibold">{t.joined || "Joined"}</th>}
                             {type === 'projects' && <th className="p-4 whitespace-nowrap font-semibold">{t.supported || "Supported"}</th>}
-                            <th className="p-4 whitespace-nowrap text-center font-semibold">{t.pin_item}</th>
-                            <th className="p-4 whitespace-nowrap text-right font-semibold">{t.table_actions}</th>
+                            <th className="p-4 whitespace-nowrap text-center font-semibold">{t.pin_item || "Pin"}</th>
+                            <th className="p-4 whitespace-nowrap text-right font-semibold">{t.table_actions || "Actions"}</th>
                         </tr>
                     </thead>
                     <tbody className="text-gray-800 dark:text-gray-200 divide-y divide-gray-200 dark:divide-gray-700">
@@ -86,7 +86,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                                     </div>
                                 </td>
                                 <td className="p-4 font-medium">
-                                    <p className="line-clamp-1">{(item.title?.[activeLang] || item.title?.en || item.title?.fr || item.title?.ar || (typeof item.title === 'string' ? item.title : '') || 'Untitled')}</p>
+                                    <p className="line-clamp-1">{(item.title?.[activeLang] || item.title?.en || item.title?.fr || item.title?.ar || (typeof item.title === 'string' ? item.title : '') || (t.untitled || 'Untitled'))}</p>
                                 </td>
                                 <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-sm">
                                     {item.date ? new Date(item.date).toLocaleDateString() : '-'}
@@ -100,7 +100,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                                     <button
                                         onClick={() => togglePin(type, item.id, item.is_pinned)}
                                         className={`p-2 rounded-full transition-all ${item.is_pinned ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-500'}`}
-                                        title={item.is_pinned ? "Unpin" : "Pin to top"}
+                                        title={item.is_pinned ? (t.unpin || "Unpin") : (t.pin_to_top || "Pin to top")}
                                     >
                                         <FaThumbtack size={14} />
                                     </button>
@@ -119,7 +119,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                         )) : (
                             <tr>
                                 <td colspan="6" className="p-8 text-center text-gray-500 dark:text-gray-400">
-                                    No items found.
+                                    {t.no_items_found || "No items found."}
                                 </td>
                             </tr>
                         )}
@@ -665,7 +665,7 @@ const AdminDashboard = () => {
             <Modal
                 isOpen={!!selectedUser}
                 onClose={() => setSelectedUser(null)}
-                title={selectedUser ? `User Details: ${selectedUser.full_name}` : 'User Details'}
+                title={selectedUser ? `${t.user_details}: ${selectedUser.full_name}` : t.user_details}
             >
                 {selectedUser && (
                     <div className="space-y-6">
@@ -686,13 +686,13 @@ const AdminDashboard = () => {
                         {/* Tabs */}
                         <div className="flex border-b dark:border-gray-700">
                             <button onClick={() => setActiveUserTab('activities')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'activities' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
-                                Activities ({userDetails.activities?.length || 0})
+                                {t.tab_activities} ({userDetails.activities?.length || 0})
                             </button>
                             <button onClick={() => setActiveUserTab('donations')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'donations' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
-                                Donations ({userDetails.donations?.length || 0})
+                                {t.tab_donations} ({userDetails.donations?.length || 0})
                             </button>
                             <button onClick={() => setActiveUserTab('suggestions')} className={`px-4 py-2 font-medium transition-colors ${activeUserTab === 'suggestions' ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
-                                Suggestions ({userDetails.suggestions?.length || 0})
+                                {t.tab_suggestions} ({userDetails.suggestions?.length || 0})
                             </button>
                         </div>
 
@@ -707,15 +707,15 @@ const AdminDashboard = () => {
                                         {userDetails.activities?.length > 0 ? userDetails.activities.map(activity => (
                                             <div key={activity.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
                                                 <div>
-                                                    <h4 className="font-bold text-gray-800 dark:text-white">{activity.events?.title?.en || activity.events?.title?.fr || activity.events?.title?.ar || 'Event'}</h4>
-                                                    <p className="text-xs text-gray-500">{new Date(activity.events?.date).toLocaleDateString()} • {activity.events?.category || 'Event'}</p>
+                                                    <h4 className="font-bold text-gray-800 dark:text-white">{activity.events?.title?.[language] || activity.events?.title?.en || activity.events?.title?.fr || activity.events?.title?.ar || t.event}</h4>
+                                                    <p className="text-xs text-gray-500">{new Date(activity.events?.date).toLocaleDateString()} • {t[activity.events?.category] || activity.events?.category || t.event}</p>
                                                 </div>
                                                 <span className={`text-xs px-2 py-1 rounded capitalize ${activity.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                                     activity.status === 'attended' ? 'bg-purple-100 text-purple-800' :
                                                         activity.status === 'rejected' ? 'bg-red-100 text-red-800' :
                                                             'bg-yellow-100 text-yellow-800'
                                                     }`}>
-                                                    {activity.status || 'pending'}
+                                                    {t[`status_${activity.status}`] || activity.status || t.status_pending}
                                                 </span>
                                             </div>
                                         )) : <p className="text-gray-500 text-center py-4">No activities found.</p>}
@@ -729,11 +729,11 @@ const AdminDashboard = () => {
                                             <div key={donation.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm">
                                                 <div>
                                                     <h4 className="font-bold text-green-600">{donation.amount} MAD</h4>
-                                                    <p className="text-xs text-gray-500">Via {donation.method}</p>
+                                                    <p className="text-xs text-gray-500">{t.via} {t[`payment_method_${donation.method}`] || donation.method}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <span className="text-xs text-gray-400 block">{new Date(donation.created_at).toLocaleDateString()}</span>
-                                                    <span className={`text-xs px-2 py-0.5 rounded capitalize ${donation.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{donation.status || 'pending'}</span>
+                                                    <span className={`text-xs px-2 py-0.5 rounded capitalize ${donation.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t[`status_${donation.status}`] || donation.status || t.status_pending}</span>
                                                 </div>
                                             </div>
                                         )) : <p className="text-gray-500 text-center py-4">No donations found.</p>}
@@ -752,7 +752,7 @@ const AdminDashboard = () => {
                                                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{suggestion.description}</p>
                                                 {suggestion.proposed_date && (
                                                     <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded inline-block">
-                                                        Proposed Date: {new Date(suggestion.proposed_date).toLocaleDateString()}
+                                                        {t.proposed_date}: {new Date(suggestion.proposed_date).toLocaleDateString()}
                                                     </div>
                                                 )}
                                             </div>
