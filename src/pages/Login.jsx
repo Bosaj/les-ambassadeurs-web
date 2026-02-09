@@ -44,7 +44,7 @@ const Login = () => {
             // Redirect is handled by Supabase automatically (to the URL config in Supabase dashboard)
         } catch (error) {
             console.error(error);
-            toast.error(t.error_occurred || "Failed to login with Google");
+            toast.error(t.error_occurred);
         }
     };
 
@@ -99,7 +99,7 @@ const Login = () => {
                 </form>
                 <div className="text-center text-sm">
                     <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <p className="text-center text-gray-500 mb-4">{t.or_login_with || "Or login with"}</p>
+                        <p className="text-center text-gray-500 mb-4">{t.or_login_with}</p>
                         <button
                             onClick={handleGoogleLogin}
                             className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium"

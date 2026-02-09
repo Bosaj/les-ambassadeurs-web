@@ -165,6 +165,7 @@ const VolunteerDashboard = () => {
                 image_url: user.user_metadata?.avatar_url || '',
                 is_approved: false
             });
+
             toast.success(t.testimonial_submitted_approval, { id: toastId });
             setTestimonial('');
         } catch (error) {
@@ -264,7 +265,7 @@ const VolunteerDashboard = () => {
                                 </div>
                                 <div className="bg-red-500 text-white rounded-xl p-6 shadow-md flex items-center justify-between cursor-pointer transform hover:scale-105 transition" onClick={() => setActiveTab('activities')}>
                                     <div>
-                                        <p className="text-lg opacity-80">{t.events_joined}</p>
+                                        <p className="text-lg opacity-80">{t.events_joined || "Events Joined"}</p>
                                         <h2 className="text-4xl font-bold">{userActivities.length}</h2>
                                     </div>
                                     <FaCalendarCheck className="text-5xl opacity-50" />
@@ -274,7 +275,7 @@ const VolunteerDashboard = () => {
                             <div className="grid md:grid-cols-2 gap-8">
                                 {/* Upcoming Events List */}
                                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700 transition-colors">
-                                    <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">{t.upcoming_opportunities}</h2>
+                                    <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">{t.upcoming_opportunities || "Upcoming Opportunities"}</h2>
                                     <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                         {allOpportunities.length === 0 ? (
                                             <p className="text-gray-500 dark:text-gray-400">{t.no_events || "No upcoming events."}</p>
@@ -314,18 +315,18 @@ const VolunteerDashboard = () => {
 
                                 {/* Testimonial Form */}
                                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700 transition-colors">
-                                    <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">{t.share_story}</h2>
+                                    <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">{t.share_story || "Share Your Story"}</h2>
                                     <form onSubmit={handleSubmitTestimonial}>
                                         <textarea
                                             value={testimonial}
                                             onChange={(e) => setTestimonial(e.target.value)}
                                             className="w-full border dark:border-gray-600 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                             rows="4"
-                                            placeholder={t.testimonial_placeholder}
+                                            placeholder={t.testimonial_placeholder || "Your experience matters..."}
                                             required
                                         ></textarea>
                                         <button className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition flex items-center justify-center gap-2">
-                                            <FaStar /> {t.submit_testimonial}
+                                            <FaStar /> {t.submit_testimonial || "Submit Testimonial"}
                                         </button>
                                     </form>
                                 </div>
@@ -361,7 +362,7 @@ const VolunteerDashboard = () => {
                                                             activity.events?.category === 'project' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200' :
                                                                 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200'
                                                             }`}>
-                                                            {activity.events?.category || 'Event'}
+                                                            {activity.events?.category === 'program' ? (t.program || "Program") : (activity.events?.category === 'project' ? (t.project || "Project") : (t.event || "Event"))}
                                                         </span>
                                                     </p>
                                                     <p className="text-xs text-gray-400 mt-1">
@@ -407,7 +408,7 @@ const VolunteerDashboard = () => {
                                     {userDonations.map(donation => (
                                         <div key={donation.id} className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border dark:border-gray-700">
                                             <div>
-                                                <p className="font-bold text-gray-800 dark:text-white">{donation.method || "Direct Donation"}</p>
+                                                <p className="font-bold text-gray-800 dark:text-white">{donation.method === 'stripe' ? (t.payment_card || "Card") : (donation.method === 'paypal' ? "PayPal" : (t.direct_donation || "Direct Donation"))}</p>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(donation.created_at).toLocaleDateString()}</p>
                                             </div>
                                             <span className="font-bold text-green-600 dark:text-green-400">+{donation.amount} MAD</span>

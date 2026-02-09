@@ -70,7 +70,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                             <th className="p-4 min-w-[30%] font-semibold">{t.table_title}</th>
                             <th className="p-4 whitespace-nowrap font-semibold">{t.table_date}</th>
                             <th className="p-4 whitespace-nowrap font-semibold">{t.location || "Location"}</th>
-                            {type === 'events' && <th className="p-4 whitespace-nowrap font-semibold">{t.table_attendees}</th>}
+                            {type === 'events' && <th className="p-4 whitespace-nowrap font-semibold">{t.attendees || "Attendees"}</th>}
                             {type === 'programs' && <th className="p-4 whitespace-nowrap font-semibold">{t.joined || "Joined"}</th>}
                             {type === 'projects' && <th className="p-4 whitespace-nowrap font-semibold">{t.supported || "Supported"}</th>}
                             <th className="p-4 whitespace-nowrap text-center font-semibold">{t.pin_item}</th>
@@ -238,12 +238,12 @@ const AdminDashboard = () => {
                     <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.invite_new_admin}</h3>
                     <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
                         <input
-                            type="email" required placeholder={t.user_email || "User Email"}
+                            type="email" required placeholder={t.user_email_label || "User Email"}
                             className="flex-1 border p-2 rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                             value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
                         />
                         <button disabled={loading} className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition whitespace-nowrap">
-                            {loading ? t.processing : t.send_invitation}
+                            {loading ? (t.processing || "Processing...") : t.send_invitation}
                         </button>
                     </form>
                 </div>
@@ -303,7 +303,7 @@ const AdminDashboard = () => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                 <tr>
-                                    <th className="p-4">{t.name || "Name"}</th>
+                                    <th className="p-4">{t.table_header_name || "Name"}</th>
                                     <th className="p-4">{t.email || "Email"}</th>
                                     <th className="p-4">{t.status || "Status"}</th>
                                     <th className="p-4">{t.documents || "Documents"}</th>
@@ -626,7 +626,7 @@ const AdminDashboard = () => {
                                                     </button>
                                                 </div>
                                             </div>
-                                        )) : <p className="text-gray-500">{t.no_testimonials}</p>}
+                                        )) : <p className="text-gray-500">{t.no_testimonials || "No testimonials yet"}</p>}
                                     </div>
                                 </div>
                             )}

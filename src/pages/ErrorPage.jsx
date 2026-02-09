@@ -30,10 +30,8 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
     }
 
     // Default translations if keys missing (or if fallback used above with limited keys)
-    const title = is404 ? (t.page_not_found || "Page Not Found") : (t.error_title || "Something went wrong");
-    const desc = is404 ?
-        (t.page_not_found_desc || "The page you are looking for does not exist or has been moved.") :
-        (t.error_desc || "We apologize for the inconvenience. An unexpected error has occurred. Please try again later.");
+    const title = is404 ? t.page_not_found : t.error_title;
+    const desc = is404 ? t.page_not_found_desc : t.error_desc;
 
     const isRtl = language === 'ar';
 
@@ -77,14 +75,14 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
                         to="/"
                         className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white rounded-xl font-medium transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
-                        {t.home || "Go Home"}
+                        {t.home}
                     </Link>
                     {!is404 && resetErrorBoundary && (
                         <button
                             onClick={resetErrorBoundary}
                             className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl font-medium transition shadow hover:shadow-md"
                         >
-                            {t.try_again || "Try Again"}
+                            {t.try_again}
                         </button>
                     )}
                 </div>
@@ -92,7 +90,7 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
                 {/* Contact Info */}
                 <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 relative z-10">
                     <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                        {t.contact_support || "Need Help?"}
+                        {t.contact_support}
                     </h3>
 
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
@@ -101,7 +99,7 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
                                 <FaEnvelope />
                             </div>
                             <div className="text-left">
-                                <p className="font-semibold text-gray-700 dark:text-gray-200">{t.support_label || "Support"}</p>
+                                <p className="font-semibold text-gray-700 dark:text-gray-200">{t.support_label}</p>
                                 <a href="mailto:asosoufaraelkhir48@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
                                     asosoufaraelkhir48@gmail.com
                                 </a>
@@ -113,7 +111,7 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
                                 <FaCode />
                             </div>
                             <div className="text-left">
-                                <p className="font-semibold text-gray-700 dark:text-gray-200">{t.developer_label || "Developer"}</p>
+                                <p className="font-semibold text-gray-700 dark:text-gray-200">{t.developer_label}</p>
                                 <a href="https://www.linkedin.com/in/oussama-elhadji" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
                                     Oussama ELHADJI
                                 </a>

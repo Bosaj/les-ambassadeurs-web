@@ -330,7 +330,7 @@ const Donate = () => {
                             className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                         />
                         <label htmlFor="anonymous" className="text-gray-700 dark:text-gray-300 font-medium">
-                            {t.donate_anonymous || "Donate Anonymously (Hide my name)"}
+                            {t.donate_anonymous}
                         </label>
                     </div>
 
@@ -344,7 +344,7 @@ const Donate = () => {
                                     className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
                                     value={donationForm.name}
                                     onChange={e => setDonationForm({ ...donationForm, name: e.target.value })}
-                                    placeholder={t.name_placeholder || "Your Name"}
+                                    placeholder={t.name_placeholder}
                                 />
                             </div>
                             <div>
@@ -355,19 +355,19 @@ const Donate = () => {
                                     className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
                                     value={donationForm.email}
                                     onChange={e => setDonationForm({ ...donationForm, email: e.target.value })}
-                                    placeholder={t.email_placeholder || "name@example.com"}
+                                    placeholder={t.email_placeholder}
                                     disabled={!!user} // Disable email edit if logged in? Maybe allow override? User said "pre-fill... fix or modefy". So allow edit.
                                 // actually user said "just he fix or modefy". So remove disabled.
                                 />
                             </div>
                             <div>
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.phone || "Phone Number"}</label>
+                                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.phone}</label>
                                 <input
                                     type="tel"
                                     className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all duration-200 shadow-sm text-lg"
                                     value={donationForm.phone}
                                     onChange={e => setDonationForm({ ...donationForm, phone: e.target.value })}
-                                    placeholder={t.phone_placeholder || "+212 6..."}
+                                    placeholder={t.phone_placeholder}
                                 />
                             </div>
                         </>
@@ -397,7 +397,7 @@ const Donate = () => {
                                     : 'border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
                                     }`}
                             >
-                                <FaCreditCard className="text-xl" /> {t.credit_card_stripe || "Card"}
+                                <FaCreditCard className="text-xl" /> {t.credit_card_stripe}
                             </button>
                             <button
                                 type="button"
@@ -417,7 +417,7 @@ const Donate = () => {
                                     : 'border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
                                     }`}
                             >
-                                <FaUniversity className="text-xl" /> {t.bank_transfer || "Transfer"}
+                                <FaUniversity className="text-xl" /> {t.bank_transfer}
                             </button>
                         </div>
                     </div>
@@ -437,7 +437,7 @@ const Donate = () => {
                                                 return actions.order.create({
                                                     purchase_units: [{
                                                         amount: { value: donationForm.amount },
-                                                        description: t.donation_to || "Donation to Association Les Ambassadeurs du Bien",
+                                                        description: t.donation_to,
                                                     }],
                                                 });
                                             }}
@@ -445,7 +445,7 @@ const Donate = () => {
                                                 const details = await actions.order.capture();
                                                 handlePayPalSuccess(details);
                                             }}
-                                            onError={(err) => toast.error((t.paypal_error || "PayPal Error: ") + err.message)}
+                                            onError={(err) => toast.error((t.paypal_error) + err.message)}
                                         />
                                     </PayPalScriptProvider>
                                 ) : (
@@ -482,10 +482,10 @@ const Donate = () => {
                             <div className="mt-4 space-y-4">
                                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        {t.upload_proof || "Upload Payment Proof (PDF/Image)"}
+                                        {t.upload_proof}
                                     </label>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                        {t.proof_upload_desc || "Please upload your bank transfer receipt or screenshot."}
+                                        {t.proof_upload_desc}
                                     </p>
 
                                     <input
@@ -502,10 +502,10 @@ const Donate = () => {
                                             dark:file:bg-gray-700 dark:file:text-gray-300
                                         "
                                     />
-                                    {uploading && <p className="text-xs text-blue-600 mt-2">{t.uploading || "Uploading..."}</p>}
+                                    {uploading && <p className="text-xs text-blue-600 mt-2">{t.uploading}</p>}
                                     {donationForm.proof_url && (
                                         <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                                            <FaCheck /> {t.proof_uploaded || "Proof Uploaded"}
+                                            <FaCheck /> {t.proof_uploaded}
                                         </p>
                                     )}
                                 </div>
@@ -518,7 +518,7 @@ const Donate = () => {
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-blue-900 hover:bg-blue-800'}`}
                                 >
-                                    <FaUniversity /> {t.record_transfer || "Record Transfer"}
+                                    <FaUniversity /> {t.record_transfer}
                                 </button>
                             </div>
                         )}
@@ -530,24 +530,24 @@ const Donate = () => {
             <Modal
                 isOpen={showLoginPrompt}
                 onClose={() => setShowLoginPrompt(false)}
-                title={t.login_prompt_title || "Sign in to track your donation?"}
+                title={t.login_prompt_title}
             >
                 <div className="space-y-6">
                     <p className="text-gray-600 dark:text-gray-300">
-                        {t.login_prompt_desc || "Signing in allows you to track your donation history and download receipts. You can also donate as a guest."}
+                        {t.login_prompt_desc}
                     </p>
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={handleLoginRedirect}
                             className="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-md"
                         >
-                            {t.login_btn || "Log In"}
+                            {t.login_btn}
                         </button>
                         <button
                             onClick={handleGuestContinue}
                             className="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                         >
-                            {t.continue_guest || "Continue as Guest"}
+                            {t.continue_guest}
                         </button>
                     </div>
                 </div>

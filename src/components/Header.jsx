@@ -52,7 +52,7 @@ const Header = () => {
                             <>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaHandHoldingHeart /> <Link to="/donate" className="hover:text-red-400 transition">{t.donate}</Link></span>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaHandsHelping /> <Link to="/volunteer" className="hover:text-red-400 transition">{t.volunteer}</Link></span>
-                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaUser /> <Link to="/login" className="hover:text-red-400 transition">{t.login_btn || "Login"}</Link></span>
+                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaUser /> <Link to="/login" className="hover:text-red-400 transition">{t.login_btn}</Link></span>
                             </>
                         ) : (
                             <>
@@ -66,11 +66,11 @@ const Header = () => {
                                         {t.welcome}, {user.username || user.full_name?.split(' ')[0] || user.name?.split(' ')[0] || user.email?.split('@')[0]}
                                     </span>
                                 </div>
-                                <span className="flex items-center gap-2 text-xs sm:text-base"><Link to="/profile" className="hover:text-red-400 transition">{t.profile_title || "Profile"}</Link></span>
+                                <span className="flex items-center gap-2 text-xs sm:text-base"><Link to="/profile" className="hover:text-red-400 transition">{t.profile_title}</Link></span>
                                 {user.role === 'volunteer' && user.membership_status !== 'active' && (
-                                    <span className="flex items-center gap-2 text-xs sm:text-base text-yellow-500 font-bold"><Link to="/membership" className="hover:text-yellow-300 transition glow-sm">{t.become_member || "Become Member"}</Link></span>
+                                    <span className="flex items-center gap-2 text-xs sm:text-base text-yellow-500 font-bold"><Link to="/membership" className="hover:text-yellow-300 transition glow-sm">{t.become_member}</Link></span>
                                 )}
-                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">{t.dashboard || "Dashboard"}</Link></span>
+                                <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">{t.dashboard}</Link></span>
                                 <button onClick={logout} className="flex items-center gap-2 text-xs sm:text-base hover:text-red-400 transition"><FaSignOutAlt /> {t.logout}</button>
                             </>
                         )}
@@ -142,7 +142,7 @@ const Header = () => {
                                                 }}
                                                 className="block w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-900 dark:hover:text-white transition"
                                             >
-                                                {t.featured_programs || "Featured"}
+                                                {t.featured_programs}
                                             </button>
                                             <NavLink
                                                 to="/programs"
@@ -152,7 +152,7 @@ const Header = () => {
                                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                                 }}
                                             >
-                                                {t.all_programs || "View All Programs"}
+                                                {t.all_programs}
                                             </NavLink>
                                         </div>
                                     </div>
@@ -203,7 +203,7 @@ const Header = () => {
                                                 className="block py-1 text-sm text-gray-500 hover:text-blue-900 text-start"
                                                 onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'programs'); }}
                                             >
-                                                {t.featured_programs || "Featured"}
+                                                {t.featured_programs}
                                             </button>
                                             <NavLink
                                                 to="/programs"
@@ -213,7 +213,7 @@ const Header = () => {
                                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                                 }}
                                             >
-                                                {t.all_programs || "View All"}
+                                                {t.all_programs}
                                             </NavLink>
                                         </div>
                                     </div>
@@ -223,10 +223,10 @@ const Header = () => {
                                 <li><NavLink to="/news" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.news}</NavLink></li>
                                 <li><button className="block py-2 text-blue-900 text-start hover:text-red-500" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'contact'); }}>{t.contact_us}</button></li>
                                 {!user ? (
-                                    <li><Link to="/login" className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.login_btn || "Login"}</Link></li>
+                                    <li><Link to="/login" className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.login_btn}</Link></li>
                                 ) : (
                                     <>
-                                        <li><Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.dashboard || "Dashboard"}</Link></li>
+                                        <li><Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.dashboard}</Link></li>
                                         <li><button onClick={() => { logout(); toggleMobileMenu(); }} className="block py-2 text-red-600 hover:text-red-800 font-bold w-full text-start">{t.logout}</button></li>
                                     </>
                                 )}
