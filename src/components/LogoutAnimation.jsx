@@ -1,8 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaSignOutAlt } from 'react-icons/fa';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../translations';
 
 const LogoutAnimation = ({ isVisible }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
+
     return (
         <AnimatePresence>
             {isVisible && (
@@ -31,10 +36,10 @@ const LogoutAnimation = ({ isVisible }) => {
                         </motion.div>
 
                         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-                            Logging Out...
+                            {t.logging_out}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-300">
-                            See you soon!
+                            {t.see_you_soon}
                         </p>
 
                         <motion.div

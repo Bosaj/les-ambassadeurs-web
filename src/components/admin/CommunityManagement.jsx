@@ -167,9 +167,9 @@ const CommunityManagement = ({ t, onViewUser }) => {
                                             <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                                 <td className="p-4 font-medium dark:text-white whitespace-nowrap">{u.full_name}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.email}</td>
-                                                <td className="p-4 whitespace-nowrap"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{u.role}</span></td>
+                                                <td className="p-4 whitespace-nowrap"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{t[`role_${u.role}`] || u.role}</span></td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.phone_number || '-'}</td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.city || '-'}</td>
+                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.city ? (t[`city_${u.city.toLowerCase()}`] || u.city) : '-'}</td>
                                                 <td className="p-4 text-right whitespace-nowrap flex justify-end gap-2">
                                                     <button
                                                         onClick={() => setSelectedUserForHistory(u)}
@@ -181,7 +181,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
                                                     <button
                                                         onClick={() => onViewUser && onViewUser(u)}
                                                         className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 p-2 rounded hover:bg-blue-200 transition"
-                                                        title="View Full Profile"
+                                                        title={t.view_profile || "View Full Profile"}
                                                     >
                                                         <FaEye />
                                                     </button>
@@ -212,7 +212,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {(attendees.filter(a => attendanceFilter === 'all' || a.events?.category === attendanceFilter).length > 0) ? attendees.filter(a => attendanceFilter === 'all' || a.events?.category === attendanceFilter).map(a => (
                                             <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                                <td className="p-4 font-medium dark:text-white whitespace-nowrap">{getLocalizedContent(a.events?.title) || 'Unknown Event'}</td>
+                                                <td className="p-4 font-medium dark:text-white whitespace-nowrap">{getLocalizedContent(a.events?.title) || t.unknown_event || 'Unknown Event'}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.events?.date ? new Date(a.events.date).toLocaleDateString() : '-'}</td>
                                                 <td className="p-4 dark:text-gray-300 whitespace-nowrap">{a.name}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.email}</td>
