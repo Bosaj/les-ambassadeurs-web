@@ -3,6 +3,36 @@ import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
 import { FaMapMarkerAlt, FaUsers, FaHandHoldingHeart, FaCalendarCheck } from 'react-icons/fa';
 
+import { animate, useInView } from "framer-motion";
+import { useEffect, useRef } from 'react';
+
+const AnimatedNumber = ({ value }) => {
+    const ref = useRef(null);
+    const inView = useInView(ref, { once: true, margin: "-50px" });
+
+    useEffect(() => {
+        if (!inView) return;
+
+        // Extract numeric part and suffix
+        const numericValue = parseInt(value.toString().replace(/[^0-9]/g, ''));
+        const suffix = value.toString().includes('+') ? '+' : '';
+
+        const controls = animate(0, numericValue, {
+            duration: 2.5,
+            ease: "easeOut",
+            onUpdate(val) {
+                if (ref.current) {
+                    ref.current.textContent = Math.floor(val).toLocaleString() + suffix;
+                }
+            }
+        });
+
+        return () => controls.stop();
+    }, [inView, value]);
+
+    return <span ref={ref}>0</span>;
+};
+
 const Impact = () => {
     const { language } = useLanguage();
     const t = translations[language];
@@ -50,7 +80,7 @@ const Impact = () => {
                                 {stat.icon}
                             </div>
                             <h3 className="text-4xl font-bold mb-2 text-blue-900 dark:text-white">
-                                {stat.number}
+                                <AnimatedNumber value={stat.number} />
                             </h3>
                             <p className="text-gray-700 dark:text-gray-300 font-medium">
                                 {stat.text}

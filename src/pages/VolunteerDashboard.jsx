@@ -74,9 +74,17 @@ const VolunteerDashboard = () => {
     };
 
     // Combine events and programs for the dashboard list
+
+
     const allOpportunities = [...(realEvents || []), ...(realPrograms || [])]
-        .filter(item => new Date(item.date) > new Date())
+        .filter(item => {
+            const itemDate = new Date(item.date);
+            const now = new Date();
+            return itemDate > now;
+        })
         .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+
 
     const handleLogout = () => {
         logout();
@@ -275,7 +283,9 @@ const VolunteerDashboard = () => {
                             <div className="grid md:grid-cols-2 gap-8">
                                 {/* Upcoming Events List */}
                                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700 transition-colors">
-                                    <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">{t.upcoming_opportunities || "Upcoming Opportunities"}</h2>
+                                    <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">
+                                        {t.upcoming_opportunities || "Upcoming Opportunities"}
+                                    </h2>
                                     <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                         {allOpportunities.length === 0 ? (
                                             <p className="text-gray-500 dark:text-gray-400">{t.no_events || "No upcoming events."}</p>
@@ -296,16 +306,30 @@ const VolunteerDashboard = () => {
                                                                 <AttendeesList attendees={event.attendees} size="w-6 h-6" />
                                                             </div>
                                                         </div>
-                                                        <button
-                                                            onClick={() => handleJoinEvent(event)}
-                                                            disabled={isJoined}
-                                                            className={`mt-3 w-full py-2 rounded font-medium transition ${isJoined
-                                                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 cursor-default"
-                                                                : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                                                                }`}
-                                                        >
-                                                            {isJoined ? (t.joined || "Joined") : t.join_event_btn}
-                                                        </button>
+                                                        {isJoined ? (
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    disabled
+                                                                    className="flex-1 py-2 rounded font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 cursor-default flex items-center justify-center gap-2"
+                                                                >
+                                                                    <FaCheckCircle /> {t.joined || "Joined"}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleCancelEvent({ events: event, status: 'confirmed' })} // Passing structure expected by handleCancelEvent
+                                                                    className="px-4 py-2 rounded font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 transition"
+                                                                    title={t.cancel_registration || "Cancel Registration"}
+                                                                >
+                                                                    <FaTimesCircle />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleJoinEvent(event)}
+                                                                className="w-full py-2 rounded font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition"
+                                                            >
+                                                                {t.join_event_btn}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 );
                                             })

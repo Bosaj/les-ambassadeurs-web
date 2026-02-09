@@ -30,7 +30,7 @@ const Partners = () => {
                         <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook" className="max-h-12 opacity-70 hover:opacity-100 transition" />
                     </div>
                     <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition">
-                        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg" alt="Twitter" className="max-h-12 opacity-70 hover:opacity-100 transition" />
+                        <img src="/images/Decathlon/Decathlon_Logo_0.svg" alt="Decathlon" className="max-h-12 opacity-70 hover:opacity-100 transition" />
                     </div>
                     <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition">
                         <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg" alt="LinkedIn" className="max-h-12 opacity-70 hover:opacity-100 transition" />
