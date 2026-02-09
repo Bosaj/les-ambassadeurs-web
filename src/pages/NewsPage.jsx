@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -6,6 +7,7 @@ import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaArrowRight, FaMapM
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import AttendeesList from '../components/AttendeesList';
 
 const NewsPage = () => {
     const { news, events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
@@ -156,9 +158,12 @@ const NewsPage = () => {
                                                 {getLocalizedContent(item.description, language)}
                                             </p>
                                             <div className="flex justify-between items-center mt-auto pt-4 border-t dark:border-gray-700">
-                                                <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
-                                                    {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+                                                        {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees}
+                                                    </span>
+                                                    <AttendeesList attendees={item.attendees} size="w-8 h-8" showName={true} />
+                                                </div>
                                                 {isRegistered ? (
                                                     <button
                                                         onClick={() => handleCancelClick(item)}
@@ -205,47 +210,84 @@ const NewsPage = () => {
                 }
                 heroImage={selectedEvent?.image_url || selectedEvent?.image}
             >
-                {(selectedEvent?.category === 'event' || (selectedEvent?.attendees && !selectedEvent?.description?.en)) ? (
-                    <form onSubmit={handleGuestSubmit} className="space-y-4 pt-2">
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.full_name}</label>
-                            <input
-                                type="text"
-                                required
-                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                value={guestForm.name}
-                                onChange={e => setGuestForm({ ...guestForm, name: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">{t.email_address}</label>
-                            <input
-                                type="email"
-                                required
-                                className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white transition-colors"
-                                value={guestForm.email}
-                                onChange={e => setGuestForm({ ...guestForm, email: e.target.value })}
-                            />
-                        </div>
-                        <button type="submit" className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg mt-4">
-                            {t.confirm_registration}
-                        </button>
-                    </form>
-                ) : (
-                    <div className="relative">
-                        <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
-                            <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">
-                                <FaCalendarAlt />
-                                <span>{selectedEvent?.date ? new Date(selectedEvent.date).toLocaleDateString() : 'TBA'}</span>
+                <div className="relative">
+                    <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
+                        <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">
+                            <FaCalendarAlt />
+                            <span>{selectedEvent?.date ? new Date(selectedEvent.date).toLocaleDateString() : 'TBA'}</span>
+                        </span>
+                        {selectedEvent?.location && getLocalizedContent(selectedEvent.location, language) && (
+                            <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full border border-red-100 dark:border-red-800">
+                                <FaMapMarkerAlt />
+                                <span>{getLocalizedContent(selectedEvent.location, language)}</span>
                             </span>
-                        </div>
-                        <div className="prose dark:prose-invert max-w-none">
-                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line text-lg">
-                                {getLocalizedContent(selectedEvent?.description, language)}
-                            </p>
-                        </div>
+                        )}
+                        {(selectedEvent?.attendees) && (
+                            <div className="flex items-center gap-2 ml-auto">
+                                <span className="text-blue-900 dark:text-blue-300 font-semibold text-xs">
+                                    {selectedEvent.attendees.filter(a => a.status !== 'rejected').length} {t.attendees}
+                                </span>
+                                <AttendeesList attendees={selectedEvent.attendees} />
+                            </div>
+                        )}
                     </div>
-                )}
+                    <div className="prose dark:prose-invert max-w-none mb-8">
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line text-lg">
+                            {getLocalizedContent(selectedEvent?.description, language)}
+                        </p>
+                    </div>
+
+                    {/* Join Section for Events */}
+                    {(selectedEvent?.category === 'event' || (selectedEvent?.attendees && !selectedEvent?.description?.en)) && (
+                        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                            <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-start">{t.join_event || "Join Event"}</h4>
+                            {user ? (
+                                selectedEvent.attendees?.some(a => a.email === user.email && a.status !== 'rejected') ? (
+                                    <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg flex flex-col items-center gap-2">
+                                        <span className="flex items-center gap-2 font-bold">
+                                            <FaCheckCircle /> {t.already_registered || "You are registered."}
+                                        </span>
+                                        <button
+                                            onClick={() => handleCancelClick(selectedEvent)}
+                                            className="text-red-500 hover:text-red-700 underline text-sm"
+                                        >
+                                            {t.cancel_registration || "Cancel Registration"}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            registerForEvent('events', selectedEvent.id, {
+                                                name: user.full_name || user.user_metadata?.full_name || user.email,
+                                                email: user.email
+                                            });
+                                            toast.success(t.successfully_registered);
+                                        }}
+                                        className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700 transition"
+                                    >
+                                        {t.join_verb || "Join"}
+                                    </button>
+                                )
+                            ) : (
+                                <div className="text-center py-6">
+                                    <div className="mb-4 text-blue-900 dark:text-blue-300 text-4xl flex justify-center opacity-80">
+                                        <FaUserPlus />
+                                    </div>
+                                    <h5 className="text-lg font-bold mb-2 text-gray-800 dark:text-white">{t.login_prompt_title || "Please Login"}</h5>
+                                    <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">{t.login_prompt_desc || "You need to be logged in to register for events."}</p>
+                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                        <Link to="/login" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-all shadow-md hover:shadow-lg">
+                                            {t.login_btn || "Login"}
+                                        </Link>
+                                        <Link to="/register-volunteer" className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-bold transition-all border border-gray-200 dark:border-gray-600">
+                                            {t.sign_up_btn || "Sign Up"}
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </Modal>
         </div>
     );

@@ -65,7 +65,7 @@ export const DataProvider = ({ children }) => {
             // Fetch All Events/Programs/Projects (with pinning)
             const { data: allEventsData, error: eventsError } = await supabase
                 .from('events')
-                .select('*, attendees:event_attendees(id, name, email, status)')
+                .select('*, attendees:event_attendees(id, name, email, status, user_id)')
                 .order('is_pinned', { ascending: false })
                 .order('date', { ascending: false });
 
@@ -289,6 +289,7 @@ export const DataProvider = ({ children }) => {
                     event_id: eventId,
                     name: safeName,
                     email: userDetails.email,
+                    user_id: userDetails.id || null, // Save user_id if available
                     status: 'pending' // Reset status to pending on re-registration
                 }], { onConflict: 'event_id, email' })
                 .select();
