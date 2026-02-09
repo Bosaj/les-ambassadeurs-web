@@ -57,7 +57,7 @@ const Programs = () => {
     const displayItems = [...latestPrograms, ...latestProjects];
 
     return (
-        <section id="programs" className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+        <section id="programs" className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300" dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-4">
@@ -73,13 +73,14 @@ const Programs = () => {
                     {displayItems.length > 0 ? displayItems.map((item, index) => (
                         <div
                             key={item.id || index}
-                            className="bg-transparent rounded-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group flex flex-col items-center w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-2rem)] max-w-sm overflow-hidden border border-gray-200 dark:border-gray-700"
+                            className="bg-transparent rounded-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group flex flex-col items-center w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-2rem)] max-w-sm border border-gray-200 dark:border-gray-700"
+                            // Removed overflow-hidden to allow tooltips
                             onClick={() => {
                                 navigate('/programs', { state: { selectedProgram: item, type: item.type } });
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
                         >
-                            <div className="w-full h-48 bg-gray-200 dark:bg-gray-600 relative overflow-hidden">
+                            <div className="w-full h-48 bg-gray-200 dark:bg-gray-600 relative rounded-t-xl overflow-hidden">
                                 {item.image_url ? (
                                     <img
                                         src={item.image_url}
@@ -95,7 +96,7 @@ const Programs = () => {
                                     <span className="text-white font-semibold">{t.learn_more}</span>
                                 </div>
                                 {/* Type Badge */}
-                                <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/60 text-xs font-bold px-2 py-1 rounded shadow text-blue-900 dark:text-white">
+                                <div className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} bg-white/90 dark:bg-black/60 text-xs font-bold px-2 py-1 rounded shadow text-blue-900 dark:text-white`}>
                                     {item.type === 'programs' ? (t.programs_section_title || "Program") : (t.projects_section_title || "Project")}
                                 </div>
                             </div>
@@ -130,7 +131,7 @@ const Programs = () => {
                                         className="inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
                                     >
                                         <span>{t.learn_more}</span>
-                                        <FaArrowRight className={`ml-1 ${language === 'ar' ? 'rotate-180' : ''}`} />
+                                        <FaArrowRight className={`${language === 'ar' ? 'mr-1 rotate-180' : 'ml-1'}`} />
                                     </button>
                                 </div>
                             </div>
@@ -147,7 +148,7 @@ const Programs = () => {
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     >
                         <span>{t.discover_all}</span>
-                        <FaArrowRight className={`ml-2 ${language === 'ar' ? 'rotate-180' : ''}`} />
+                        <FaArrowRight className={`${language === 'ar' ? 'mr-2 rotate-180' : 'ml-2'}`} />
                     </Link>
                 </div>
             </div>
@@ -158,7 +159,7 @@ const Programs = () => {
                 title={getLocalizedContent(activeItem?.title, language)}
                 heroImage={activeItem?.image_url}
             >
-                <div className="relative">
+                <div className="relative" dir={language === 'ar' ? 'rtl' : 'ltr'}>
                     {/* Hero image is handled by Modal component now */
                         !activeItem?.image_url && (
                             <div className="flex justify-center items-center h-48 bg-blue-50 dark:bg-gray-800 rounded-lg mb-6">
@@ -167,7 +168,7 @@ const Programs = () => {
                         )}
 
                     <div className="prose dark:prose-invert max-w-none">
-                        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-8">
+                        <div className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-8 text-start">
                             {/* Date and Location */}
                             <div className="flex flex-wrap gap-3 mb-4">
                                 {activeItem?.date && (
@@ -190,13 +191,13 @@ const Programs = () => {
                             </div>
 
                             {getLocalizedContent(activeItem?.description, language)}
-                        </p>
+                        </div>
                     </div>
 
                     <div className="flex flex-col gap-6 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
                         {/* Join/Support Action */}
                         <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-600">
-                            <h4 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                            <h4 className="text-lg font-bold text-gray-800 dark:text-white mb-4 text-start">
                                 {activeItem?.type === 'projects' ? (t.support_project || "Support Project") : (t.join_program || "Join Program")}
                             </h4>
 
