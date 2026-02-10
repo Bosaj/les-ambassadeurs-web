@@ -1,4 +1,4 @@
-
+/* eslint-env node */
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://mimfwguttesvrmejlibq.supabase.co';
@@ -22,8 +22,6 @@ async function checkEvents() {
         console.error('Error fetching events:', error);
         return;
     }
-
-    console.log(`Found ${data.length} events.`);
 
     const now = new Date();
     console.log('Current Time:', now.toISOString());

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { translations } from '../translations';
-import { FaGraduationCap, FaHandsHelping, FaHeart, FaLeaf, FaArrowRight, FaMapMarkerAlt, FaCheckCircle, FaUserPlus, FaCalendarAlt } from 'react-icons/fa';
+import { FaHandsHelping, FaArrowRight, FaMapMarkerAlt, FaCheckCircle, FaUserPlus, FaCalendarAlt } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 import ConfirmationModal from './ConfirmationModal';
@@ -238,7 +238,7 @@ const Programs = () => {
                                                 const formData = { name: user.full_name, email: user.email };
                                                 await registerForEvent(activeItem.type || 'program', activeItem.id, formData);
                                                 toast.success(activeItem.type === 'projects' ? (t.successfully_supported || "Successfully supported!") : (t.successfully_joined || "Successfully joined!"));
-                                            } catch (err) {
+                                            } catch {
                                                 toast.error(t.error_occurred || "Error occurred");
                                             }
                                         }}

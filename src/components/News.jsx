@@ -235,7 +235,7 @@ const News = () => {
                                                 const formData = { name: user.full_name, email: user.email };
                                                 await registerForEvent('event', currentNewsItem.id, formData);
                                                 toast.success(t.successfully_joined || "Successfully joined!");
-                                            } catch (err) {
+                                            } catch {
                                                 toast.error(t.error_occurred || "Error occurred");
                                             }
                                         }}

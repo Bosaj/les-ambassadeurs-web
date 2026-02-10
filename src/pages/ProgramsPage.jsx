@@ -16,7 +16,6 @@ const ProgramsPage = () => {
     const location = useLocation();
 
     // Generic selection state
-    const [selectedItemId, setSelectedItemId] = useState(null); // stores { id, type } or null (or just the object if passed from nav, but we should standardize)
     // Actually, to align with the pattern, let's just store the ID and Type if mostly possible, 
     // BUT we need to handle the initial navigation state which passes the full object. 
     // Better strategy: Store the 'ID' and 'Type' in state, and look it up. 

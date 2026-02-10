@@ -207,14 +207,14 @@ const AdminDashboard = () => {
                 await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id);
                 toast.success("Request approved");
                 fetchRequests();
-            } catch (e) { toast.error("Error approving"); }
+            } catch { toast.error("Error approving"); }
         };
         const handleDeny = async (id) => {
             try {
                 await supabase.from('profiles').update({ request_status: 'denied' }).eq('id', id);
                 toast.success("Request denied");
                 fetchRequests();
-            } catch (e) { toast.error("Error denying"); }
+            } catch { toast.error("Error denying"); }
         };
         const handleInvite = async (e) => {
             e.preventDefault();
@@ -267,13 +267,7 @@ const AdminDashboard = () => {
     // CommunityManagement moved to ../components/admin/CommunityManagement.jsx
 
     const MembershipRequests = () => {
-        const [pendingMembers, setPendingMembers] = useState([]);
-
-        useEffect(() => {
-            if (users) {
-                setPendingMembers(users.filter(u => u.membership_status === 'pending'));
-            }
-        }, [users]);
+        const pendingMembers = users ? users.filter(u => u.membership_status === 'pending') : [];
 
         const handleVerify = async (id, action) => {
             if (window.confirm(t.confirm_action || "Are you sure?")) {

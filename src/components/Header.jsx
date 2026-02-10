@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
 import { FaHandHoldingHeart, FaHandsHelping, FaEnvelope, FaBars, FaTimes, FaUser, FaSignOutAlt, FaTachometerAlt, FaMoon, FaSun, FaChevronDown } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';

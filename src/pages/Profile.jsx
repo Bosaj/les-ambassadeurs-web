@@ -3,11 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
-import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaTimesCircle, FaCalendarAlt } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaCalendarAlt } from 'react-icons/fa';
 
 const Profile = () => {
     const { user, refreshProfile } = useAuth();
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [membershipHistory, setMembershipHistory] = useState([]);
     const [formData, setFormData] = useState({
@@ -38,25 +38,25 @@ const Profile = () => {
             if (user.avatar_url) {
                 setAvatarPreview(user.avatar_url);
             }
+
+            const fetchMembershipHistory = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('annual_memberships')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .order('year', { ascending: false });
+                    if (error) throw error;
+                    if (data) setMembershipHistory(data);
+                } catch (error) {
+                    console.error("Error fetching membership history:", error.message);
+                    toast.error(t.error_fetching_history || "Error fetching membership history.");
+                }
+            };
+
             fetchMembershipHistory();
         }
-    }, [user]);
-
-    const fetchMembershipHistory = async () => {
-        if (!user) return;
-        try {
-            const { data, error } = await supabase
-                .from('annual_memberships')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('year', { ascending: false });
-            if (error) throw error;
-            if (data) setMembershipHistory(data);
-        } catch (error) {
-            console.error("Error fetching membership history:", error.message);
-            toast.error(t.error_fetching_history || "Error fetching membership history.");
-        }
-    };
+    }, [user, t]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

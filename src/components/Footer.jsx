@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from 'react-icons/fa';
 
 const Footer = () => {
-    const { language, t } = useLanguage();
+    const { t } = useLanguage();
 
     const navigate = useNavigate();
     const location = useLocation();

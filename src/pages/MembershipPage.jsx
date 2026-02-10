@@ -11,7 +11,6 @@ const MembershipPage = () => {
     const { t } = useLanguage();
     const navigate = useNavigate();
     const [readLaw, setReadLaw] = useState(false);
-    const [signedCommitment, setSignedCommitment] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [uploadedFile, setUploadedFile] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('office'); // 'office' or 'online'
@@ -24,7 +23,7 @@ const MembershipPage = () => {
         }
     }, []);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    const { getRootProps, getInputProps } = useDropzone({
         onDrop,
         accept: {
             'application/pdf': ['.pdf'],
