@@ -1,9 +1,11 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useData } from '../context/DataContext';
 import { translations } from '../translations';
 
 const Partners = () => {
     const { language } = useLanguage();
+    const { partners } = useData();
     const t = translations[language];
 
     return (
@@ -20,21 +22,33 @@ const Partners = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-10">
-                    <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition">
-                        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/atlassian.svg" alt="Atlassian" className="max-h-12 opacity-70 hover:opacity-100 transition" />
-                    </div>
-                    <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition">
-                        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/microsoft.svg" alt="Microsoft" className="max-h-12 opacity-70 hover:opacity-100 transition" />
-                    </div>
-                    <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition">
-                        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook" className="max-h-12 opacity-70 hover:opacity-100 transition" />
-                    </div>
-                    <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition">
-                        <img src="/images/Decathlon/Decathlon_Logo_0.svg" alt="Decathlon" className="max-h-12 opacity-70 hover:opacity-100 transition" />
-                    </div>
-                    <div className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition">
-                        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg" alt="LinkedIn" className="max-h-12 opacity-70 hover:opacity-100 transition" />
-                    </div>
+                    {partners && partners.length > 0 ? (
+                        partners.map((partner) => (
+                            <a
+                                key={partner.id}
+                                href={partner.website_url || '#'}
+                                target={partner.website_url ? "_blank" : "_self"}
+                                rel="noopener noreferrer"
+                                className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition group"
+                                title={partner.name}
+                            >
+                                <img
+                                    src={partner.image_url}
+                                    alt={partner.name}
+                                    className="max-h-12 opacity-70 group-hover:opacity-100 transition object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://via.placeholder.com/150?text=" + partner.name.charAt(0);
+                                    }}
+                                />
+                            </a>
+                        ))
+                    ) : (
+                        // Fallback/Static partners if no data or while loading (optional, or just show message)
+                        <div className="col-span-full text-center text-gray-500 py-10">
+                            {t.no_partners || "No partners added yet."}
+                        </div>
+                    )}
                 </div>
             </div>
         </section>

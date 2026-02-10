@@ -11,6 +11,7 @@ export const DataProvider = ({ children }) => {
     const [events, setEvents] = useState([]);
     const [projects, setProjects] = useState([]);
     const [testimonials, setTestimonials] = useState([]);
+    const [partners, setPartners] = useState([]);
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState([]); // Added to store user data
 
@@ -122,6 +123,15 @@ export const DataProvider = ({ children }) => {
             if (testimonialsError) throw testimonialsError;
             setTestimonials(testimonialsData || []);
 
+            // Fetch Partners
+            const { data: partnersData, error: partnersError } = await supabase
+                .from('partners')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (partnersError) throw partnersError;
+            setPartners(partnersData || []);
+
         } catch (error) {
             console.error("Error fetching data:", error);
             if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
@@ -176,6 +186,13 @@ export const DataProvider = ({ children }) => {
                     rating: postData.rating || 5,
                     is_approved: postData.is_approved !== undefined ? postData.is_approved : true
                 };
+            } else if (type === 'partners') {
+                table = 'partners';
+                insertData = {
+                    name: postData.name,
+                    image_url: postData.image_url,
+                    website_url: postData.website_url
+                };
             }
 
             const { data, error } = await supabase
@@ -227,6 +244,13 @@ export const DataProvider = ({ children }) => {
                     rating: postData.rating || 5,
                     is_approved: postData.is_approved
                 };
+            } else if (type === 'partners') {
+                table = 'partners';
+                updateData = {
+                    name: postData.name,
+                    image_url: postData.image_url,
+                    website_url: postData.website_url
+                };
             }
 
             const { data, error } = await supabase
@@ -246,12 +270,14 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+
     const deletePost = async (type, id) => {
         try {
             let table = '';
             if (type === 'news') table = 'news';
             else if (['programs', 'events', 'projects'].includes(type.toLowerCase())) table = 'events';
             else if (type === 'testimonials') table = 'testimonials';
+            else if (type === 'partners') table = 'partners';
 
             const { error } = await supabase
                 .from(table)
@@ -263,6 +289,7 @@ export const DataProvider = ({ children }) => {
             // Optimistic updates
             if (type === 'news') setNews(prev => prev.filter(item => item.id !== id));
             else if (type === 'testimonials') setTestimonials(prev => prev.filter(item => item.id !== id));
+            else if (type === 'partners') setPartners(prev => prev.filter(item => item.id !== id));
             else {
                 setPrograms(prev => prev.filter(item => item.id !== id));
                 setEvents(prev => prev.filter(item => item.id !== id));
@@ -593,7 +620,7 @@ export const DataProvider = ({ children }) => {
 
     return (
         <DataContext.Provider value={{
-            news, programs, events, projects, testimonials, users,
+            news, programs, events, projects, testimonials, users, partners,
             addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
             getLocalizedContent, loading,
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,

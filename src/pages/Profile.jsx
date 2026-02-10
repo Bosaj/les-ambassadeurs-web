@@ -3,13 +3,21 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
-import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaCalendarAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaCalendarAlt, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
 
 const Profile = () => {
-    const { user, refreshProfile } = useAuth();
+    const { user, refreshProfile, logout } = useAuth();
     const { t } = useLanguage();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [membershipHistory, setMembershipHistory] = useState([]);
+
+    // Delete Account State
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         full_name: '',
         email: '',
@@ -133,6 +141,33 @@ const Profile = () => {
             toast.error(error.message || "Failed to update profile", { id: toastId });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== 'DELETE') return;
+
+        if (window.confirm(t.delete_account_confirm || "Are you absolutely sure? Type 'DELETE' to confirm.")) {
+            setDeleteLoading(true);
+            const toastId = toast.loading(t.processing || "Processing...");
+            try {
+                // Call Supabase RPC to delete user from auth.users
+                // This requires the 'delete_own_account' function to be created in Supabase (check migrations)
+                const { error } = await supabase.rpc('delete_own_account');
+
+                if (error) throw error;
+
+                toast.success(t.account_deleted_success || "Your account has been deleted.", { id: toastId });
+
+                // Logout and redirect
+                await logout();
+                navigate('/');
+
+            } catch (error) {
+                console.error("Delete account error:", error);
+                toast.error(t.delete_account_error || "Error deleting account. Please contact support.", { id: toastId });
+                setDeleteLoading(false);
+            }
         }
     };
 
@@ -324,6 +359,57 @@ const Profile = () => {
                             ))}
                         </div>
                     )}
+                </div>
+            </div>
+
+            {/* Delete Account Section */}
+            <div className="max-w-4xl mx-auto mt-12 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-2xl shadow-sm overflow-hidden p-8">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 dark:text-red-400 shrink-0">
+                        <FaExclamationTriangle size={24} />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">{t.delete_account_title}</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">{t.delete_account_warning}</p>
+
+                        {showDeleteConfirm ? (
+                            <div className="space-y-4 animate-fade-in bg-white dark:bg-gray-800 p-6 rounded-xl border border-red-100 dark:border-red-900/50">
+                                <label className="block font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                                    {t.delete_account_confirm}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={deleteConfirmText}
+                                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                    placeholder={t.delete_confirmation_placeholder}
+                                    className="w-full p-3 border border-red-300 rounded-lg dark:bg-gray-700 dark:border-red-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none mb-4"
+                                />
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={handleDeleteAccount}
+                                        disabled={deleteConfirmText !== 'DELETE' || deleteLoading}
+                                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
+                                    >
+                                        {deleteLoading ? t.processing : t.delete_account_btn}
+                                    </button>
+                                    <button
+                                        onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg dark:bg-gray-700 dark:text-white transition-colors"
+                                        disabled={deleteLoading}
+                                    >
+                                        {t.cancel_registration || "Cancel"}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setShowDeleteConfirm(true)}
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-md hover:shadow-lg"
+                            >
+                                <FaTrash /> {t.delete_account_btn}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
