@@ -490,7 +490,7 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const fetchAllDonations = async () => {
+    const fetchAllDonations = React.useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('donations')
@@ -503,9 +503,9 @@ export const DataProvider = ({ children }) => {
             console.error("Error fetching all donations:", err);
             return [];
         }
-    };
+    }, []);
 
-    const updateDonationStatus = async (id, status) => {
+    const updateDonationStatus = React.useCallback(async (id, status) => {
         try {
             const { data, error } = await supabase
                 .from('donations')
@@ -524,9 +524,9 @@ export const DataProvider = ({ children }) => {
             console.error("Error updating donation status:", err);
             return false;
         }
-    };
+    }, []);
 
-    const deleteDonation = async (id) => {
+    const deleteDonation = React.useCallback(async (id) => {
         try {
             const { error } = await supabase
                 .from('donations')
@@ -539,7 +539,7 @@ export const DataProvider = ({ children }) => {
             console.error("Error deleting donation:", err);
             return false;
         }
-    };
+    }, []);
 
 
     const submitSuggestion = async (suggestionData) => {

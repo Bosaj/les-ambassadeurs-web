@@ -1,26 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaMoneyBillWave, FaCheck, FaTimes, FaSearch, FaFileInvoiceDollar, FaUser, FaEnvelope, FaCalendarAlt, FaCreditCard, FaTrash } from 'react-icons/fa';
 import { useData } from '../../context/DataContext';
+import { useLanguage } from '../../context/LanguageContext';
 import toast from 'react-hot-toast';
 import Modal from '../Modal';
 
-const DonationsList = ({ t }) => {
+const DonationsList = () => {
+    const { t } = useLanguage();
     const { fetchAllDonations, updateDonationStatus, deleteDonation } = useData();
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDonation, setSelectedDonation] = useState(null);
 
-    const loadDonations = async () => {
+    const loadDonations = useCallback(async () => {
         setLoading(true);
         const data = await fetchAllDonations();
         setDonations(data);
         setLoading(false);
-    };
+    }, [fetchAllDonations]);
 
     useEffect(() => {
+        // eslint-disable-next-line
         loadDonations();
-    }, []);
+
+    }, [loadDonations]);
 
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, id: null });
 

@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 const Signup = () => {
     const { signup, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
-    const { language, t } = useLanguage();
+    const { t } = useLanguage();
 
     const [formData, setFormData] = useState({
         name: '',

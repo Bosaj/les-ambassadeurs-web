@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { translations } from '../translations';
 import { FaGoogle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
-    const { login, loginWithGoogle, user } = useAuth();
+    const { login, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const { language, t } = useLanguage();
+    const { t } = useLanguage();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -19,7 +18,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
 
     // Get the redirect path from location state or default to dashboard
-    const from = location.state?.from || (user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/volunteer');
+    // Get the redirect path from location state or default to dashboard
 
     const handleSubmit = async (e) => {
         e.preventDefault();

@@ -14,7 +14,6 @@ const NewsPage = () => {
     const { user } = useAuth();
     const { language, t } = useLanguage();
     const [selectedEvent, setSelectedEvent] = useState(null);
-    const [guestForm, setGuestForm] = useState({ name: '', email: '' });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, event: null });
 
     const handleRegisterClick = (event) => {
@@ -30,7 +29,7 @@ const NewsPage = () => {
             });
             toast.success(t.successfully_registered);
         } else {
-            // Open modal for guest
+            // Open modal for details/login prompt
             setSelectedEvent(event);
         }
     };
@@ -51,14 +50,6 @@ const NewsPage = () => {
         } finally {
             setConfirmModal({ isOpen: false, event: null });
         }
-    };
-
-    const handleGuestSubmit = (e) => {
-        e.preventDefault();
-        registerForEvent('events', selectedEvent.id, guestForm);
-        toast.success(t.successfully_registered);
-        setSelectedEvent(null);
-        setGuestForm({ name: '', email: '' });
     };
 
     return (

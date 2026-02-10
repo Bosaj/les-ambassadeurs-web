@@ -10,11 +10,7 @@ const MembershipHistoryModal = ({ user, onClose, t }) => {
     const startYear = 2024;
     const years = Array.from({ length: currentYear - startYear + 2 }, (_, i) => startYear + i); // Up to next year
 
-    useEffect(() => {
-        fetchHistory();
-    }, [user]);
-
-    const fetchHistory = async () => {
+    const fetchHistory = React.useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('annual_memberships')
@@ -28,7 +24,11 @@ const MembershipHistoryModal = ({ user, onClose, t }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user.id]);
+
+    useEffect(() => {
+        fetchHistory();
+    }, [fetchHistory]);
 
     const togglePayment = async (year, existingRecord) => {
         try {

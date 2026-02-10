@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,7 +37,7 @@ const VolunteerDashboard = () => {
     const [membershipHistory, setMembershipHistory] = useState([]);
     const [testimonial, setTestimonial] = useState('');
 
-    const [rating, setRating] = useState(5);
+    const rating = 5;
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
     const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
 
@@ -48,13 +48,14 @@ const VolunteerDashboard = () => {
         proposed_date: ''
     });
 
-    useEffect(() => {
-        if (user?.email) {
-            loadUserData();
-        }
-    }, [user?.email, activeTab]);
 
-    const loadUserData = async () => {
+    const loadMembershipHistory = useCallback(async () => {
+        if (!user) return;
+        const history = await fetchMembershipHistory(user.id);
+        setMembershipHistory(history);
+    }, [user, fetchMembershipHistory]);
+
+    const loadUserData = useCallback(async () => {
         if (activeTab === 'activities' || activeTab === 'overview') {
             const activities = await fetchUserActivities(user.email);
             setUserActivities(activities);
@@ -66,12 +67,15 @@ const VolunteerDashboard = () => {
         if (activeTab === 'membership' || activeTab === 'overview') {
             loadMembershipHistory();
         }
-    };
+    }, [activeTab, user.email, fetchUserActivities, fetchUserDonations, loadMembershipHistory]);
 
-    const loadMembershipHistory = async () => {
-        const history = await fetchMembershipHistory(user.id);
-        setMembershipHistory(history);
-    };
+
+
+    useEffect(() => {
+        if (user?.email) {
+            loadUserData();
+        }
+    }, [user?.email, activeTab, loadUserData]);
 
     // Combine events and programs for the dashboard list
 
@@ -292,11 +296,14 @@ const VolunteerDashboard = () => {
                                         ) : (
                                             allOpportunities.map(event => {
                                                 const isJoined = event.attendees?.some(a => a.email === user?.email);
+                                                const categoryLabel = event.category === 'program'
+                                                    ? (t.program || "Program")
+                                                    : (event.category === 'project' ? (t.project || "Project") : (t.event || "Event"));
                                                 return (
                                                     <div key={event.id} className="border dark:border-gray-700 p-4 rounded-lg hover:shadow-md transition bg-gray-50 dark:bg-gray-700/50">
                                                         <h3 className="font-bold text-blue-900 dark:text-blue-400">{getLocalizedContent(event.title, language)}</h3>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                            {new Date(event.date).toLocaleDateString()} • {event.category}
+                                                            {new Date(event.date).toLocaleDateString()} • {categoryLabel}
                                                         </p>
                                                         <div className="flex justify-between items-center mt-2">
                                                             <div className="flex items-center gap-2">

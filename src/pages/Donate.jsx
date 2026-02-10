@@ -18,7 +18,7 @@ import StripeCheckout from '../components/StripeCheckout';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const Donate = () => {
-    const { language, t } = useLanguage();
+    const { t } = useLanguage();
     const { addDonation } = useData();
     const { user } = useAuth();
 
@@ -104,7 +104,7 @@ const Donate = () => {
                         try {
                             const errorData = JSON.parse(text);
                             errorMsg = errorData.error || errorMsg;
-                        } catch (e) {
+                        } catch {
                             console.error("Failed to parse error response:", text);
                             errorMsg += ` (Status: ${response.status})`;
                         }
@@ -135,7 +135,7 @@ const Donate = () => {
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [donationForm.amount, donationForm.method, showModal]);
+    }, [donationForm.amount, donationForm.method, showModal, navigate]);
 
     const handleSuccess = async (details, methodOverride = null) => {
         try {
@@ -173,7 +173,7 @@ const Donate = () => {
             const fileName = `${Math.random()}.${fileExt}`;
             const filePath = `${fileName}`;
 
-            const { data, error } = await supabase.storage
+            const { error } = await supabase.storage
                 .from('donations')
                 .upload(filePath, file);
 
@@ -207,7 +207,7 @@ const Donate = () => {
             toast.success(t.donation_success);
             setShowModal(false);
             setDonationForm({ name: '', amount: '', method: 'online', proof_url: null });
-        } catch (error) {
+        } catch {
             toast.error(t.donation_error);
         }
     }

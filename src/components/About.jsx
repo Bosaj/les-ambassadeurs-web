@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 // removed import { translations } from '../translations';
 
 const About = () => {
-    const { language, t } = useLanguage();
+    const { t } = useLanguage();
 
     return (
         <section id="about" className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">

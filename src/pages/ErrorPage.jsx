@@ -12,7 +12,7 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
         const langCtx = useLanguage();
         t = langCtx.t;
         language = langCtx.language;
-    } catch (e) {
+    } catch {
         // Fallback if Context fails
         language = 'en';
         t = {

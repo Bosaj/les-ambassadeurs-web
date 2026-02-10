@@ -1,7 +1,8 @@
 import React from 'react';
-import { FaUsers, FaCalendarAlt, FaNewspaper, FaHandsHelping, FaMoneyBillWave } from 'react-icons/fa';
+import { FaUsers, FaCalendarAlt, FaNewspaper, FaHandsHelping } from 'react-icons/fa';
 
-const StatCard = ({ title, value, icon: Icon, color, t }) => (
+// eslint-disable-next-line no-unused-vars
+const StatCard = ({ title, value, icon: Icon, color }) => (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between transition-transform hover:scale-105">
         <div>
             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">{title}</p>
@@ -14,7 +15,7 @@ const StatCard = ({ title, value, icon: Icon, color, t }) => (
 );
 
 const DashboardStats = ({ data, t }) => {
-    const { news, programs, projects, events, users, donations } = data;
+    const { news, programs, projects, events, users } = data;
 
     const stats = [
         {
