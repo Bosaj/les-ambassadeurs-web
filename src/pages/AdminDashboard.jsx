@@ -29,7 +29,7 @@ const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const { t, language } = useLanguage();
 
-    const { news, programs, projects, events, testimonials, partners, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions, users, verifyMember } = useData();
+    const { news, programs, projects, events, testimonials, partners, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions, users } = useData();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [editingId, setEditingId] = useState(null);
@@ -213,7 +213,9 @@ const AdminDashboard = () => {
             name: '',
             role: { en: '', fr: '', ar: '' },
             content: { en: '', fr: '', ar: '' },
-            rating: 5
+            rating: 5,
+            website_url: '',
+            image_url: ''
         });
         setIsModalOpen(true);
     };
@@ -229,7 +231,9 @@ const AdminDashboard = () => {
             name: '',
             role: { en: '', fr: '', ar: '' },
             content: { en: '', fr: '', ar: '' },
-            rating: 5
+            rating: 5,
+            website_url: '',
+            image_url: ''
         });
     };
 
@@ -457,7 +461,7 @@ const AdminDashboard = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCancelEdit}
-                title={editingId ? `${t.edit_btn} ${formType}` : `${t.add_btn} ${formType}`}
+                title={editingId ? `${t.edit_btn} ${formType}` : (formType === 'partners' ? t.add_new_partner : `${t.add_btn} ${formType}`)}
             >
                 {formType === 'partners' ? (
                     <PartnerForm
