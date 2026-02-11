@@ -4,6 +4,7 @@ import { FaHandHoldingHeart, FaHandsHelping, FaEnvelope, FaBars, FaTimes, FaUser
 import { useAuth } from '../context/AuthContext';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import NotificationBell from './NotificationBell';
 
 const Header = () => {
     const { language, changeLanguage, t } = useLanguage();
@@ -70,6 +71,7 @@ const Header = () => {
                                     <span className="flex items-center gap-2 text-xs sm:text-base text-yellow-500 font-bold"><Link to="/membership" className="hover:text-yellow-300 transition glow-sm">{t.become_member}</Link></span>
                                 )}
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaTachometerAlt /> <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/volunteer"} className="hover:text-red-400 transition">{t.dashboard}</Link></span>
+                                <NotificationBell />
                                 <button onClick={logout} className="flex items-center gap-2 text-xs sm:text-base hover:text-red-400 transition"><FaSignOutAlt /> {t.logout}</button>
                             </>
                         )}
