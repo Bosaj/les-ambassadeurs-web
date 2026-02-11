@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash,
     FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck,
-    FaPhone, FaHandHoldingHeart, FaChartPie, FaPlus, FaHandshake
+    FaPhone, FaHandHoldingHeart, FaChartPie, FaPlus, FaHandshake, FaEdit, FaPause, FaPlay
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -26,7 +26,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 
 const AdminDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, hasPermission } = useAuth();
     const { t, language } = useLanguage();
 
     const { news, programs, projects, events, testimonials, partners, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions, users } = useData();
@@ -88,6 +88,31 @@ const AdminDashboard = () => {
         const [requests, setRequests] = useState([]);
         const [inviteEmail, setInviteEmail] = useState('');
         const [loading, setLoading] = useState(false);
+        const [admins, setAdmins] = useState([]);
+        const [selectedAdmin, setSelectedAdmin] = useState(null);
+        const [permissions, setPermissions] = useState([]);
+        const [adminTitle, setAdminTitle] = useState('');
+
+        const allPermissions = [
+            { id: 'manage_news', label: t.perm_news },
+            { id: 'manage_programs', label: t.perm_programs },
+            { id: 'manage_projects', label: t.perm_projects },
+            { id: 'manage_events', label: t.perm_events },
+            { id: 'manage_partners', label: t.perm_partners },
+            { id: 'manage_community', label: t.perm_community },
+            { id: 'manage_donations', label: t.perm_donations },
+            { id: 'manage_testimonials', label: t.perm_testimonials },
+            { id: 'manage_admins', label: t.perm_admins },
+        ];
+
+        const fetchAdmins = async () => {
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('role', 'admin');
+            console.log("Fetched admins:", data);
+            if (data) setAdmins(data);
+        };
 
         const fetchRequests = async () => {
             const { data, error } = await supabase
@@ -97,20 +122,37 @@ const AdminDashboard = () => {
             if (!error) setRequests(data || []);
         };
 
-        useEffect(() => { fetchRequests(); }, []);
+        useEffect(() => {
+            fetchRequests();
+            fetchAdmins();
+        }, []);
+
         const handleApprove = async (id) => {
             try {
-                await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id);
-                toast.success("Request approved");
-                fetchRequests();
-            } catch { toast.error("Error approving"); }
+                console.log("Approving request for ID:", id);
+                const { error, data } = await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id).select();
+                console.log("Update result:", { error, data });
+
+                if (error) throw error;
+                toast.success(t.request_approved);
+                console.log("Refreshing data...");
+                await fetchRequests();
+                await fetchAdmins();
+            } catch (error) {
+                console.error("Error approving:", error);
+                toast.error(t.error_approving);
+            }
         };
         const handleDeny = async (id) => {
             try {
-                await supabase.from('profiles').update({ request_status: 'denied' }).eq('id', id);
-                toast.success("Request denied");
-                fetchRequests();
-            } catch { toast.error("Error denying"); }
+                const { error } = await supabase.from('profiles').update({ request_status: 'denied' }).eq('id', id);
+                if (error) throw error;
+                toast.success(t.request_denied);
+                await fetchRequests();
+            } catch (error) {
+                console.error("Error denying:", error);
+                toast.error(t.error_denying);
+            }
         };
         const handleInvite = async (e) => {
             e.preventDefault();
@@ -128,8 +170,113 @@ const AdminDashboard = () => {
             }
         };
 
+        const handleToggleStatus = async (admin) => {
+            const newStatus = admin.is_active === false; // Toggle logic (default is true if undefined)
+            const confirmMsg = newStatus ? (t.confirm_activate || "Activate admin?") : (t.confirm_suspend || "Suspend admin?");
+
+            if (window.confirm(confirmMsg)) {
+                try {
+                    const { error } = await supabase.from('profiles').update({ is_active: newStatus }).eq('id', admin.id);
+                    if (error) throw error;
+                    toast.success(newStatus ? (t.admin_activated_success || "Admin activated") : (t.admin_suspended_success || "Admin suspended"));
+                    fetchAdmins();
+                } catch (error) {
+                    console.error("Error updating status:", error);
+                    toast.error(t.error_occurred || "Error occurred");
+                }
+            }
+        };
+
+        const handleRemoveAdmin = async (admin) => {
+            if (window.confirm(t.confirm_remove_admin || "Remove admin privileges?")) {
+                try {
+                    const { error } = await supabase.from('profiles').update({ role: 'member', admin_title: null, permissions: null }).eq('id', admin.id);
+                    if (error) throw error;
+                    toast.success(t.admin_removed_success || "Admin removed");
+                    fetchAdmins();
+                } catch (error) {
+                    console.error("Error removing admin:", error);
+                    toast.error(t.error_occurred || "Error removed");
+                }
+            }
+        };
+
+        const handlePermissionChange = (permId) => {
+            if (permissions.includes(permId)) {
+                setPermissions(permissions.filter(p => p !== permId));
+            } else {
+                setPermissions([...permissions, permId]);
+            }
+        };
+
+        const savePermissions = async () => {
+            if (!selectedAdmin) return;
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ permissions, admin_title: adminTitle })
+                    .eq('id', selectedAdmin.id);
+
+                if (error) throw error;
+                toast.success("Permissions updated");
+                setSelectedAdmin(null);
+                fetchAdmins();
+            } catch (error) {
+                console.error(error);
+                toast.error("Error saving permissions");
+            }
+        };
+
+        const openPermissionModal = (admin) => {
+            setSelectedAdmin(admin);
+            // Super Admin acts as having all permissions
+            if (admin.email === 'oussousselhadji@gmail.com') {
+                setPermissions(allPermissions.map(p => p.id));
+            } else {
+                setPermissions(admin.permissions || []);
+            }
+            setAdminTitle(admin.admin_title || '');
+        };
+
         return (
             <div>
+                {selectedAdmin && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+                            <h3 className="text-xl font-bold mb-4 dark:text-white">{t.manage_permissions}: {selectedAdmin.full_name}</h3>
+                            <div className="space-y-2 mb-6">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {t.admin_title_label || "Admin Title/Role"}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={adminTitle}
+                                    onChange={(e) => setAdminTitle(e.target.value)}
+                                    placeholder="e.g. Financial Manager"
+                                    className="w-full p-2 border dark:border-gray-600 rounded mb-4 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+
+                                <h4 className="font-bold mb-2 text-gray-800 dark:text-white">{t.manage_permissions}</h4>
+                                {allPermissions.map(p => (
+                                    <label key={p.id} className="flex items-center gap-2 text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={permissions.includes(p.id)}
+                                            onChange={() => handlePermissionChange(p.id)}
+                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                        {p.label}
+                                    </label>
+                                ))}
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button onClick={() => setSelectedAdmin(null)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Cancel</button>
+                                <button onClick={savePermissions} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-8 border border-gray-200 dark:border-gray-600">
                     <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.invite_new_admin}</h3>
                     <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
@@ -143,14 +290,122 @@ const AdminDashboard = () => {
                         </button>
                     </form>
                 </div>
+
+                <div className="mb-8">
+                    <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.existing_admins}</h3>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th className="p-3">{t.table_header_name}</th>
+                                    <th className="p-3">{t.table_header_email}</th>
+                                    <th className="p-3">{t.role_title}</th>
+                                    <th className="p-3">{t.status || "Status"}</th>
+                                    <th className="p-3 text-right">{t.table_header_actions}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {admins.map(admin => (
+                                    <tr key={admin.id} className="border-t dark:border-gray-600">
+                                        <td className="p-3 dark:text-white">{(language === 'ar' && admin.full_name_ar) ? admin.full_name_ar : admin.full_name}</td>
+                                        <td className="p-3 text-gray-500 dark:text-gray-400">{admin.email}</td>
+                                        <td className="p-3 text-blue-600 dark:text-blue-400">
+                                            {t[`role_${admin.admin_title?.toLowerCase()}`] || admin.admin_title || '-'}
+                                        </td>
+                                        <td className="p-3">
+                                            <span className={`px-2 py-1 rounded text-xs ${admin.is_active !== false ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+                                                {admin.is_active !== false ? (t.status_active || 'Active') : (t.status_suspended || 'Suspended')}
+                                            </span>
+                                        </td>
+                                        <td className="p-3 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <button onClick={() => openPermissionModal(admin)} className="text-blue-600 hover:text-blue-800" title={t.manage}><FaEdit size={18} /></button>
+                                                <button
+                                                    onClick={() => handleToggleStatus(admin)}
+                                                    className={`${admin.is_active !== false ? 'text-orange-500 hover:text-orange-700' : 'text-green-500 hover:text-green-700'}`}
+                                                    title={admin.is_active !== false ? t.suspend_admin : t.activate_admin}
+                                                >
+                                                    {admin.is_active !== false ? <FaPause size={18} /> : <FaPlay size={18} />}
+                                                </button>
+                                                <button onClick={() => handleRemoveAdmin(admin)} className="text-red-600 hover:text-red-800" title={t.remove_admin}><FaTrash size={18} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                        {admins.map(admin => (
+                            <div key={admin.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border dark:border-gray-700">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h4 className="font-bold text-gray-800 dark:text-white">{(language === 'ar' && admin.full_name_ar) ? admin.full_name_ar : admin.full_name}</h4>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{admin.email}</p>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded text-xs ${admin.is_active !== false ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+                                        {admin.is_active !== false ? (t.status_active || 'Active') : (t.status_suspended || 'Suspended')}
+                                    </span>
+                                </div>
+                                <div className="mb-4">
+                                    <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+                                        {t[`role_${admin.admin_title?.toLowerCase()}`] || admin.admin_title || '-'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-end gap-3 border-t dark:border-gray-700 pt-3">
+                                    <button
+                                        onClick={() => openPermissionModal(admin)}
+                                        className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 px-2 py-1 rounded"
+                                    >
+                                        <FaEdit /> {t.manage}
+                                    </button>
+                                    <button
+                                        onClick={() => handleToggleStatus(admin)}
+                                        className={`flex items-center gap-1 px-2 py-1 rounded ${admin.is_active !== false ? 'text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700' : 'text-green-500 hover:bg-green-50 dark:hover:bg-gray-700'}`}
+                                    >
+                                        {admin.is_active !== false ? <><FaPause /> {t.suspend || "Suspend"}</> : <><FaPlay /> {t.activate || "Activate"}</>}
+                                    </button>
+                                    <button
+                                        onClick={() => handleRemoveAdmin(admin)}
+                                        className="flex items-center gap-1 text-red-600 hover:bg-red-50 dark:hover:bg-gray-700 px-2 py-1 rounded"
+                                    >
+                                        <FaTrash /> {t.remove || "Remove"}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <div>
                     <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.pending_requests || "Pending Requests"}</h3>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden overflow-x-auto">
                         {requests.length === 0 ? <p className="p-4 text-center">{t.no_pending_requests || "No pending requests"}</p> : (
                             <table className="w-full text-left min-w-[300px]">
-                                <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="p-3 whitespace-nowrap">{t.table_header_name || "Name"}</th><th className="p-3 text-right whitespace-nowrap">{t.actions || "Actions"}</th></tr></thead>
+                                <thead className="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th className="p-3 whitespace-nowrap">{t.table_header_name || "Name"}</th>
+                                        <th className="p-3 whitespace-nowrap">{t.requested_role}</th>
+                                        <th className="p-3 text-right whitespace-nowrap">{t.table_header_actions || "Actions"}</th>
+                                    </tr>
+                                </thead>
                                 <tbody>{requests.map(r => (
-                                    <tr key={r.id} className="border-t dark:border-gray-600"><td className="p-3 dark:text-white whitespace-nowrap">{(language === 'ar' && r.full_name_ar) ? r.full_name_ar : r.full_name}</td><td className="p-3 text-right whitespace-nowrap"><button onClick={() => handleApprove(r.id)} className="text-green-500 mr-2"><FaCheck /></button><button onClick={() => handleDeny(r.id)} className="text-red-500"><FaTimes /></button></td></tr>
+                                    <tr key={r.id} className="border-t dark:border-gray-600">
+                                        <td className="p-3 dark:text-white whitespace-nowrap">{(language === 'ar' && r.full_name_ar) ? r.full_name_ar : r.full_name}</td>
+                                        <td className="p-3 text-blue-500 whitespace-nowrap">{t[`role_${r.admin_title?.toLowerCase()}`] || r.admin_title || '-'}</td>
+                                        <td className="p-3 text-right whitespace-nowrap">
+                                            <button onClick={() => handleApprove(r.id)} className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded-md text-sm font-medium mr-2 transition inline-flex items-center gap-1 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50">
+                                                <FaCheck size={12} /> {t.approve}
+                                            </button>
+                                            <button onClick={() => handleDeny(r.id)} className="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded-md text-sm font-medium transition inline-flex items-center gap-1 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
+                                                <FaTimes size={12} /> {t.reject}
+                                            </button>
+                                        </td>
+                                    </tr>
                                 ))}</tbody>
                             </table>
                         )}
@@ -292,39 +547,61 @@ const AdminDashboard = () => {
                     </button>
                 </h2>
                 <nav className="space-y-2">
-                    <button onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'overview' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaChartPie /> {t.overview || "Overview"}
-                    </button>
-                    <button onClick={() => { setActiveTab('news'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'news' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaNewspaper /> {t.manage_news}
-                    </button>
-                    <button onClick={() => { setActiveTab('programs'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaCalendarPlus /> {t.manage_programs}
-                    </button>
-                    <button onClick={() => { setActiveTab('projects'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'projects' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaHandHoldingHeart /> {t.manage_projects || "Manage Projects"}
-                    </button>
-                    <button onClick={() => { setActiveTab('events'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'events' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaCalendarCheck /> {t.manage_events}
-                    </button>
-                    <button onClick={() => { setActiveTab('partners'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'partners' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaHandshake /> {t.tab_partners || "Partners"}
-                    </button>
-                    <button onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'users' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaUsers /> {t.manage_users || "Manage Community"}
-                    </button>
-                    <button onClick={() => { setActiveTab('memberships'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'memberships' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaUserShield /> {t.manage_memberships || "Membership Requests"}
-                    </button>
-                    <button onClick={() => { setActiveTab('donations'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'donations' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaMoneyBillWave /> {t.donations}
-                    </button>
-                    <button onClick={() => { setActiveTab('testimonials'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaComments /> {t.manage_testimonials}
-                    </button>
-                    <button onClick={() => { setActiveTab('admins'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
-                        <FaUserShield /> {t.manage_admins}
-                    </button>
+                    {(hasPermission('manage_news') || hasPermission('manage_all')) && (
+                        <button onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'overview' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaChartPie /> {t.overview || "Overview"}
+                        </button>
+                    )}
+                    {hasPermission('manage_news') && (
+                        <button onClick={() => { setActiveTab('news'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'news' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaNewspaper /> {t.manage_news}
+                        </button>
+                    )}
+                    {hasPermission('manage_programs') && (
+                        <button onClick={() => { setActiveTab('programs'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'programs' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaCalendarPlus /> {t.manage_programs}
+                        </button>
+                    )}
+                    {hasPermission('manage_projects') && (
+                        <button onClick={() => { setActiveTab('projects'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'projects' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaHandHoldingHeart /> {t.manage_projects || "Manage Projects"}
+                        </button>
+                    )}
+                    {hasPermission('manage_events') && (
+                        <button onClick={() => { setActiveTab('events'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'events' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaCalendarCheck /> {t.manage_events}
+                        </button>
+                    )}
+                    {hasPermission('manage_partners') && (
+                        <button onClick={() => { setActiveTab('partners'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'partners' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaHandshake /> {t.tab_partners || "Partners"}
+                        </button>
+                    )}
+                    {hasPermission('manage_community') && (
+                        <button onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'users' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaUsers /> {t.manage_users || "Manage Community"}
+                        </button>
+                    )}
+                    {hasPermission('manage_community') && (
+                        <button onClick={() => { setActiveTab('memberships'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'memberships' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaUserShield /> {t.manage_memberships || "Membership Requests"}
+                        </button>
+                    )}
+                    {hasPermission('manage_donations') && (
+                        <button onClick={() => { setActiveTab('donations'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'donations' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaMoneyBillWave /> {t.donations}
+                        </button>
+                    )}
+                    {hasPermission('manage_testimonials') && (
+                        <button onClick={() => { setActiveTab('testimonials'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 transition-colors ${activeTab === 'testimonials' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaComments /> {t.manage_testimonials}
+                        </button>
+                    )}
+                    {hasPermission('manage_admins') && (
+                        <button onClick={() => { setActiveTab('admins'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded flex items-center gap-3 text-yellow-300 transition-colors ${activeTab === 'admins' ? 'bg-blue-800 dark:bg-gray-700' : 'hover:bg-blue-800 dark:hover:bg-gray-700'}`}>
+                            <FaUserShield /> {t.manage_admins}
+                        </button>
+                    )}
                     <button onClick={() => navigate('/dashboard/volunteer')} className="w-full text-left p-3 rounded flex items-center gap-3 text-green-300 hover:bg-blue-800 dark:hover:bg-gray-700 transition-colors">
                         <FaHandHoldingHeart /> {t.volunteer_view || "Volunteer View"}
                     </button>
@@ -379,14 +656,14 @@ const AdminDashboard = () => {
 
                     {activeTab !== 'overview' && (
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300 min-h-[500px]">
-                            {activeTab === 'news' && <PostList type="news" data={news} onDelete={handleDelete} onAdd={() => handleAdd('news')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} />}
-                            {activeTab === 'programs' && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={() => handleAdd('programs')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} />}
-                            {activeTab === 'projects' && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={() => handleAdd('projects')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} />}
-                            {activeTab === 'events' && <PostList type="events" data={events} onDelete={handleDelete} onAdd={() => handleAdd('events')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} />}
-                            {activeTab === 'partners' && <PostList type="partners" data={partners} onDelete={handleDelete} onAdd={() => handleAdd('partners')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'partners')} />}
+                            {activeTab === 'news' && hasPermission('manage_news') && <PostList type="news" data={news} onDelete={handleDelete} onAdd={() => handleAdd('news')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'news')} />}
+                            {activeTab === 'programs' && hasPermission('manage_programs') && <PostList type="programs" data={programs} onDelete={handleDelete} onAdd={() => handleAdd('programs')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'programs')} />}
+                            {activeTab === 'projects' && hasPermission('manage_projects') && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={() => handleAdd('projects')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} />}
+                            {activeTab === 'events' && hasPermission('manage_events') && <PostList type="events" data={events} onDelete={handleDelete} onAdd={() => handleAdd('events')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} />}
+                            {activeTab === 'partners' && hasPermission('manage_partners') && <PostList type="partners" data={partners} onDelete={handleDelete} onAdd={() => handleAdd('partners')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'partners')} />}
 
 
-                            {activeTab === 'testimonials' && (
+                            {activeTab === 'testimonials' && hasPermission('manage_testimonials') && (
                                 <div>
                                     <div className="flex justify-between items-center mb-6">
                                         <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-white flex items-center gap-2">
@@ -445,13 +722,13 @@ const AdminDashboard = () => {
                                 </div>
                             )}
 
-                            {activeTab === 'donations' && <DonationsList t={t} />}
+                            {activeTab === 'donations' && hasPermission('manage_donations') && <DonationsList t={t} />}
 
-                            {activeTab === 'admins' && user?.email === 'oussousselhadji@gmail.com' && (
+                            {activeTab === 'admins' && hasPermission('manage_admins') && (
                                 <AdminManagement />
                             )}
-                            {activeTab === 'users' && <CommunityManagement t={t} onViewUser={handleViewUser} />}
-                            {activeTab === 'memberships' && <MembershipRequests />}
+                            {activeTab === 'users' && hasPermission('manage_community') && <CommunityManagement t={t} onViewUser={handleViewUser} />}
+                            {activeTab === 'memberships' && hasPermission('manage_community') && <MembershipRequests />}
                         </div>
                     )}
                 </main>

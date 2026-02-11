@@ -12,6 +12,7 @@ import {
 } from 'react-icons/fa';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MembershipRenewalModal from '../components/MembershipRenewalModal';
+import RequestAdminModal from '../components/RequestAdminModal';
 import AttendeesList from '../components/AttendeesList';
 
 const VolunteerDashboard = () => {
@@ -40,6 +41,7 @@ const VolunteerDashboard = () => {
     const rating = 5;
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null });
     const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
+    const [isRequestAdminModalOpen, setIsRequestAdminModalOpen] = useState(false);
 
     // Suggestion Form State
     const [suggestionForm, setSuggestionForm] = useState({
@@ -147,14 +149,19 @@ const VolunteerDashboard = () => {
         }
     };
 
-    const handleRequestAdmin = async () => {
-        if (!window.confirm(t.confirm_admin_request || "Request Admin access?")) return;
+    const handleRequestAdmin = () => {
+        setIsRequestAdminModalOpen(true);
+    };
 
+    const handleSubmitAdminRequest = async (requestedRole) => {
         const toastId = toast.loading(t.submitting_request || "Submitting request...");
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update({ request_status: 'pending' })
+                .update({
+                    request_status: 'pending',
+                    admin_title: requestedRole
+                })
                 .eq('id', user.id);
 
             if (error) throw error;
@@ -590,6 +597,12 @@ const VolunteerDashboard = () => {
                 isOpen={isRenewalModalOpen}
                 onClose={() => setIsRenewalModalOpen(false)}
                 onRenewalComplete={loadMembershipHistory}
+            />
+
+            <RequestAdminModal
+                isOpen={isRequestAdminModalOpen}
+                onClose={() => setIsRequestAdminModalOpen(false)}
+                onSubmit={handleSubmitAdminRequest}
             />
         </div >
     );

@@ -184,8 +184,16 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const hasPermission = (permission) => {
+        if (!user) return false;
+        // Super Admin Override
+        if (user.email === 'oussousselhadji@gmail.com') return true;
+        // Check permissions array
+        return user.permissions?.includes(permission);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember, hasPermission }}>
             {/* Show animation overlay when logging out */}
             <LogoutAnimation isVisible={isLoggingOut} />
             {!loading && children}

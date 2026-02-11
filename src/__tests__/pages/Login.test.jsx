@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import Login from '../../pages/Login';
 import { AuthProvider } from '../../context/AuthContext';
-import { LanguageProvider } from '../../context/LanguageContext';
+// LanguageProvider import removed as it is now in a separate file and unused here
 
 // Mock context providers if complex
 vi.mock('../../context/AuthContext', async () => {
@@ -29,7 +29,6 @@ vi.mock('../../context/LanguageContext', () => ({
         },
         language: 'en'
     }),
-    LanguageProvider: ({ children }) => <div>{children}</div>
 }));
 
 describe('Login Page', () => {
