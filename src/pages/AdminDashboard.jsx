@@ -529,7 +529,7 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex transition-colors duration-300 relative">
+        <div className="flex-grow w-full bg-gray-100 dark:bg-gray-900 flex transition-colors duration-300 relative">
             {/* Sidebar */}
             {/* Mobile Overlay */}
             {isSidebarOpen && (
@@ -612,7 +612,7 @@ const AdminDashboard = () => {
             </aside>
 
             {/* Mobile Header / Content */}
-            <div className="flex-1 w-full md:w-auto">
+            <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
                 <header className="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center md:hidden transition-colors duration-300 sticky top-0 z-30">
                     <button onClick={() => setIsSidebarOpen(true)} className="text-gray-600 dark:text-gray-300 p-2">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -623,7 +623,7 @@ const AdminDashboard = () => {
                     <button onClick={handleLogout} className="text-gray-600 dark:text-gray-300 p-2"><FaSignOutAlt /></button>
                 </header>
 
-                <main className="p-8">
+                <main className="flex-grow p-4 md:p-8 overflow-y-auto">
                     <div className="flex justify-between items-center mb-8">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{t.welcome}, {user?.name}</h1>
