@@ -1,64 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
-import { FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaEdit } from 'react-icons/fa';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+import BranchMap from './BranchMap';
+import BranchesManagementModal from './admin/BranchesManagementModal';
+import toast from 'react-hot-toast';
 
 const Branches = () => {
     const { language } = useLanguage();
     const t = translations[language];
     const [selectedCity, setSelectedCity] = useState('');
+    const [branches, setBranches] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const branchesData = [
-        {
-            id: 'casablanca',
-            cityKey: 'casablanca',
-            addressKey: 'branch_casablanca_address',
-            phone: '0522-123456',
-            email: 'casablanca@safara.org',
-            coordinates: { top: '30%', left: '20%' }
-        },
-        {
-            id: 'rabat',
-            cityKey: 'rabat',
-            addressKey: 'branch_rabat_address',
-            phone: '0537-654321',
-            email: 'rabat@safara.org',
-            coordinates: { top: '25%', left: '25%' }
-        },
-        {
-            id: 'oujda',
-            cityKey: 'oujda',
-            addressKey: 'branch_oujda_address',
-            phone: '0536-789123',
-            email: 'oujda@safara.org',
-            coordinates: { top: '35%', left: '40%' }
-        },
-        {
-            id: 'marrakech',
-            cityKey: 'marrakech',
-            addressKey: 'branch_marrakech_address',
-            phone: '0524-456789',
-            email: 'marrakech@safara.org',
-            coordinates: { top: '60%', left: '30%' }
-        },
-        {
-            id: 'essaouira',
-            cityKey: 'essaouira',
-            addressKey: 'branch_essaouira_address',
-            phone: '0524-112233',
-            email: 'essaouira@safara.org',
-            coordinates: { top: '50%', left: '15%' }
+    useEffect(() => {
+        fetchBranches();
+    }, []);
+
+    const fetchBranches = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('branches')
+                .select('*')
+                .order('city', { ascending: true });
+
+            if (error) throw error;
+            setBranches(data || []);
+        } catch (error) {
+            console.error('Error fetching branches:', error);
+            // toast.error("Error loading branches"); // Optional: silent fail for public view
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
 
     const filteredBranches = selectedCity
-        ? branchesData.filter(branch => branch.id === selectedCity)
-        : branchesData;
+        ? branches.filter(branch => branch.city.toLowerCase() === selectedCity.toLowerCase())
+        : branches;
+
+    // Get unique cities for filter dropdown
+    const uniqueCities = [...new Set(branches.map(b => b.city))];
 
     return (
         <section id="branches" className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
+                <div className="text-center mb-12 relative">
                     <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-4">
                         {t.branches_title}
                     </h2>
@@ -66,26 +58,38 @@ const Branches = () => {
                         {t.branches_desc}
                     </p>
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
+
+                    {isAdmin && (
+                        <button
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="absolute top-0 right-0 mt-2 mr-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
+                        >
+                            <FaEdit />
+                            <span>{t.manage_branches || "Manage Branches"}</span>
+                        </button>
+                    )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">
-                    <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
-                        <div className="relative bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden h-[400px]">
-                            <iframe
-                                title="Map of Morocco"
-                                src="https://maps.google.com/maps?q=Morocco&t=&z=5&ie=UTF8&iwloc=&output=embed"
-                                width="100%"
-                                height="100%"
-                                frameBorder="0"
-                                style={{ border: 0 }}
-                                allowFullScreen=""
-                                aria-hidden="false"
-                                tabIndex="0"
-                            ></iframe>
+                    {/* Map Column */}
+                    <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md h-[500px] flex flex-col">
+                        <div className="relative bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-grow z-0">
+                            {branches.length > 0 ? (
+                                <BranchMap
+                                    branches={branches}
+                                    selectedCity={selectedCity}
+                                    onSelectBranch={(branch) => setSelectedCity(branch.city.toLowerCase())}
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                                    {loading ? t.loading || "Loading map..." : t.no_branches || "No branches configured"}
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                    {/* List Column */}
+                    <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md h-[500px] flex flex-col">
                         <h3 className="text-xl font-bold mb-6 text-blue-900 dark:text-white">
                             {t.find_branch}
                         </h3>
@@ -101,41 +105,72 @@ const Branches = () => {
                                 onChange={(e) => setSelectedCity(e.target.value)}
                             >
                                 <option value="">{t.all_cities}</option>
-                                <option value="casablanca">{t.casablanca}</option>
-                                <option value="rabat">{t.rabat}</option>
-                                <option value="oujda">{t.oujda}</option>
-                                <option value="marrakech">{t.marrakech}</option>
-                                <option value="essaouira">{t.essaouira}</option>
-                                <option value="fes">{t.fes}</option>
-                                <option value="tangier">{t.tangier}</option>
-                                <option value="agadir">{t.agadir}</option>
+                                {uniqueCities.map(city => (
+                                    <option key={city} value={city.toLowerCase()}>{city}</option>
+                                ))}
                             </select>
                         </div>
 
-                        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                            {filteredBranches.map(branch => (
-                                <div key={branch.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition cursor-pointer">
-                                    <h4 className="font-bold text-blue-900 dark:text-white">
-                                        {t[branch.cityKey]}
-                                    </h4>
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 flex items-center gap-2">
-                                        <FaMapMarkerAlt className="text-red-500" />
-                                        <span>{t[branch.addressKey]}</span>
-                                    </p>
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2">
-                                        <FaPhone className="text-blue-500" />
-                                        <span dir="ltr">{branch.phone}</span>
-                                    </p>
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2">
-                                        <FaEnvelope className="text-blue-400" />
-                                        <span>{branch.email}</span>
-                                    </p>
-                                </div>
-                            ))}
+                        <div className="space-y-4 overflow-y-auto pr-2 flex-grow">
+                            {filteredBranches.length > 0 ? (
+                                filteredBranches.map(branch => (
+                                    <div
+                                        key={branch.id}
+                                        className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition cursor-pointer"
+                                        onClick={() => setSelectedCity(branch.city.toLowerCase())}
+                                    >
+                                        <h4 className="font-bold text-blue-900 dark:text-white text-lg">
+                                            {branch.name}
+                                        </h4>
+                                        <div className="mt-2 space-y-2">
+                                            <p className="text-gray-600 dark:text-gray-300 text-sm flex items-start gap-2">
+                                                <FaMapMarkerAlt className="text-red-500 mt-1 flex-shrink-0" />
+                                                <span>{branch.address}</span>
+                                            </p>
+                                            {branch.phone && (
+                                                <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2">
+                                                    <FaPhone className="text-blue-500 flex-shrink-0" />
+                                                    <span dir="ltr">{branch.phone}</span>
+                                                </p>
+                                            )}
+                                            {branch.email && (
+                                                <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-2">
+                                                    <FaEnvelope className="text-blue-400 flex-shrink-0" />
+                                                    <span>{branch.email}</span>
+                                                </p>
+                                            )}
+                                            {branch.google_map_link && (
+                                                <a
+                                                    href={branch.google_map_link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-block mt-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {t.google_map_link || "View on Google Maps"}
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                                    {t.no_items_found || "No branches found"}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {isAdmin && (
+                <BranchesManagementModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    t={t}
+                    onUpdate={fetchBranches}
+                />
+            )}
         </section>
     );
 };
