@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
-    const { login, loginWithGoogle } = useAuth();
+    const { login, loginWithGoogle, user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useLanguage();
@@ -16,6 +16,14 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    // Redirect if already logged in
+    React.useEffect(() => {
+        if (user) {
+            const redirectPath = location.state?.from || (user.role === 'admin' ? '/dashboard/admin' : '/dashboard/volunteer');
+            navigate(redirectPath, { replace: true });
+        }
+    }, [user, navigate, location]);
 
     // Get the redirect path from location state or default to dashboard
     // Get the redirect path from location state or default to dashboard

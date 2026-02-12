@@ -19,7 +19,7 @@ class ErrorBoundary extends Component {
 
     resetErrorBoundary = () => {
         this.setState({ hasError: false, error: null });
-        // Optional: window.location.reload() if deep reset needed
+        window.location.reload();
     }
 
     render() {
