@@ -21,6 +21,7 @@ import MembershipPage from './pages/MembershipPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorPage from './pages/ErrorPage';
 import ErrorBoundary from './components/ErrorBoundary';
+import GamificationHub from './components/GamificationHub';
 
 import ScrollToTopWrapper from './components/ScrollToTopWrapper';
 
@@ -46,6 +47,7 @@ function App() {
                                         <Route path="signup" element={<Signup />} />
                                         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                                         <Route path="membership" element={<ProtectedRoute><MembershipPage /></ProtectedRoute>} />
+                                        <Route path="gamification" element={<ProtectedRoute><GamificationHub /></ProtectedRoute>} />
 
                                         <Route
                                             path="dashboard/admin"

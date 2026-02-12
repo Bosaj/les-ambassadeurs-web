@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaCalendarAlt, FaTrash, FaExclamationTriangle, FaAward } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaCalendarAlt, FaTrash, FaExclamationTriangle, FaAward, FaStar } from 'react-icons/fa';
 import BadgeDisplay from '../components/BadgeDisplay';
 
 const Profile = () => {
@@ -234,8 +234,18 @@ const Profile = () => {
                         <h1 className="text-2xl font-bold mt-4">{formData.username || t.profile_title}</h1>
                         <p className="opacity-80">{user?.email}</p>
 
-                        <div className="mt-4 flex justify-center">
+                        <div className="mt-4 flex justify-center flex-col items-center gap-2">
+                            <div className="flex items-center gap-2 text-yellow-300 font-bold text-lg bg-white/10 px-4 py-1 rounded-full cursor-pointer hover:bg-white/20 transition" onClick={() => navigate('/gamification')}>
+                                <FaStar />
+                                <span>{user?.points || 0} PTS</span>
+                            </div>
                             <BadgeDisplay badges={earnedBadges} />
+                            <button
+                                onClick={() => navigate('/gamification')}
+                                className="text-xs text-blue-200 hover:text-white underline mt-1"
+                            >
+                                {t.view_achievements || "View Achievements"}
+                            </button>
                         </div>
                     </div>
 
