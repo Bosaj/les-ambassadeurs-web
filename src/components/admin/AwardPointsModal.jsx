@@ -3,7 +3,7 @@ import { FaStar, FaTimes, FaSave } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
-const AwardPointsModal = ({ isOpen, onClose, user, onSuccess, t }) => {
+const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
     const [amount, setAmount] = useState(10);
     const [reason, setReason] = useState('');
     const [actionType, setActionType] = useState('bonus');

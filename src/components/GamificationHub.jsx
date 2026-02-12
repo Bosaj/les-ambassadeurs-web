@@ -18,9 +18,9 @@ const GamificationHub = () => {
         if (user) {
             fetchGamificationData();
         }
-    }, [user]);
+    }, [user, fetchGamificationData]);
 
-    const fetchGamificationData = async () => {
+    const fetchGamificationData = React.useCallback(async () => {
         try {
             setLoading(true);
 
@@ -59,7 +59,7 @@ const GamificationHub = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user, t]);
 
     const handleClaimBadge = async (badgeId) => {
         try {
@@ -76,7 +76,7 @@ const GamificationHub = () => {
             // Let's implement the client-side check first visually, but real logic should be server-side.
             // Using the RPC:
 
-            const { data, error } = await supabase.rpc('claim_badge', { p_badge_id: badgeId });
+            const { error } = await supabase.rpc('claim_badge', { p_badge_id: badgeId });
 
             if (error) throw error;
 
@@ -134,7 +134,7 @@ const GamificationHub = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {badges.map(badge => {
                             const claimed = isBadgeClaimed(badge.id);
-                            const locked = userPoints < badge.points_required && !claimed;
+                            // const locked = userPoints < badge.points_required && !claimed; // Unused
                             const canClaim = userPoints >= badge.points_required && !claimed;
 
                             return (
