@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBell, FaCheck, FaExclamationTriangle, FaInfoCircle, FaTimes } from 'react-icons/fa';
+import { FaBell, FaCheck, FaExclamationTriangle, FaInfoCircle, FaTimes, FaTrash } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -80,6 +80,18 @@ const NotificationBell = () => {
         }
     };
 
+    const handleClearAll = async () => {
+        const { error } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('user_id', user.id);
+
+        if (!error) {
+            setNotifications([]);
+            setUnreadCount(0);
+        }
+    };
+
     // Close dropdown on click outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -126,14 +138,26 @@ const NotificationBell = () => {
                             <FaBell className="text-blue-600 dark:text-blue-400" />
                             {t?.notifications || "Notifications"}
                         </h3>
-                        {unreadCount > 0 && (
-                            <button
-                                onClick={handleMarkAllAsRead}
-                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
-                            >
-                                {t?.mark_all_read || "Mark all read"}
-                            </button>
-                        )}
+                        <div className="flex items-center gap-3">
+                            {unreadCount > 0 && (
+                                <button
+                                    onClick={handleMarkAllAsRead}
+                                    className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
+                                >
+                                    {t?.mark_all_read || "Mark all read"}
+                                </button>
+                            )}
+                            {notifications.length > 0 && (
+                                <button
+                                    onClick={handleClearAll}
+                                    className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors flex items-center gap-1"
+                                    title={t?.clear_all || "Clear all"}
+                                >
+                                    <FaTrash size={12} />
+                                    <span className="hidden sm:inline">{t?.clear_all || "Clear"}</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="max-h-[70vh] overflow-y-auto custom-scrollbar">

@@ -716,7 +716,12 @@ export const translations = {
         "admin_activated_success": "تم تفعيل الحساب بنجاح",
         "admin_removed_success": "تمت إزالة المسؤول بنجاح",
         "status_active": "نشط",
-        "status_suspended": "مجمّد"
+        "status_suspended": "مجمّد",
+        "clear_all": "مسح الكل",
+        "admin_invitation": "دعوة مسؤول",
+        "admin_invitation_msg": "لقد تمت دعوتك لتصبح مسؤولاً.",
+        "admin_request_approved_msg": "تمت الموافقة على طلبك لتصبح مسؤولاً.",
+        "admin_request_denied_msg": "تم رفض طلبك لتصبح مسؤولاً."
     },
     "en": {
         "donate": "Donate Now",
@@ -1435,7 +1440,12 @@ export const translations = {
         "admin_activated_success": "Admin activated successfully",
         "admin_removed_success": "Admin removed successfully",
         "status_active": "Active",
-        "status_suspended": "Suspended"
+        "status_suspended": "Suspended",
+        "clear_all": "Clear All",
+        "admin_invitation": "Admin Invitation",
+        "admin_invitation_msg": "You have been invited to become an admin.",
+        "admin_request_approved_msg": "Your request to become an admin has been approved.",
+        "admin_request_denied_msg": "Your request to become an admin has been denied."
     },
     "fr": {
         "manage_partners": "Gérer les Partenaires",
@@ -2133,6 +2143,11 @@ export const translations = {
         "notifications": "Notifications",
         "mark_all_read": "Tout marquer comme lu",
         "no_notifications": "Aucune notification",
-        "showing_last_10": "Affichage des 10 dernières notifications"
+        "showing_last_10": "Affichage des 10 dernières notifications",
+        "clear_all": "Tout effacer",
+        "admin_invitation": "Invitation Admin",
+        "admin_invitation_msg": "Vous avez été invité à devenir administrateur.",
+        "admin_request_approved_msg": "Votre demande pour devenir administrateur a été approuvée.",
+        "admin_request_denied_msg": "Votre demande pour devenir administrateur a été refusée."
     }
 };
