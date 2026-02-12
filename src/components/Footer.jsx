@@ -106,9 +106,9 @@ const Footer = () => {
                         {t.copyright} {t.website_by} <a href="https://www.linkedin.com/in/oussama-elhadji" className="underline" target="_blank" rel="noopener noreferrer">Oussama ELHADJI</a>
                     </p>
                     <div className="flex gap-6">
-                        <a href="#" className="text-gray-400 hover:text-white text-sm transition">{t.privacy_policy}</a>
-                        <a href="#" className="text-gray-400 hover:text-white text-sm transition">{t.terms_of_use}</a>
-                        <a href="#" className="text-gray-400 hover:text-white text-sm transition">{t.report_problem}</a>
+                        <Link to="/privacy-policy" className="text-gray-400 hover:text-white text-sm transition">{t.privacy_policy}</Link>
+                        <Link to="/terms-of-use" className="text-gray-400 hover:text-white text-sm transition">{t.terms_of_use}</Link>
+                        <Link to="/report-problem" className="text-gray-400 hover:text-white text-sm transition">{t.report_problem}</Link>
                     </div>
                 </div>
             </div>

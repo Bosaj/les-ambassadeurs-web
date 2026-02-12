@@ -22,6 +22,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ErrorPage from './pages/ErrorPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import GamificationHub from './components/GamificationHub';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfUse from './pages/TermsOfUse';
+import ReportProblem from './pages/ReportProblem';
 
 import ScrollToTopWrapper from './components/ScrollToTopWrapper';
 
@@ -48,6 +51,9 @@ function App() {
                                         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                                         <Route path="membership" element={<ProtectedRoute><MembershipPage /></ProtectedRoute>} />
                                         <Route path="gamification" element={<ProtectedRoute><GamificationHub /></ProtectedRoute>} />
+                                        <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                                        <Route path="terms-of-use" element={<TermsOfUse />} />
+                                        <Route path="report-problem" element={<ReportProblem />} />
 
                                         <Route
                                             path="dashboard/admin"
