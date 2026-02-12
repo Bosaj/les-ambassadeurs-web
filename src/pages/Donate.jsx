@@ -249,7 +249,7 @@ const Donate = () => {
                                 <span className="text-right">{t.account_name_value}</span>
                             </p>
                             <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded text-center font-mono text-sm break-all dark:text-white">
-                                RIB: Comming Soon
+                                {t.bank_details}
                             </div>
                         </div>
                         <button
