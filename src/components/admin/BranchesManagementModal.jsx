@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { FaTimes, FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import ConfirmationModal from '../ConfirmationModal';
 
 const BranchesManagementModal = ({ isOpen, onClose, t, onUpdate }) => {
     const [branches, setBranches] = useState([]);
@@ -16,6 +17,13 @@ const BranchesManagementModal = ({ isOpen, onClose, t, onUpdate }) => {
         google_map_link: '',
         lat: '',
         lng: ''
+    });
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null,
+        isDangerous: false
     });
 
     const fetchBranches = useCallback(async () => {
@@ -57,23 +65,29 @@ const BranchesManagementModal = ({ isOpen, onClose, t, onUpdate }) => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm(t.confirm_delete || "Are you sure?")) return;
+        setConfirmModal({
+            isOpen: true,
+            title: t.delete_branch || "Delete Branch",
+            message: t.confirm_delete || "Are you sure you want to delete this branch? This action cannot be undone.",
+            isDangerous: true,
+            onConfirm: async () => {
+                try {
+                    const { error } = await supabase
+                        .from('branches')
+                        .delete()
+                        .eq('id', id);
 
-        try {
-            const { error } = await supabase
-                .from('branches')
-                .delete()
-                .eq('id', id);
+                    if (error) throw error;
 
-            if (error) throw error;
-
-            toast.success(t.item_deleted || "Branch deleted");
-            fetchBranches();
-            onUpdate && onUpdate();
-        } catch (error) {
-            console.error('Error deleting branch:', error);
-            toast.error(t.error_deleting || "Error deleting branch");
-        }
+                    toast.success(t.item_deleted || "Branch deleted");
+                    fetchBranches();
+                    onUpdate && onUpdate();
+                } catch (error) {
+                    console.error('Error deleting branch:', error);
+                    toast.error(t.error_deleting || "Error deleting branch");
+                }
+            }
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -316,6 +330,15 @@ const BranchesManagementModal = ({ isOpen, onClose, t, onUpdate }) => {
                     </div>
                 </div>
             </div>
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                isDangerous={confirmModal.isDangerous}
+            />
         </div>
     );
 };
