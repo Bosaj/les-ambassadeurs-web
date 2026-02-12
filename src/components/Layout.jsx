@@ -16,7 +16,7 @@ const Layout = () => {
             dir={language === 'ar' ? 'rtl' : 'ltr'}
         >
             <Header />
-            <main className="flex-grow">
+            <main className="flex-grow flex flex-col w-full">
                 <Outlet />
             </main>
             <Footer />
