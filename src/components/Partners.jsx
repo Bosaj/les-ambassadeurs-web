@@ -21,7 +21,7 @@ const Partners = () => {
                     <div className="w-24 h-1 bg-red-500 mx-auto mt-4"></div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-10">
+                <div className="flex flex-wrap justify-center gap-8 md:gap-12">
                     {partners && partners.length > 0 ? (
                         partners.map((partner) => (
                             <a
@@ -29,13 +29,13 @@ const Partners = () => {
                                 href={partner.website_url || '#'}
                                 target={partner.website_url ? "_blank" : "_self"}
                                 rel="noopener noreferrer"
-                                className="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-sm flex items-center justify-center h-28 hover:shadow-md transition group"
+                                className="bg-white dark:bg-gray-700 p-6 md:p-8 rounded-lg shadow-sm flex items-center justify-center w-40 h-28 md:w-48 hover:shadow-md transition group"
                                 title={partner.name}
                             >
                                 <img
-                                    src={partner.image_url}
+                                    src={partner.image_url.startsWith('http') ? partner.image_url : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/partners/${partner.image_url}`}
                                     alt={partner.name}
-                                    className="max-h-12 opacity-70 group-hover:opacity-100 transition object-contain"
+                                    className="max-h-12 w-auto opacity-70 group-hover:opacity-100 transition object-contain"
                                     onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.src = "https://via.placeholder.com/150?text=" + partner.name.charAt(0);
@@ -45,7 +45,7 @@ const Partners = () => {
                         ))
                     ) : (
                         // Fallback/Static partners if no data or while loading (optional, or just show message)
-                        <div className="col-span-full text-center text-gray-500 py-10">
+                        <div className="w-full text-center text-gray-500 py-10">
                             {t.no_partners || "No partners added yet."}
                         </div>
                     )}

@@ -143,7 +143,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
                 </button>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700 min-h-[400px]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700 min-h-[400px] w-full max-w-full">
                 {loading ? (
                     <div className="flex justify-center items-center h-40 text-gray-500">
                         {t.loading_data || "Loading data..."}
