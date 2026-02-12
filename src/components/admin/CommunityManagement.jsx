@@ -152,40 +152,46 @@ const CommunityManagement = ({ t, onViewUser }) => {
                     <>
                         {view === 'members' ? (
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left min-w-[800px]">
+                                <table className="w-full text-left min-w-[900px]">
                                     <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                         <tr>
-                                            <th className="p-4 whitespace-nowrap">{t.table_header_name || "Name"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.table_header_email || "Email"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.table_header_role || "Role"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.table_header_phone || "Phone"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.table_header_city || "City"}</th>
-                                            <th className="p-4 whitespace-nowrap text-right">{t.table_header_actions || "Actions"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[20%]">{t.table_header_name || "Name"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[25%]">{t.table_header_email || "Email"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[10%]">{t.table_header_role || "Role"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[15%]">{t.table_header_phone || "Phone"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[15%]">{t.table_header_city || "City"}</th>
+                                            <th className="p-4 whitespace-nowrap text-right w-[15%]">{t.table_header_actions || "Actions"}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {users.length > 0 ? users.map(u => (
                                             <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                                <td className="p-4 font-medium dark:text-white whitespace-nowrap">{(language === 'ar' && u.full_name_ar) ? u.full_name_ar : u.full_name}</td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.email}</td>
-                                                <td className="p-4 whitespace-nowrap"><span className={`px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{t[`role_${u.role}`] || u.role}</span></td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{u.phone_number || '-'}</td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{(language === 'ar' && u.city_ar) ? u.city_ar : (u.city ? (t[`city_${u.city.toLowerCase()}`] || u.city) : '-')}</td>
-                                                <td className="p-4 text-right whitespace-nowrap flex justify-end gap-2">
-                                                    <button
-                                                        onClick={() => setSelectedUserForHistory(u)}
-                                                        className="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 p-2 rounded hover:bg-purple-200 transition"
-                                                        title={t.membership_history_title || "Membership History"}
-                                                    >
-                                                        <FaHistory />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => onViewUser && onViewUser(u)}
-                                                        className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 p-2 rounded hover:bg-blue-200 transition"
-                                                        title={t.view_profile || "View Full Profile"}
-                                                    >
-                                                        <FaEye />
-                                                    </button>
+                                                <td className="p-4 font-medium dark:text-white align-middle">
+                                                    <div className="truncate max-w-[200px]" title={(language === 'ar' && u.full_name_ar) ? u.full_name_ar : u.full_name}>
+                                                        {(language === 'ar' && u.full_name_ar) ? u.full_name_ar : u.full_name}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{u.email}</td>
+                                                <td className="p-4 whitespace-nowrap align-middle"><span className={`px-2 py-1 rounded text-xs inline-block ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{t[`role_${u.role}`] || u.role}</span></td>
+                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{u.phone_number || '-'}</td>
+                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{(language === 'ar' && u.city_ar) ? u.city_ar : (u.city ? (t[`city_${u.city.toLowerCase()}`] || u.city) : '-')}</td>
+                                                <td className="p-4 text-right whitespace-nowrap align-middle">
+                                                    <div className="flex justify-end gap-2 items-center">
+                                                        <button
+                                                            onClick={() => setSelectedUserForHistory(u)}
+                                                            className="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 p-2 rounded hover:bg-purple-200 transition flex-shrink-0"
+                                                            title={t.membership_history_title || "Membership History"}
+                                                        >
+                                                            <FaHistory />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => onViewUser && onViewUser(u)}
+                                                            className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 p-2 rounded hover:bg-blue-200 transition flex-shrink-0"
+                                                            title={t.view_profile || "View Full Profile"}
+                                                        >
+                                                            <FaEye />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         )) : (
@@ -198,62 +204,68 @@ const CommunityManagement = ({ t, onViewUser }) => {
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left min-w-[800px]">
+                                <table className="w-full text-left min-w-[900px]">
                                     <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                         <tr>
-                                            <th className="p-4 whitespace-nowrap">{t.tab_events || "Event"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.date || "Date"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.table_header_name || "Name"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.table_header_email || "Email"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.status || "Status"}</th>
-                                            <th className="p-4 whitespace-nowrap">{t.registered_on || "Registered At"}</th>
-                                            <th className="p-4 whitespace-nowrap text-right">{t.actions || "Actions"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[20%]">{t.tab_events || "Event"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[15%]">{t.date || "Date"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[20%]">{t.table_header_name || "Name"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[20%]">{t.table_header_email || "Email"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[10%]">{t.status || "Status"}</th>
+                                            <th className="p-4 whitespace-nowrap w-[15%]">{t.registered_on || "Registered At"}</th>
+                                            <th className="p-4 whitespace-nowrap text-right w-[150px]">{t.actions || "Actions"}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {(attendees.filter(a => attendanceFilter === 'all' || a.events?.category === attendanceFilter).length > 0) ? attendees.filter(a => attendanceFilter === 'all' || a.events?.category === attendanceFilter).map(a => (
                                             <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                                <td className="p-4 font-medium dark:text-white whitespace-nowrap">{getLocalizedContent(a.events?.title) || t.unknown_event || 'Unknown Event'}</td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.events?.date ? new Date(a.events.date).toLocaleDateString() : '-'}</td>
-                                                <td className="p-4 dark:text-gray-300 whitespace-nowrap">
+                                                <td className="p-4 font-medium dark:text-white align-middle">
+                                                    <div className="truncate max-w-[200px]" title={getLocalizedContent(a.events?.title)}>
+                                                        {getLocalizedContent(a.events?.title) || t.unknown_event || 'Unknown Event'}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{a.events?.date ? new Date(a.events.date).toLocaleDateString() : '-'}</td>
+                                                <td className="p-4 dark:text-gray-300 whitespace-nowrap align-middle">
                                                     {(language === 'ar' && a.profiles?.full_name_ar) ? a.profiles.full_name_ar : (a.profiles?.full_name || a.name)}
                                                 </td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.email}</td>
-                                                <td className="p-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded text-xs capitalize ${a.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{a.email}</td>
+                                                <td className="p-4 whitespace-nowrap align-middle">
+                                                    <span className={`px-2 py-1 rounded text-xs capitalize inline-block ${a.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                                         a.status === 'rejected' ? 'bg-red-100 text-red-800' :
                                                             'bg-yellow-100 text-yellow-800'
                                                         }`}>
                                                         {t[`status_${a.status}`] || a.status || 'pending'}
                                                     </span>
                                                 </td>
-                                                <td className="p-4 text-gray-400 text-sm whitespace-nowrap">{new Date(a.created_at).toLocaleString()}</td>
-                                                <td className="p-4 text-right whitespace-nowrap flex justify-end gap-2">
-                                                    {a.status !== 'confirmed' && (
+                                                <td className="p-4 text-gray-400 text-sm whitespace-nowrap align-middle">{new Date(a.created_at).toLocaleString()}</td>
+                                                <td className="p-4 text-right whitespace-nowrap align-middle">
+                                                    <div className="flex justify-end gap-2 items-center">
+                                                        {a.status !== 'confirmed' && (
+                                                            <button
+                                                                onClick={() => handleAction('approve', a)}
+                                                                className="text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 p-1.5 rounded transition flex-shrink-0"
+                                                                title={t.approve || "Approve"}
+                                                            >
+                                                                <FaCheck />
+                                                            </button>
+                                                        )}
+                                                        {a.status !== 'rejected' && (
+                                                            <button
+                                                                onClick={() => handleAction('reject', a)}
+                                                                className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded transition flex-shrink-0"
+                                                                title={t.reject || "Reject"}
+                                                            >
+                                                                <FaTimes />
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            onClick={() => handleAction('approve', a)}
-                                                            className="text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 p-2 rounded transition"
-                                                            title={t.approve || "Approve"}
+                                                            onClick={() => handleAction('delete', a)}
+                                                            className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 p-1.5 rounded transition flex-shrink-0"
+                                                            title={t.delete || "Delete"}
                                                         >
-                                                            <FaCheck />
+                                                            <FaTrash />
                                                         </button>
-                                                    )}
-                                                    {a.status !== 'rejected' && (
-                                                        <button
-                                                            onClick={() => handleAction('reject', a)}
-                                                            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded transition"
-                                                            title={t.reject || "Reject"}
-                                                        >
-                                                            <FaTimes />
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => handleAction('delete', a)}
-                                                        className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded transition"
-                                                        title={t.delete || "Delete"}
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         )) : (
