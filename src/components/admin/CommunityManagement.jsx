@@ -34,7 +34,8 @@ const CommunityManagement = ({ t, onViewUser }) => {
                 .from('event_attendees')
                 .select(`
                         *,
-                        events (title, date, category)
+                        events (title, date, category),
+                        profiles (full_name, full_name_ar)
                     `)
                 .order('created_at', { ascending: false });
 
@@ -214,7 +215,9 @@ const CommunityManagement = ({ t, onViewUser }) => {
                                             <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                                 <td className="p-4 font-medium dark:text-white whitespace-nowrap">{getLocalizedContent(a.events?.title) || t.unknown_event || 'Unknown Event'}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.events?.date ? new Date(a.events.date).toLocaleDateString() : '-'}</td>
-                                                <td className="p-4 dark:text-gray-300 whitespace-nowrap">{a.name}</td>
+                                                <td className="p-4 dark:text-gray-300 whitespace-nowrap">
+                                                    {(language === 'ar' && a.profiles?.full_name_ar) ? a.profiles.full_name_ar : (a.profiles?.full_name || a.name)}
+                                                </td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.email}</td>
                                                 <td className="p-4 whitespace-nowrap">
                                                     <span className={`px-2 py-1 rounded text-xs capitalize ${a.status === 'confirmed' ? 'bg-green-100 text-green-800' :
