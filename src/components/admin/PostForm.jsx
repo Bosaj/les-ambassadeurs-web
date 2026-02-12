@@ -164,14 +164,26 @@ const PostForm = ({
                             />
                         </div>
 
+                        {/* Start Date */}
                         <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.date_label}</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.start_date || "Start Date"}</label>
                             <input
                                 type="date"
                                 required={type !== 'projects'}
                                 className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
-                                value={formData.date || ''}
+                                value={formData.date ? formData.date.split('T')[0] : ''}
                                 onChange={e => setFormData({ ...formData, date: e.target.value })}
+                            />
+                        </div>
+
+                        {/* End Date */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.end_date || "End Date"}</label>
+                            <input
+                                type="date"
+                                className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
+                                value={formData.end_date ? formData.end_date.split('T')[0] : ''}
+                                onChange={e => setFormData({ ...formData, end_date: e.target.value })}
                             />
                         </div>
 

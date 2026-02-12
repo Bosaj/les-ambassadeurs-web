@@ -9,6 +9,7 @@ import ConfirmationModal from './ConfirmationModal';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import AttendeesList from './AttendeesList';
+import { formatDateRange, calculateDuration } from '../utils/dateUtils';
 
 const Programs = () => {
     const { language } = useLanguage();
@@ -173,7 +174,12 @@ const Programs = () => {
                             <div className="flex flex-wrap gap-3 mb-4">
                                 {activeItem?.date && (
                                     <div className="flex items-center gap-2 text-sm font-semibold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                                        <FaCalendarAlt /> {new Date(activeItem.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'), { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        <FaCalendarAlt /> {formatDateRange(activeItem.date, activeItem.end_date, language)}
+                                        {activeItem.end_date && calculateDuration(activeItem.date, activeItem.end_date, t) && (
+                                            <span className="ml-2 text-xs bg-blue-200 text-blue-900 px-2 py-0.5 rounded-full border border-blue-300">
+                                                {calculateDuration(activeItem.date, activeItem.end_date, t)}
+                                            </span>
+                                        )}
                                     </div>
                                 )}
                                 {activeItem?.location && getLocalizedContent(activeItem.location, language) && (

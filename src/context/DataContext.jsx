@@ -170,6 +170,7 @@ export const DataProvider = ({ children }) => {
                 insertData = {
                     title: postData.title,
                     date: new Date(postData.date).toISOString(),
+                    end_date: postData.end_date ? new Date(postData.end_date).toISOString() : null,
                     image_url: postData.image,
                     description: postData.description,
                     location: postData.location || {},
@@ -230,6 +231,7 @@ export const DataProvider = ({ children }) => {
                 updateData = {
                     title: postData.title,
                     date: new Date(postData.date).toISOString(),
+                    end_date: postData.end_date ? new Date(postData.end_date).toISOString() : null,
                     image_url: postData.image,
                     description: postData.description,
                     location: postData.location || {},

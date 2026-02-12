@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import AttendeesList from '../components/AttendeesList';
+import { formatDateRange, calculateDuration } from '../utils/dateUtils';
 
 const NewsPage = () => {
     const { news, events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
@@ -82,7 +83,7 @@ const NewsPage = () => {
                                         />
                                         <div className="p-6 flex-1 flex flex-col">
                                             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                                <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : 'TBA'}
+                                                <FaCalendarAlt className="mr-2" /> {formatDateRange(item.date, item.end_date, language)}
                                                 {item.location && getLocalizedContent(item.location, language) && (
                                                     <span className="flex items-center ml-3">
                                                         <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(item.location, language)}
@@ -135,7 +136,13 @@ const NewsPage = () => {
                                         />
                                         <div className="p-6 flex-1 flex flex-col">
                                             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                                <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : 'TBA'}
+                                                <FaCalendarAlt className="mr-2" />
+                                                <span>{formatDateRange(item.date, item.end_date, language)}</span>
+                                                {item.end_date && calculateDuration(item.date, item.end_date, t) && (
+                                                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                                                        {calculateDuration(item.date, item.end_date, t)}
+                                                    </span>
+                                                )}
                                                 {item.location && getLocalizedContent(item.location, language) && (
                                                     <span className="flex items-center ml-3">
                                                         <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(item.location, language)}
@@ -205,7 +212,12 @@ const NewsPage = () => {
                     <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
                         <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">
                             <FaCalendarAlt />
-                            <span>{selectedEvent?.date ? new Date(selectedEvent.date).toLocaleDateString() : 'TBA'}</span>
+                            <span>{formatDateRange(selectedEvent?.date, selectedEvent?.end_date, language)}</span>
+                            {selectedEvent?.end_date && calculateDuration(selectedEvent.date, selectedEvent.end_date, t) && (
+                                <span className="ml-2 text-xs bg-blue-200 text-blue-900 px-2 py-0.5 rounded-full border border-blue-300">
+                                    {calculateDuration(selectedEvent.date, selectedEvent.end_date, t)}
+                                </span>
+                            )}
                         </span>
                         {selectedEvent?.location && getLocalizedContent(selectedEvent.location, language) && (
                             <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full border border-red-100 dark:border-red-800">

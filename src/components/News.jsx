@@ -9,6 +9,7 @@ import ConfirmationModal from './ConfirmationModal';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import AttendeesList from './AttendeesList';
+import { formatDateRange, calculateDuration } from '../utils/dateUtils';
 
 const News = () => {
     const { language } = useLanguage();
@@ -98,7 +99,7 @@ const News = () => {
                             <div className="p-6 flex-1 flex flex-col text-start">
                                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                     <span className="flex items-center gap-1">
-                                        <FaCalendarAlt /> <span>{new Date(item.date).toLocaleDateString()}</span>
+                                        <FaCalendarAlt /> <span>{formatDateRange(item.date, item.end_date, language)}</span>
                                     </span>
                                     {item.location && (
                                         <span className={`flex items-center gap-1 ${language === 'ar' ? 'mr-3' : 'ml-3'}`}>
@@ -167,7 +168,12 @@ const News = () => {
                     <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
                         <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">
                             <FaCalendarAlt />
-                            <span>{currentNewsItem?.date ? new Date(currentNewsItem.date).toLocaleDateString() : ''}</span>
+                            <span>{formatDateRange(currentNewsItem?.date, currentNewsItem?.end_date, language)}</span>
+                            {currentNewsItem?.end_date && calculateDuration(currentNewsItem.date, currentNewsItem.end_date, t) && (
+                                <span className="ml-2 text-xs bg-blue-200 text-blue-900 px-2 py-0.5 rounded-full border border-blue-300">
+                                    {calculateDuration(currentNewsItem.date, currentNewsItem.end_date, t)}
+                                </span>
+                            )}
                         </span>
                         {currentNewsItem?.location && getLocalizedContent(currentNewsItem.location, language) && (
                             <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-3 py-1 rounded-full border border-red-100 dark:border-red-800">
