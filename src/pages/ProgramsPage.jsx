@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import AttendeesList from '../components/AttendeesList';
+import { formatDateRange, calculateDuration } from '../utils/dateUtils';
 
 const ProgramsPage = () => {
     const { programs, projects, registerForEvent, getLocalizedContent, cancelRegistration } = useData();
@@ -103,7 +104,19 @@ const ProgramsPage = () => {
                 <div className="p-8 flex flex-col justify-center flex-1">
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2 justify-between">
                         <div className="flex items-center">
-                            <FaCalendarAlt className="mr-2" /> {item.date ? new Date(item.date).toLocaleDateString() : t.ongoing}
+                            <FaCalendarAlt className="mr-2" />
+                            {item.date ? (
+                                <>
+                                    <span>{formatDateRange(item.date, item.end_date, language)}</span>
+                                    {item.end_date && calculateDuration(item.date, item.end_date, t) && (
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                                            {calculateDuration(item.date, item.end_date, t)}
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span>{t.ongoing || "Ongoing"}</span>
+                            )}
                             {item.location && getLocalizedContent(item.location, language) && (
                                 <span className="flex items-center ml-4">
                                     <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(item.location, language)}
@@ -208,7 +221,12 @@ const ProgramsPage = () => {
                         <div className="flex flex-wrap gap-3 mb-4">
                             {selectedItem?.date && (
                                 <div className="flex items-center gap-2 text-sm font-semibold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                                    <FaCalendarAlt /> {new Date(selectedItem.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'), { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    <FaCalendarAlt /> {formatDateRange(selectedItem.date, selectedItem.end_date, language)}
+                                    {selectedItem.end_date && calculateDuration(selectedItem.date, selectedItem.end_date, t) && (
+                                        <span className="ml-2 text-xs bg-blue-200 text-blue-900 px-2 py-0.5 rounded-full border border-blue-300">
+                                            {calculateDuration(selectedItem.date, selectedItem.end_date, t)}
+                                        </span>
+                                    )}
                                 </div>
                             )}
                             {selectedItem?.location && getLocalizedContent(selectedItem.location, language) && (

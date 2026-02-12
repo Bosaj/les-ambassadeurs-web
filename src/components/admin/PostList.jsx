@@ -53,7 +53,8 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                         <tr className="border-b dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50">
                             <th className="p-4 whitespace-nowrap font-semibold">{t.table_image || "Image"}</th>
                             <th className="p-4 min-w-[30%] font-semibold">{type === 'partners' ? (t.partner_name || "Partner Name") : (t.table_title || "Title")}</th>
-                            {type !== 'partners' && <th className="p-4 whitespace-nowrap font-semibold">{t.table_date || "Date"}</th>}
+                            {type !== 'partners' && <th className="p-4 whitespace-nowrap font-semibold">{t.start_date || "Start Date"}</th>}
+                            {(type === 'events' || type === 'programs' || type === 'projects') && <th className="p-4 whitespace-nowrap font-semibold">{t.end_date || "End Date"}</th>}
                             <th className="p-4 whitespace-nowrap font-semibold">{type === 'partners' ? (t.partner_website || "Website") : (t.location || "Location")}</th>
                             {type === 'events' && <th className="p-4 whitespace-nowrap font-semibold">{t.attendees || "Attendees"}</th>}
                             {type === 'programs' && <th className="p-4 whitespace-nowrap font-semibold">{t.joined || "Joined"}</th>}
@@ -76,6 +77,9 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                                 </td>
                                 {type !== 'partners' && <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-sm">
                                     {item.date ? new Date(item.date).toLocaleDateString() : '-'}
+                                </td>}
+                                {(type === 'events' || type === 'programs' || type === 'projects') && <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-sm">
+                                    {item.end_date ? new Date(item.end_date).toLocaleDateString() : '-'}
                                 </td>}
                                 <td className="p-4 text-gray-500 dark:text-gray-400 text-sm font-medium">
                                     {type === 'partners' ? (

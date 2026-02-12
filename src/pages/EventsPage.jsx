@@ -6,6 +6,7 @@ import { FaCalendarAlt, FaUserPlus, FaCheckCircle, FaTimes, FaMapMarkerAlt } fro
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../components/ConfirmationModal';
 import AttendeesList from '../components/AttendeesList';
+import { formatDateRange, calculateDuration } from '../utils/dateUtils';
 
 const EventsPage = () => {
     const { events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
@@ -67,7 +68,15 @@ const EventsPage = () => {
                                 <img src={event.image_url || event.image} alt={getLocalizedContent(event.title, language)} className="h-64 md:h-auto md:w-1/3 object-cover" />
                                 <div className="p-8 flex flex-col justify-center flex-1">
                                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                        <FaCalendarAlt className="mr-2" /> {new Date(event.date).toLocaleDateString()}
+                                        <div className="flex items-center">
+                                            <FaCalendarAlt className="mr-2" />
+                                            <span>{formatDateRange(event.date, event.end_date, language)}</span>
+                                            {event.end_date && calculateDuration(event.date, event.end_date, t) && (
+                                                <span className="ml-2 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-0.5 rounded-full">
+                                                    {calculateDuration(event.date, event.end_date, t)}
+                                                </span>
+                                            )}
+                                        </div>
                                         {event.location && getLocalizedContent(event.location, language) && (
                                             <span className="flex items-center ml-4">
                                                 <FaMapMarkerAlt className="mr-1" /> {getLocalizedContent(event.location, language)}
@@ -127,7 +136,11 @@ const EventsPage = () => {
                         >
                             <FaTimes size={20} />
                         </button>
-                        <h2 className="text-2xl font-bold mb-4 dark:text-white">{t.join_event}: {getLocalizedContent(selectedEvent.title, language)}</h2>
+                        <h2 className="text-2xl font-bold mb-2 dark:text-white">{t.join_event}: {getLocalizedContent(selectedEvent.title, language)}</h2>
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+                            <FaCalendarAlt className="mr-2" />
+                            <span>{formatDateRange(selectedEvent.date, selectedEvent.end_date, language)}</span>
+                        </div>
                         <form onSubmit={handleGuestSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-gray-700 dark:text-gray-300 mb-1">{t.full_name}</label>

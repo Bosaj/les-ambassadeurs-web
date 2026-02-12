@@ -46,6 +46,7 @@ const AdminDashboard = () => {
     const [formData, setFormData] = useState({
         title: { en: '', fr: '', ar: '' },
         date: '',
+        end_date: '',
         image: '',
         description: { en: '', fr: '', ar: '' },
         name: '',
@@ -475,6 +476,7 @@ const AdminDashboard = () => {
         setFormData({
             title: normalize(item.title),
             date: item.date ? item.date.split('T')[0] : '',
+            end_date: item.end_date ? item.end_date.split('T')[0] : '',
             image: item.image_url || item.image || '',
             description: normalize(item.description),
             name: item.name || '',
@@ -482,7 +484,7 @@ const AdminDashboard = () => {
             content: normalize(item.content),
             rating: item.rating || 5,
             is_approved: item.is_approved,
-            // Partners specific
+            location: normalize(item.location),
             website_url: item.website_url || '',
             image_url: item.image_url || ''
         });
