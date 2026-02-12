@@ -1,25 +1,39 @@
 import React from 'react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
+import ConfirmationModal from '../ConfirmationModal';
 import { FaUserShield, FaCheckCircle, FaClock, FaCheck, FaTimes, FaMoneyBillWave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const MembershipRequests = () => {
     const { users, verifyMember } = useData();
     const { t, language } = useLanguage();
+    const [confirmModal, setConfirmModal] = React.useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null,
+        isDangerous: false
+    });
 
     const pendingMembers = users ? users.filter(u => u.membership_status === 'pending') : [];
 
     const handleVerify = async (id, action) => {
-        if (window.confirm(t.confirm_action || "Are you sure?")) {
-            const toastId = toast.loading("Processing...");
-            const result = await verifyMember(id, action);
-            if (result.success) {
-                toast.success("Updated successfully", { id: toastId });
-            } else {
-                toast.error("Failed to update", { id: toastId });
+        setConfirmModal({
+            isOpen: true,
+            title: action === 'approve' ? (t.approve_member || "Approve Member") : (t.reject_member || "Reject Member"),
+            message: t.confirm_action || "Are you sure you want to proceed with this action?",
+            isDangerous: action === 'reject',
+            onConfirm: async () => {
+                const toastId = toast.loading("Processing...");
+                const result = await verifyMember(id, action);
+                if (result.success) {
+                    toast.success("Updated successfully", { id: toastId });
+                } else {
+                    toast.error("Failed to update", { id: toastId });
+                }
             }
-        }
+        });
     };
 
     return (
@@ -92,6 +106,15 @@ const MembershipRequests = () => {
                     </table>
                 </div>
             )}
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                isDangerous={confirmModal.isDangerous}
+            />
         </div>
     );
 };

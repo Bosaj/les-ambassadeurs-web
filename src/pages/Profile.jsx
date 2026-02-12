@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaCalendarAlt, FaTrash, FaExclamationTriangle, FaAward, FaStar } from 'react-icons/fa';
 import BadgeDisplay from '../components/BadgeDisplay';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const Profile = () => {
     const { user, refreshProfile, logout } = useAuth();
@@ -18,6 +19,13 @@ const Profile = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null,
+        isDangerous: false
+    });
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -188,28 +196,32 @@ const Profile = () => {
     };
 
     const handleDeleteAccount = async () => {
-        if (deleteConfirmText !== 'DELETE') return;
+        setConfirmModal({
+            isOpen: true,
+            title: t.delete_account || "Delete Account",
+            message: t.delete_account_confirm || "Are you absolutely sure? This action cannot be undone.",
+            isDangerous: true,
+            onConfirm: performDeleteAccount
+        });
+    };
 
-        if (window.confirm(t.delete_account_confirm || "Are you absolutely sure? Type 'DELETE' to confirm.")) {
-            setDeleteLoading(true);
-            const toastId = toast.loading(t.processing || "Processing...");
-            try {
-                // Call Supabase RPC to delete user from auth.users
-                const { error } = await supabase.rpc('delete_own_account');
+    const performDeleteAccount = async () => {
+        setDeleteLoading(true);
+        const toastId = toast.loading(t.processing || "Processing...");
+        try {
+            // Call Supabase RPC to delete user from auth.users
+            const { error } = await supabase.rpc('delete_own_account');
 
-                if (error) throw error;
+            if (error) throw error;
 
-                toast.success(t.account_deleted_success || "Your account has been deleted.", { id: toastId });
-
-                // Logout and redirect
-                await logout();
-                navigate('/');
-
-            } catch (error) {
-                console.error("Delete account error:", error);
-                toast.error(t.delete_account_error || "Error deleting account. Please contact support.", { id: toastId });
-                setDeleteLoading(false);
-            }
+            toast.success(t.account_deleted || "Account deleted successfully", { id: toastId });
+            logout();
+            navigate('/');
+        } catch (error) {
+            console.error(error);
+            toast.error(error.message || "Failed to delete account", { id: toastId });
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -469,6 +481,15 @@ const Profile = () => {
                     </div>
                 </div>
             </div>
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                isDangerous={confirmModal.isDangerous}
+            />
         </div>
     );
 };
