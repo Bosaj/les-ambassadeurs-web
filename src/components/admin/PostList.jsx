@@ -69,7 +69,7 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
                             <tr key={item.id} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group">
                                 <td className="p-4 whitespace-nowrap">
                                     <div className="relative w-16 h-10 rounded overflow-hidden shadow-sm group-hover:shadow-md transition-all">
-                                        <img src={item.image_url || item.image || "https://via.placeholder.com/150"} alt="" className="w-full h-full object-cover" />
+                                        <img src={item.image_url || item.image || "https://via.placeholder.com/150"} alt="" loading="lazy" className="w-full h-full object-cover" />
                                     </div>
                                 </td>
                                 <td className="p-4 font-medium">
