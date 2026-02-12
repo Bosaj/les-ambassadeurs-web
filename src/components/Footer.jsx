@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 // removed import { translations } from '../translations';
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaWhatsapp } from 'react-icons/fa';
 
 const Footer = () => {
     const { t } = useLanguage();
@@ -47,6 +47,9 @@ const Footer = () => {
                             </a>
                             <a href="https://www.linkedin.com/company/jamiyat-safarat-khair-oujda/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition p-1">
                                 <FaLinkedinIn className="text-2xl" />
+                            </a>
+                            <a href="https://chat.whatsapp.com/Lmy97p5Q64H8USGhyTT0TN?mode=gi_t" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition p-1">
+                                <FaWhatsapp className="text-2xl" />
                             </a>
                         </div>
                     </div>

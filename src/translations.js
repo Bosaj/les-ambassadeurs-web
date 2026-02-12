@@ -598,7 +598,7 @@ export const translations = {
         "bank_instruction": "يرجى تحويل المبلغ إلى الحساب البنكي أدناه ورفع الإيصال.",
         "bank_name": "البنك: البنك الشعبي",
         "account_holder": "الحساب: جمعية سفراء الخير",
-        "bank_details": "RIB: 123456789012345678901234",
+        "bank_details": "RIB: Coming Soon",
         "confirm_renewal": "تأكيد التجديد",
         "renewal_success": "تم تجديد العضوية بنجاح!",
         "renewal_pending_msg": "تم تقديم طلب التجديد. في انتظار الموافقة.",
@@ -761,7 +761,11 @@ export const translations = {
         "donor": "متبرع سخي",
         "donor_desc": "دعم الجمعية بتبرع.",
         "veteran": "مسؤول مخضرم",
-        "veteran_desc": "مسؤول منذ فترة طويلة."
+        "veteran_desc": "مسؤول منذ فترة طويلة.",
+        "suspend": "تجميد",
+        "activate": "تفعيل",
+        "remove": "إزالة",
+        "coming_soon": "قريباً"
     },
     "en": {
         "donate": "Donate Now",
@@ -1023,7 +1027,7 @@ export const translations = {
         "bank_instruction": "Please transfer the amount to the bank account below and upload the receipt.",
         "bank_name": "Bank: Banque Populaire",
         "account_holder": "Account: Les Ambassadeurs du Bien",
-        "bank_details": "RIB: 123456789012345678901234",
+        "bank_details": "RIB: Coming Soon",
         "confirm_renewal": "Confirm Renewal",
         "renewal_success": "Membership renewal successful!",
         "renewal_pending_msg": "Renewal request submitted. Pending approval.",
@@ -1525,7 +1529,11 @@ export const translations = {
         "donor": "Generous Donor",
         "donor_desc": "Supported the association with a donation.",
         "veteran": "Veteran Admin",
-        "veteran_desc": "Long-standing administrator."
+        "veteran_desc": "Long-standing administrator.",
+        "suspend": "Suspend",
+        "activate": "Activate",
+        "remove": "Remove",
+        "coming_soon": "Coming Soon"
     },
     "fr": {
         "manage_partners": "Gérer les Partenaires",
@@ -2268,6 +2276,21 @@ export const translations = {
         "donor": "Donateur Généreux",
         "donor_desc": "A soutenu l'association avec un don.",
         "veteran": "Administrateur Vétéran",
-        "veteran_desc": "Administrateur de longue date."
+        "veteran_desc": "Administrateur de longue date.",
+        "suspend": "Suspendre",
+        "activate": "Activer",
+        "remove": "Supprimer",
+        "suspend_admin": "Suspendre l'administrateur",
+        "activate_admin": "Activer l'administrateur",
+        "remove_admin": "Supprimer l'administrateur",
+        "confirm_suspend": "Êtes-vous sûr de vouloir suspendre cet administrateur ? Il ne pourra plus accéder au tableau de bord.",
+        "confirm_activate": "Êtes-vous sûr de vouloir réactiver cet administrateur ?",
+        "confirm_remove_admin": "Êtes-vous sûr de vouloir supprimer les privilèges d'administrateur de cet utilisateur ? Il redeviendra membre.",
+        "admin_suspended_success": "Administrateur suspendu avec succès",
+        "admin_activated_success": "Administrateur activé avec succès",
+        "admin_removed_success": "Administrateur supprimé avec succès",
+        "status_active": "Actif",
+        "status_suspended": "Suspendu",
+        "coming_soon": "Bientôt disponible"
     }
 };
