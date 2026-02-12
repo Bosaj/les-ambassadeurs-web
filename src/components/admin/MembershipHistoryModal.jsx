@@ -3,7 +3,10 @@ import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import { FaHistory, FaTimesCircle, FaCalendarAlt } from 'react-icons/fa';
 
+import { useLanguage } from '../../context/LanguageContext';
+
 const MembershipHistoryModal = ({ user, onClose, t }) => {
+    const { language } = useLanguage();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const currentYear = new Date().getFullYear();
@@ -68,7 +71,7 @@ const MembershipHistoryModal = ({ user, onClose, t }) => {
                         <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
                             <FaHistory /> {t.membership_history_title || "Membership History"}
                         </h2>
-                        <p className="text-sm opacity-80">{user.full_name}</p>
+                        <p className="text-sm opacity-80">{(language === 'ar' && user.full_name_ar) ? user.full_name_ar : user.full_name}</p>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition">
                         <FaTimesCircle className="text-2xl" />

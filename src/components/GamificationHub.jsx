@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 const GamificationHub = () => {
     const { user, refreshProfile } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [badges, setBadges] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
@@ -40,7 +40,7 @@ const GamificationHub = () => {
             // 3. Fetch Leaderboard (Top 10)
             const { data: topUsers, error: leaderboardError } = await supabase
                 .from('profiles')
-                .select('username, full_name, points, avatar_url')
+                .select('username, full_name, full_name_ar, points, avatar_url')
                 .order('points', { ascending: false })
                 .limit(10);
 
@@ -211,7 +211,11 @@ const GamificationHub = () => {
                                     {index + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold truncate dark:text-white">{user.username || user.full_name || 'Anonymous'}</p>
+                                    <p className="font-semibold truncate dark:text-white">
+                                        {(language === 'ar' && user.full_name_ar)
+                                            ? user.full_name_ar
+                                            : (user.username || user.full_name || 'Anonymous')}
+                                    </p>
                                     <p className="text-xs text-gray-500">{user.points} {t.points || "points"}</p>
                                 </div>
                                 {index === 0 && <FaTrophy className="text-yellow-500" />}
