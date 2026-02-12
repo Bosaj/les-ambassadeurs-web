@@ -80,10 +80,30 @@ const CommunityManagement = ({ t, onViewUser }) => {
             if (type === 'approve') {
                 await updateAttendanceStatus(data.id, 'confirmed');
                 setAttendees(prev => prev.map(item => item.id === data.id ? { ...item, status: 'confirmed' } : item));
+
+                // Create Notification
+                await supabase.from('notifications').insert({
+                    user_id: data.user_id,
+                    type: 'success',
+                    title: t.request_approved || "Request Approved",
+                    message: `${t.event || "Event"}: ${getLocalizedContent(data.events?.title)} - ${t.approved || "Approved"}`,
+                    is_read: false
+                });
+
                 toast.success(t.approved || "Approved", { id: toastId });
             } else if (type === 'reject') {
                 await updateAttendanceStatus(data.id, 'rejected');
                 setAttendees(prev => prev.map(item => item.id === data.id ? { ...item, status: 'rejected' } : item));
+
+                // Create Notification
+                await supabase.from('notifications').insert({
+                    user_id: data.user_id,
+                    type: 'error',
+                    title: t.request_denied || "Request Denied",
+                    message: `${t.event || "Event"}: ${getLocalizedContent(data.events?.title)} - ${t.rejected || "Rejected"}`,
+                    is_read: false
+                });
+
                 toast.success(t.rejected || "Rejected", { id: toastId });
             } else if (type === 'delete') {
                 // Use data.event_id directly from the attendee record

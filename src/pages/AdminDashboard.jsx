@@ -134,6 +134,16 @@ const AdminDashboard = () => {
                 console.log("Update result:", { error, data });
 
                 if (error) throw error;
+
+                // Create Notification
+                await supabase.from('notifications').insert({
+                    user_id: id,
+                    type: 'success',
+                    title: t.request_approved || "Request Approved",
+                    message: t.admin_request_approved_msg || "Your request to become an admin has been approved.",
+                    is_read: false
+                });
+
                 toast.success(t.request_approved);
                 console.log("Refreshing data...");
                 await fetchRequests();
@@ -147,6 +157,16 @@ const AdminDashboard = () => {
             try {
                 const { error } = await supabase.from('profiles').update({ request_status: 'denied' }).eq('id', id);
                 if (error) throw error;
+
+                // Create Notification
+                await supabase.from('notifications').insert({
+                    user_id: id,
+                    type: 'error',
+                    title: t.request_denied || "Request Denied",
+                    message: t.admin_request_denied_msg || "Your request to become an admin has been denied.",
+                    is_read: false
+                });
+
                 toast.success(t.request_denied);
                 await fetchRequests();
             } catch (error) {
@@ -160,6 +180,19 @@ const AdminDashboard = () => {
             try {
                 // Mock invite for now as RPC might not be set up
                 // await supabase.rpc('make_admin_by_email', { target_email: inviteEmail });
+
+                // Try to find user to send notification
+                const { data: user } = await supabase.from('profiles').select('id').eq('email', inviteEmail).single();
+                if (user) {
+                    await supabase.from('notifications').insert({
+                        user_id: user.id,
+                        type: 'info',
+                        title: t.admin_invitation || "Admin Invitation",
+                        message: t.admin_invitation_msg || "You have been invited to become an admin.",
+                        is_read: false
+                    });
+                }
+
                 toast.success("Invitation sent (Mock)");
                 setInviteEmail('');
             } catch (error) {
