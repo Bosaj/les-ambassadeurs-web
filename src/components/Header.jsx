@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { FaHandHoldingHeart, FaHandsHelping, FaEnvelope, FaBars, FaTimes, FaUser, FaSignOutAlt, FaTachometerAlt, FaMoon, FaSun, FaChevronDown } from 'react-icons/fa';
+import { FaHandHoldingHeart, FaHandsHelping, FaEnvelope, FaBars, FaTimes, FaUser, FaSignOutAlt, FaTachometerAlt, FaMoon, FaSun, FaChevronDown, FaStar } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
@@ -64,6 +64,9 @@ const Header = () => {
                                     )}
                                     <span className="text-xs sm:text-base font-bold text-yellow-300">
                                         {t.welcome}, {(language === 'ar' && user.full_name_ar) ? user.full_name_ar.split(' ')[0] : (user.username || user.full_name?.split(' ')[0] || user.name?.split(' ')[0] || user.email?.split('@')[0])}
+                                    </span>
+                                    <span className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-yellow-400 bg-blue-800/80 px-2 py-0.5 rounded-full ml-2 shadow-sm border border-yellow-500/20" title={t.my_points || "Points"}>
+                                        <FaStar className="text-[10px]" /> {user.points || 0}
                                     </span>
                                 </div>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><Link to="/profile" className="hover:text-red-400 transition">{t.profile_title}</Link></span>

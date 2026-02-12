@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { FaHistory, FaEye, FaCheck, FaTimes, FaTrash } from 'react-icons/fa';
+import { FaHistory, FaEye, FaCheck, FaTimes, FaTrash, FaStar } from 'react-icons/fa';
 import MembershipHistoryModal from './MembershipHistoryModal';
+import AwardPointsModal from './AwardPointsModal';
 import ConfirmationModal from '../ConfirmationModal';
 import { useLanguage } from '../../context/LanguageContext';
 import { useData } from '../../context/DataContext';
@@ -17,6 +18,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
     const { language } = useLanguage();
     const { updateAttendanceStatus, fetchData: refreshGlobalData, cancelRegistration } = useData();
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, data: null });
+    const [awardModal, setAwardModal] = useState({ isOpen: false, user: null });
 
     const fetchData = async () => {
         setLoading(true);
@@ -206,10 +208,16 @@ const CommunityManagement = ({ t, onViewUser }) => {
                                                         </button>
                                                         <button
                                                             onClick={() => onViewUser && onViewUser(u)}
-                                                            className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 p-2 rounded hover:bg-blue-200 transition flex-shrink-0"
                                                             title={t.view_profile || "View Full Profile"}
                                                         >
                                                             <FaEye />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setAwardModal({ isOpen: true, user: u })}
+                                                            className="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300 p-2 rounded hover:bg-yellow-200 transition flex-shrink-0"
+                                                            title={t.award_points || "Award Points"}
+                                                        >
+                                                            <FaStar />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -307,6 +315,14 @@ const CommunityManagement = ({ t, onViewUser }) => {
                         t={t}
                     />
                 )}
+
+                <AwardPointsModal
+                    isOpen={awardModal.isOpen}
+                    onClose={() => setAwardModal({ isOpen: false, user: null })}
+                    user={awardModal.user}
+                    onSuccess={fetchData}
+                    t={t}
+                />
 
                 <ConfirmationModal
                     isOpen={confirmModal.isOpen}
