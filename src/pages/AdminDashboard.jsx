@@ -590,7 +590,7 @@ const AdminDashboard = () => {
                 />
             )}
 
-            <aside className={`fixed inset - y - 0 left - 0 z - 50 md: z - 30 w - 64 bg - blue - 900 dark: bg - gray - 800 text - white p - 6 transform transition - transform duration - 300 ease -in -out md: translate - x - 0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} `}>
+            <aside className={`fixed inset-y-0 left-0 z-50 md:z-30 w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} `}>
                 <h2 className="text-2xl font-bold mb-8 flex justify-between items-center">
                     {t.admin_panel}
                     <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-white">
