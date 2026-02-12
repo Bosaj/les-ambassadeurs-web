@@ -754,7 +754,15 @@ export const translations = {
         "claiming_badge": "جاري الحصول على الشارة...",
         "badge_claimed_success": "تم الحصول على الشارة!",
         "badge_claim_error": "فشل الحصول على الشارة",
-        "points": "نقاط"
+        "points": "نقاط",
+        "active_member": "عضو نشط",
+        "active_member_desc": "نشط باستمرار في المجتمع.",
+        "participant": "مشارك في الفعاليات",
+        "participant_desc": "حضر فعالية واحدة على الأقل.",
+        "donor": "متبرع سخي",
+        "donor_desc": "دعم الجمعية بتبرع.",
+        "veteran": "مسؤول مخضرم",
+        "veteran_desc": "مسؤول منذ فترة طويلة."
     },
     "en": {
         "donate": "Donate Now",
@@ -1511,7 +1519,15 @@ export const translations = {
         "claiming_badge": "Claiming badge...",
         "badge_claimed_success": "Badge claimed!",
         "badge_claim_error": "Failed to claim badge",
-        "points": "Pts"
+        "points": "Pts",
+        "active_member": "Active Member",
+        "active_member_desc": "Consistently active in the community.",
+        "participant": "Event Participant",
+        "participant_desc": "Attended at least one event.",
+        "donor": "Generous Donor",
+        "donor_desc": "Supported the association with a donation.",
+        "veteran": "Veteran Admin",
+        "veteran_desc": "Long-standing administrator."
     },
     "fr": {
         "manage_partners": "Gérer les Partenaires",
@@ -2247,6 +2263,14 @@ export const translations = {
         "claiming_badge": "Réclamation du badge...",
         "badge_claimed_success": "Badge réclamé !",
         "badge_claim_error": "Échec de la réclamation du badge",
-        "points": "Pts"
+        "points": "Pts",
+        "active_member": "Membre Actif",
+        "active_member_desc": "Actif régulièrement dans la communauté.",
+        "participant": "Participant aux Événements",
+        "participant_desc": "A participé à au moins un événement.",
+        "donor": "Donateur Généreux",
+        "donor_desc": "A soutenu l'association avec un don.",
+        "veteran": "Administrateur Vétéran",
+        "veteran_desc": "Administrateur de longue date."
     }
 };

@@ -164,8 +164,8 @@ const GamificationHub = () => {
                                         </div>
                                     </div>
 
-                                    <h3 className="mt-4 font-bold text-lg dark:text-white">{badge.name}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{badge.description}</p>
+                                    <h3 className="mt-4 font-bold text-lg dark:text-white">{t[badge.id] || badge.name}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{t[`${badge.id}_desc`] || badge.description}</p>
 
                                     <div className="mt-4">
                                         {claimed ? (
