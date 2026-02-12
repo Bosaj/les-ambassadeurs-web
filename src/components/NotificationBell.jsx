@@ -117,7 +117,7 @@ const NotificationBell = () => {
     if (!user) return null;
 
     return (
-        <div className="relative z-[100]" ref={dropdownRef}>
+        <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="relative p-2 text-white hover:text-gray-200 transition-colors focus:outline-none rounded-full hover:bg-white/10"
@@ -132,7 +132,7 @@ const NotificationBell = () => {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700 animate-fade-in-down origin-top-right">
+                <div className="absolute right-[-60px] sm:right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700 animate-fade-in-down origin-top-right z-[100]">
                     <div className="p-3 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
                         <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-2">
                             <FaBell className="text-blue-600 dark:text-blue-400" />

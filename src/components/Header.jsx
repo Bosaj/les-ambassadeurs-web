@@ -47,7 +47,7 @@ const Header = () => {
             {/* Top Bar */}
             <div className="bg-blue-900 text-white text-sm py-2">
                 <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
                         {!user ? (
                             <>
                                 <span className="flex items-center gap-2 text-xs sm:text-base"><FaHandHoldingHeart /> <Link to="/donate" className="hover:text-red-400 transition">{t.donate}</Link></span>

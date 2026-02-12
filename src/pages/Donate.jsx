@@ -15,7 +15,12 @@ import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckout from '../components/StripeCheckout';
 
 // Initialize Stripe outside of component
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
+
+if (!STRIPE_KEY) {
+    console.warn("Stripe Publishable Key is missing. Online payments will be disabled.");
+}
 
 const Donate = () => {
     const { t } = useLanguage();
@@ -31,7 +36,7 @@ const Donate = () => {
         email: user?.email || '',
         phone: user?.user_metadata?.phone || '',
         amount: '',
-        method: 'online', // 'online', 'paypal', 'transfer'
+        method: 'transfer', // 'online', 'paypal', 'transfer'
         isAnonymous: false
     });
 
@@ -244,7 +249,7 @@ const Donate = () => {
                                 <span className="text-right">{t.account_name_value}</span>
                             </p>
                             <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded text-center font-mono text-sm break-all dark:text-white">
-                                RIB: 123 456 78901234567890 12
+                                RIB: Comming Soon
                             </div>
                         </div>
                         <button
@@ -265,10 +270,10 @@ const Donate = () => {
                             {t.online_payment_desc}
                         </p>
                         <button
-                            onClick={() => handleDonateClick('online')}
-                            className="w-full bg-red-500 text-white font-bold py-4 rounded-lg hover:bg-red-600 transition shadow-md"
+                            disabled
+                            className="w-full bg-gray-400 text-white font-bold py-4 rounded-lg cursor-not-allowed shadow-none"
                         >
-                            {t.donate_now_btn}
+                            {t.coming_soon}
                         </button>
                         <div className="mt-4 flex justify-center gap-4 opacity-60">
                             <div className="flex gap-2 items-center text-gray-400 text-sm">
@@ -287,10 +292,10 @@ const Donate = () => {
                             {t.paypal_desc}
                         </p>
                         <button
-                            onClick={() => handleDonateClick('paypal')}
-                            className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition shadow-md"
+                            disabled
+                            className="w-full bg-gray-400 text-white font-bold py-4 rounded-lg cursor-not-allowed shadow-none"
                         >
-                            {t.donate_paypal}
+                            {t.coming_soon}
                         </button>
                     </div>
                 </div>
@@ -391,23 +396,17 @@ const Donate = () => {
                         <div className="grid grid-cols-3 gap-3">
                             <button
                                 type="button"
-                                onClick={() => handleDonateClick('online')}
-                                className={`p-4 rounded-xl border-2 text-sm font-bold flex flex-col items-center gap-2 transition-all duration-200 ${donationForm.method === 'online'
-                                    ? 'border-red-500 bg-red-50 text-red-600 shadow-md transform scale-[1.02] dark:bg-red-900/20 dark:text-red-400'
-                                    : 'border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
-                                    }`}
+                                disabled
+                                className={`p-4 rounded-xl border-2 text-sm font-bold flex flex-col items-center gap-2 transition-all duration-200 opacity-50 cursor-not-allowed border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500`}
                             >
-                                <FaCreditCard className="text-xl" /> {t.credit_card_stripe}
+                                <FaCreditCard className="text-xl" /> {t.credit_card_stripe} <span className="text-xs text-red-500">({t.coming_soon})</span>
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleDonateClick('paypal')}
-                                className={`p-4 rounded-xl border-2 text-sm font-bold flex flex-col items-center gap-2 transition-all duration-200 ${donationForm.method === 'paypal'
-                                    ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md transform scale-[1.02] dark:bg-blue-900/20 dark:text-blue-400'
-                                    : 'border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
-                                    }`}
+                                disabled
+                                className={`p-4 rounded-xl border-2 text-sm font-bold flex flex-col items-center gap-2 transition-all duration-200 opacity-50 cursor-not-allowed border-transparent bg-gray-50 dark:bg-gray-800 text-gray-500`}
                             >
-                                <FaPaypal className="text-xl" /> PayPal
+                                <FaPaypal className="text-xl" /> PayPal <span className="text-xs text-blue-500">({t.coming_soon})</span>
                             </button>
                             <button
                                 type="button"

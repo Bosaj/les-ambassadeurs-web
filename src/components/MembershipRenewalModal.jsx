@@ -10,7 +10,8 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { FaCreditCard, FaUniversity, FaMoneyBillWave, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaSpinner, FaPaypal } from 'react-icons/fa';
 
 // Initialize Stripe outside of the component
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const { t } = useLanguage();
