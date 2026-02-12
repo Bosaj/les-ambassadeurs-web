@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 const MembershipRequests = () => {
     const { users, verifyMember } = useData();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     const pendingMembers = users ? users.filter(u => u.membership_status === 'pending') : [];
 
@@ -48,7 +48,7 @@ const MembershipRequests = () => {
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {pendingMembers.map(user => (
                                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td className="p-4 font-bold dark:text-white">{user.full_name}</td>
+                                    <td className="p-4 font-bold dark:text-white">{(language === 'ar' && user.full_name_ar) ? user.full_name_ar : user.full_name}</td>
                                     <td className="p-4 text-gray-500 dark:text-gray-400">{user.email}</td>
                                     <td className="p-4">
                                         <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center gap-1 w-fit">

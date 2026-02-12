@@ -64,7 +64,6 @@ const Header = () => {
                                     )}
                                     <span className="text-xs sm:text-base font-bold text-yellow-300">
                                         {t.welcome}, {(language === 'ar' && user.full_name_ar) ? user.full_name_ar.split(' ')[0] : (user.username || user.full_name?.split(' ')[0] || user.name?.split(' ')[0] || user.email?.split('@')[0])}
-                                        {t.welcome}, {(language === 'ar' && user.full_name_ar) ? user.full_name_ar.split(' ')[0] : (user.username || user.full_name?.split(' ')[0] || user.name?.split(' ')[0] || user.email?.split('@')[0])}
                                     </span>
                                     <Link to="/gamification" className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-yellow-400 bg-blue-800/80 px-2 py-0.5 rounded-full ml-2 shadow-sm border border-yellow-500/20 hover:bg-blue-700 transition" title={t.my_points || "Points"}>
                                         <FaStar className="text-[10px]" /> {user.points || 0}
