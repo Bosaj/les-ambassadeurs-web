@@ -7,7 +7,7 @@ import { FaGoogle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const Signup = () => {
-    const { signup, loginWithGoogle } = useAuth();
+    const { signup, loginWithGoogle, user } = useAuth();
     const navigate = useNavigate();
     const { t } = useLanguage();
 
@@ -19,6 +19,13 @@ const Signup = () => {
         city: ''
     });
     const [loading, setLoading] = useState(false);
+
+    // Redirect if already logged in
+    React.useEffect(() => {
+        if (user) {
+            navigate('/dashboard/volunteer', { replace: true });
+        }
+    }, [user, navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

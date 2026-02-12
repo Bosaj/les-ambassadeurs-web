@@ -71,12 +71,12 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 relative z-10">
-                    <Link
-                        to="/"
+                    <a
+                        href="/"
                         className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white rounded-xl font-medium transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
                         {t.home}
-                    </Link>
+                    </a>
                     {!is404 && resetErrorBoundary && (
                         <button
                             onClick={resetErrorBoundary}
