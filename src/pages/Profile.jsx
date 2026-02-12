@@ -311,6 +311,7 @@ const Profile = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 placeholder={t.profile_password_hint}
+                                autoComplete="new-password"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                             />
                         </div>
