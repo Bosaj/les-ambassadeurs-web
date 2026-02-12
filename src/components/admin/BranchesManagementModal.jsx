@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { FaTimes, FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -18,13 +18,7 @@ const BranchesManagementModal = ({ isOpen, onClose, t, onUpdate }) => {
         lng: ''
     });
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchBranches();
-        }
-    }, [isOpen]);
-
-    const fetchBranches = async () => {
+    const fetchBranches = useCallback(async () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -40,7 +34,13 @@ const BranchesManagementModal = ({ isOpen, onClose, t, onUpdate }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t.error_loading_data]);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchBranches();
+        }
+    }, [isOpen, fetchBranches]);
 
     const handleEdit = (branch) => {
         setEditingBranch(branch);

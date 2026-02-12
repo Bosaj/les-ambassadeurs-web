@@ -6,7 +6,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import BranchMap from './BranchMap';
 import BranchesManagementModal from './admin/BranchesManagementModal';
-import toast from 'react-hot-toast';
 
 const Branches = () => {
     const { language } = useLanguage();
