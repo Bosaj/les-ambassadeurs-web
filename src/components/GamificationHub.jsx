@@ -14,12 +14,6 @@ const GamificationHub = () => {
     const [leaderboard, setLeaderboard] = useState([]);
     const [userPoints, setUserPoints] = useState(0);
 
-    useEffect(() => {
-        if (user) {
-            fetchGamificationData();
-        }
-    }, [user, fetchGamificationData]);
-
     const fetchGamificationData = React.useCallback(async () => {
         try {
             setLoading(true);
@@ -60,6 +54,12 @@ const GamificationHub = () => {
             setLoading(false);
         }
     }, [user, t]);
+
+    useEffect(() => {
+        if (user) {
+            fetchGamificationData();
+        }
+    }, [user, fetchGamificationData]);
 
     const handleClaimBadge = async (badgeId) => {
         try {
