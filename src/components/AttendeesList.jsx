@@ -1,8 +1,10 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const AttendeesList = ({ attendees, max = 3, size = "w-8 h-8", showName = false }) => {
     const { users = [] } = useData() || {};
+    const { language } = useLanguage();
 
     if (!attendees || attendees.length === 0) return null;
 
@@ -14,18 +16,28 @@ const AttendeesList = ({ attendees, max = 3, size = "w-8 h-8", showName = false 
     const displayedAttendees = validAttendees.slice(0, max);
     // const remainingCount = validAttendees.length - max; // Optional: if we want to show +X in the avatar stack itself
 
-    const getAvatar = (attendee) => {
+    const getAttendeeDetails = (attendee) => {
         const user = users.find(u => u.id === attendee.user_id || u.email === attendee.email);
-        return user?.avatar_url || null;
+
+        let displayName = attendee.name || (attendee.email ? attendee.email.split('@')[0] : 'Guest');
+        let avatar = user?.avatar_url || null;
+
+        if (user) {
+            if (language === 'ar' && user.full_name_ar) {
+                displayName = user.full_name_ar;
+            } else if (user.full_name) {
+                displayName = user.full_name;
+            }
+        }
+
+        return { displayName, avatar };
     };
 
     return (
         <div className="flex items-center -space-x-2">
             {displayedAttendees.map((attendee, index) => {
-                const avatar = getAvatar(attendee);
+                const { displayName, avatar } = getAttendeeDetails(attendee);
                 const isOnlyOne = validAttendees.length === 1;
-                // Fallback name logic: use name, or email part, or "Guest"
-                const displayName = attendee.name || (attendee.email ? attendee.email.split('@')[0] : 'Guest');
                 const initial = displayName.charAt(0).toUpperCase();
 
                 return (

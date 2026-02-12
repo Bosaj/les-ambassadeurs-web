@@ -123,6 +123,21 @@ const CommunityManagement = ({ t, onViewUser }) => {
         }
     };
 
+    const getAttendeeName = (attendee) => {
+        let profile = attendee.profiles;
+        if (Array.isArray(profile)) profile = profile[0];
+
+        // Fallback to finding in users list if not joined
+        if (!profile && users.length > 0) {
+            profile = users.find(u => u.email === attendee.email);
+        }
+
+        if (language === 'ar' && profile?.full_name_ar) {
+            return profile.full_name_ar;
+        }
+        return profile?.full_name || attendee.name || 'Unknown';
+    };
+
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -254,7 +269,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
                                                 </td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{a.events?.date ? new Date(a.events.date).toLocaleDateString() : '-'}</td>
                                                 <td className="p-4 dark:text-gray-300 whitespace-nowrap align-middle">
-                                                    {(language === 'ar' && a.profiles?.full_name_ar) ? a.profiles.full_name_ar : (a.profiles?.full_name || a.name)}
+                                                    {getAttendeeName(a)}
                                                 </td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{a.email}</td>
                                                 <td className="p-4 whitespace-nowrap align-middle">

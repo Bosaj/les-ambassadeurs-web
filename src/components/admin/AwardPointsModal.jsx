@@ -3,7 +3,10 @@ import { FaStar, FaTimes, FaSave } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
+import { useLanguage } from '../../context/LanguageContext';
+
 const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
+    const { language } = useLanguage();
     const [amount, setAmount] = useState(10);
     const [reason, setReason] = useState('');
     const [actionType, setActionType] = useState('bonus');
@@ -52,7 +55,7 @@ const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border dark:border-gray-600">
                         <p className="text-sm text-gray-500 dark:text-gray-400">Awarding to:</p>
-                        <p className="font-bold text-lg dark:text-white">{user.full_name || user.username || user.email}</p>
+                        <p className="font-bold text-lg dark:text-white">{(language === 'ar' && user.full_name_ar) ? user.full_name_ar : (user.full_name || user.username || user.email)}</p>
                     </div>
 
                     <div>
