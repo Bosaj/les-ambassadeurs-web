@@ -40,9 +40,13 @@ const StripeCheckout = ({ amount, onSuccess, onError }) => {
                 onSuccess(paymentIntent);
             } else {
                 // Handle other statuses (processing, requires_action, etc.) if needed
-                console.log("Payment status:", paymentIntent?.status);
                 if (paymentIntent?.status === 'processing') {
-                    toast.loading(t.processing || "Payment processing...");
+                    toast.loading(t.payment_processing || "Payment processing...");
+                } else if (paymentIntent?.status === 'requires_payment_method') {
+                    toast.error(t.payment_failed_method || "Payment failed. Please try another payment method.");
+                } else {
+                    // unexpected status
+                    toast.error(t.payment_status_unknown || "Payment status unknown. Please check your dashboard.");
                 }
             }
         } catch (err) {
