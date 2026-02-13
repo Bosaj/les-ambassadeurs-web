@@ -9,7 +9,7 @@ import BadgeDisplay from '../components/BadgeDisplay';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 const Profile = () => {
-    const { user, refreshProfile, logout } = useAuth();
+    const { user, refreshProfile, setIsLoggingOut } = useAuth();
     const { t } = useLanguage();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -215,7 +215,17 @@ const Profile = () => {
             if (error) throw error;
 
             toast.success(t.account_deleted || "Account deleted successfully", { id: toastId });
-            logout();
+
+            // Trigger logout animation
+            setIsLoggingOut(true);
+
+            // Wait for animation to complete (2 seconds)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Clear session locally (don't call API since user is already deleted)
+            await supabase.auth.signOut({ scope: 'local' });
+
+            // Animation will stay visible and user will be redirected by AuthContext
             navigate('/');
         } catch (error) {
             console.error(error);
