@@ -1,3 +1,13 @@
+[build]
+  # Secrets scanning configuration
+  # VITE_ prefixed environment variables are PUBLIC and meant to be bundled into the client
+  # They should NOT be treated as secrets (they're exposed to browsers by design)
+  environment = { SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY,VITE_STRIPE_PUBLISHABLE_KEY" }
+
+# Omit example file from secrets scanning
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = ".envexemple"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
