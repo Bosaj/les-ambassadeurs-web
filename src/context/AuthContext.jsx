@@ -55,14 +55,35 @@ export const AuthProvider = ({ children }) => {
         });
 
         // Listen for changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
-                // Only fetch if we don't have the user or it's a different user
-                setUser(prev => {
-                    if (prev?.id === session.user.id) return prev;
-                    fetchProfile(session.user);
-                    return prev;
-                });
+                // Handle new OAuth sign-in (SIGNED_IN event from Google/OAuth)
+                if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+                    // Check if profile exists
+                    const { data: existingProfile } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    // If no profile exists, create one from auth metadata
+                    if (!existingProfile) {
+                        const fullName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User';
+
+                        await supabase
+                            .from('profiles')
+                            .insert({
+                                id: session.user.id,
+                                email: session.user.email,
+                                full_name: fullName,
+                                role: 'volunteer',
+                                avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
+                            });
+                    }
+                }
+
+                // Fetch profile (will now exist)
+                await fetchProfile(session.user);
             } else {
                 setUser(null);
                 setLoading(false);
