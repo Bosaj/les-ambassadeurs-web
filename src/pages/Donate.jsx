@@ -10,17 +10,9 @@ import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckout from '../components/StripeCheckout';
-
-// Initialize Stripe outside of component
-const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
-
-if (!STRIPE_KEY) {
-    console.warn("Stripe Publishable Key is missing. Online payments will be disabled.");
-}
+import stripePromise from '../lib/stripe';
 
 const Donate = () => {
     const { t } = useLanguage();

@@ -2,16 +2,12 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckout from './StripeCheckout';
 import toast from 'react-hot-toast';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { FaCreditCard, FaUniversity, FaMoneyBillWave, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaSpinner, FaPaypal } from 'react-icons/fa';
-
-// Initialize Stripe outside of the component
-const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
+import stripePromise from '../lib/stripe';
 
 const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const { t } = useLanguage();

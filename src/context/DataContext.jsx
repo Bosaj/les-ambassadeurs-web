@@ -147,6 +147,13 @@ export const DataProvider = ({ children }) => {
     // Helper to get localized string is now imported from utils
 
 
+
+    const safeISOString = (dateStr) => {
+        if (!dateStr) return null;
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+    };
+
     const addPost = async (type, postData) => {
         try {
             let table = '';
@@ -156,7 +163,7 @@ export const DataProvider = ({ children }) => {
                 table = 'news';
                 insertData = {
                     title: postData.title,
-                    date: new Date(postData.date).toISOString(),
+                    date: safeISOString(postData.date) || new Date().toISOString(),
                     image_url: postData.image,
                     description: postData.description,
                     location: postData.location || {}
@@ -166,8 +173,8 @@ export const DataProvider = ({ children }) => {
                 const categoryMap = { 'programs': 'program', 'events': 'event', 'projects': 'project' };
                 insertData = {
                     title: postData.title,
-                    date: new Date(postData.date).toISOString(),
-                    end_date: postData.end_date ? new Date(postData.end_date).toISOString() : null,
+                    date: safeISOString(postData.date) || new Date().toISOString(),
+                    end_date: safeISOString(postData.end_date),
                     image_url: postData.image,
                     description: postData.description,
                     location: postData.location || {},
@@ -218,7 +225,7 @@ export const DataProvider = ({ children }) => {
                 table = 'news';
                 updateData = {
                     title: postData.title,
-                    date: new Date(postData.date).toISOString(),
+                    date: safeISOString(postData.date) || new Date().toISOString(),
                     image_url: postData.image,
                     description: postData.description,
                     location: postData.location || {}
@@ -227,8 +234,8 @@ export const DataProvider = ({ children }) => {
                 table = 'events';
                 updateData = {
                     title: postData.title,
-                    date: new Date(postData.date).toISOString(),
-                    end_date: postData.end_date ? new Date(postData.end_date).toISOString() : null,
+                    date: safeISOString(postData.date) || new Date().toISOString(),
+                    end_date: safeISOString(postData.end_date),
                     image_url: postData.image,
                     description: postData.description,
                     location: postData.location || {},
