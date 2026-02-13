@@ -28,8 +28,17 @@ const CommunityManagement = ({ t, onViewUser }) => {
                 .from('profiles')
                 .select('*');
 
-            if (profilesError) throw profilesError;
-            if (profiles) setUsers(profiles);
+            if (profilesError) {
+                console.error("Error fetching profiles:", profilesError);
+                toast.error(`Failed to load community members: ${profilesError.message}`);
+                throw profilesError;
+            }
+
+            console.log("Fetched profiles count:", profiles?.length || 0);
+            if (profiles) {
+                console.log("Profiles data structure (first item):", profiles[0]);
+                setUsers(profiles);
+            }
 
             // Fetch Event Attendees
             const { data: att, error: attError } = await supabase
@@ -52,6 +61,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
             }
         } catch (error) {
             console.error("Error fetching community data:", error);
+            toast.error("Failed to load community data. Check console for details.");
         } finally {
             setLoading(false);
         }
