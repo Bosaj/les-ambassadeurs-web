@@ -61,7 +61,7 @@ const Branches = () => {
                     {isAdmin && (
                         <button
                             onClick={() => setIsEditModalOpen(true)}
-                            className="absolute top-0 right-0 mt-2 mr-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
+                            className="mt-6 md:mt-0 md:absolute md:top-0 md:right-0 md:mr-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md mx-auto md:mx-0"
                         >
                             <FaEdit />
                             <span>{t.manage_branches || "Manage Branches"}</span>
