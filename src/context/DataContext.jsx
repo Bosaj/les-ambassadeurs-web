@@ -200,11 +200,15 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
+            console.log(`[addPost] Inserting into ${table}:`, insertData);
+
             const { data, error } = await supabase
                 .from(table)
                 .insert([insertData])
                 .select()
                 .single();
+
+            console.log(`[addPost] Result:`, { data, error });
 
             if (error) throw error;
 
@@ -259,12 +263,16 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
+            console.log(`[updatePost] Updating ${table} ID ${id}:`, updateData);
+
             const { data, error } = await supabase
                 .from(table)
                 .update(updateData)
                 .eq('id', id)
                 .select()
                 .single();
+
+            console.log(`[updatePost] Result:`, { data, error });
 
             if (error) throw error;
 

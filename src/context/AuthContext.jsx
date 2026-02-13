@@ -146,18 +146,18 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         setIsLoggingOut(true);
-        // Wait for animation
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Wait for animation (reduced to 800ms for snappier feel)
+        await new Promise(resolve => setTimeout(resolve, 800));
 
         const { error } = await supabase.auth.signOut();
         if (error) {
             console.error("Logout error:", error);
-            // Even if error, we probably want to reset state or force partial logout
         }
 
         setUser(null);
         setIsLoggingOut(false);
-        // Optional: Redirect specifically if needed, but usually App handles user null
+        // Force redirect to home to clear state and ensure clean slate
+        window.location.href = '/';
     };
 
     const getURL = () => {
