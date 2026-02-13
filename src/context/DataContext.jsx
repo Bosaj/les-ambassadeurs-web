@@ -88,9 +88,6 @@ export const DataProvider = ({ children }) => {
                 if (error) throw error;
                 allEventsData = data || [];
             }
-            console.log("Events fetched:", allEventsData);
-
-            // Debug log
 
 
             // Filter into categories

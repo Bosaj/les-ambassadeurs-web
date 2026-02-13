@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import NotificationItem from './NotificationItem';
+import toast from 'react-hot-toast';
 
 const NotificationBell = () => {
     const { user } = useAuth();
@@ -42,9 +43,40 @@ const NotificationBell = () => {
                     table: 'notifications',
                     filter: `user_id=eq.${user.id}`
                 }, (payload) => {
-                    console.log('New notification received!', payload);
-                    setNotifications(prev => [payload.new, ...prev]);
+                    const newNotif = payload.new;
+                    setNotifications(prev => [newNotif, ...prev]);
                     setUnreadCount(prev => prev + 1);
+
+                    // Show visual toast for new notification
+                    toast.custom((t) => (
+                        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+                            <div className="flex-1 w-0 p-4">
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0 pt-0.5">
+                                        {newNotif.type === 'success' ? <FaCheck className="text-green-500" /> :
+                                            newNotif.type === 'error' ? <FaTimes className="text-red-500" /> :
+                                                <FaInfoCircle className="text-blue-500" />}
+                                    </div>
+                                    <div className="ml-3 flex-1">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                            {newNotif.title}
+                                        </p>
+                                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                            {newNotif.message}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex border-l border-gray-200 dark:border-gray-700">
+                                <button
+                                    onClick={() => toast.dismiss(t.id)}
+                                    className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    ), { duration: 4000 });
                 })
                 .subscribe();
 
