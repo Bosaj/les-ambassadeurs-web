@@ -87,7 +87,7 @@ const DashboardOverview = ({ t, news, events, projects, users, testimonials, onN
                                 <img src={item.image_url} alt="" className="w-12 h-12 rounded-lg object-cover bg-gray-200" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
-                                        {item.title?.[language] || item.title?.en || item.title}
+                                        {item.title?.[language] || item.title?.en || item.title?.fr || item.title?.ar || (typeof item.title === 'string' ? item.title : t.untitled || 'Untitled')}
                                     </p>
                                     <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                                         <span className={`px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 capitalize`}>
