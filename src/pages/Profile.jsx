@@ -225,7 +225,8 @@ const Profile = () => {
             // Clear session locally (don't call API since user is already deleted)
             await supabase.auth.signOut({ scope: 'local' });
 
-            // Animation will stay visible and user will be redirected by AuthContext
+            // End animation
+            setIsLoggingOut(false);
             navigate('/');
         } catch (error) {
             console.error(error);
