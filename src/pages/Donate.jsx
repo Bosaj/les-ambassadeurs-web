@@ -12,7 +12,7 @@ import Modal from '../components/Modal';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckout from '../components/StripeCheckout';
-import stripePromise from '../lib/stripe';
+import { getStripe } from '../lib/stripe';
 
 const Donate = () => {
     const { t } = useLanguage();
@@ -450,7 +450,7 @@ const Donate = () => {
                         {donationForm.method === 'online' && (
                             <div className="mt-4">
                                 {clientSecret && donationForm.amount > 0 ? (
-                                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                                    <Elements stripe={getStripe()} options={{ clientSecret }}>
                                         <StripeCheckout
                                             amount={donationForm.amount}
                                             onSuccess={(details) => handleSuccess(details, 'stripe')}

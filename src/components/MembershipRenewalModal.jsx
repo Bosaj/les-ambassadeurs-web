@@ -7,7 +7,7 @@ import StripeCheckout from './StripeCheckout';
 import toast from 'react-hot-toast';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { FaCreditCard, FaUniversity, FaMoneyBillWave, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaSpinner, FaPaypal } from 'react-icons/fa';
-import stripePromise from '../lib/stripe';
+import { getStripe } from '../lib/stripe';
 
 const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const { t } = useLanguage();
@@ -263,7 +263,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                             {paymentMethod === 'online' && (
                                 <div>
                                     {clientSecret ? (
-                                        <Elements stripe={stripePromise} options={{ clientSecret }}>
+                                        <Elements stripe={getStripe()} options={{ clientSecret }}>
                                             <StripeCheckout
                                                 amount={MEMBERSHIP_FEE}
                                                 onSuccess={handleStripeSuccess}
