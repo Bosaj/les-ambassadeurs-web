@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import LogoutAnimation from '../components/LogoutAnimation';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const AuthContext = createContext(null);
 
@@ -217,7 +218,7 @@ export const AuthProvider = ({ children }) => {
         <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember, hasPermission, isLoggingOut, setIsLoggingOut }}>
             {/* Show animation overlay when logging out */}
             <LogoutAnimation isVisible={isLoggingOut} />
-            {!loading && children}
+            {loading ? <LoadingSpinner fullScreen={true} message="Initializing..." /> : children}
         </AuthContext.Provider>
     );
 };

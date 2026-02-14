@@ -49,7 +49,8 @@ const MembershipRequests = () => {
                 </div>
             ) : (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    <table className="w-full text-left">
+                    {/* Desktop Table */}
+                    <table className="w-full text-left hidden md:table">
                         <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                             <tr>
                                 <th className="p-4">{t.table_header_name || "Name"}</th>
@@ -104,6 +105,53 @@ const MembershipRequests = () => {
                             ))}
                         </tbody>
                     </table>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4 p-4">
+                        {pendingMembers.map(user => (
+                            <div key={user.id} className="bg-white dark:bg-gray-700 rounded-lg border dark:border-gray-600 p-4 shadow-sm">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 dark:text-white">{(language === 'ar' && user.full_name_ar) ? user.full_name_ar : user.full_name}</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                                    </div>
+                                    <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                                        <FaClock size={10} /> Pending
+                                    </span>
+                                </div>
+                                
+                                <div className="mb-4 bg-gray-50 dark:bg-gray-800 p-3 rounded text-sm">
+                                    <p className="font-semibold mb-2 text-gray-700 dark:text-gray-300">{t.documents || "Documents"}:</p>
+                                    <div className="space-y-1">
+                                            <span className="flex items-center gap-2 text-green-600">
+                                                <FaCheckCircle size={12} /> Internal Law
+                                            </span>
+                                            <span className="flex items-center gap-2 text-green-600">
+                                                <FaCheckCircle size={12} /> Commitment
+                                            </span>
+                                            <span className="flex items-center gap-2 text-yellow-600">
+                                                <FaMoneyBillWave size={12} /> Payment: Unpaid
+                                            </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleVerify(user.id, 'approve')}
+                                        className="flex-1 bg-green-100 text-green-700 hover:bg-green-200 py-2 rounded-lg transition text-sm flex justify-center items-center gap-2 font-medium"
+                                    >
+                                        <FaCheck /> {t.approve || "Approve"}
+                                    </button>
+                                    <button
+                                        onClick={() => handleVerify(user.id, 'reject')}
+                                        className="flex-1 bg-red-100 text-red-700 hover:bg-red-200 py-2 rounded-lg transition text-sm flex justify-center items-center gap-2 font-medium"
+                                    >
+                                        <FaTimes /> {t.reject || "Reject"}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
             {/* Confirmation Modal */}

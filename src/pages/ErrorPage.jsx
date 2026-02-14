@@ -1,33 +1,20 @@
 import React from 'react';
-import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../translations';
 import { Link } from 'react-router-dom';
 import { FaExclamationTriangle, FaEnvelope, FaCode } from 'react-icons/fa';
 
 const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
-    // Try to use context, but handle failure if context is unavailable (e.g. error in context provider)
-    let t = {};
-    let language = 'en';
+    // Safe language detection without hooks (to prevent crashes outside Provider)
+    const getLanguage = () => {
+        try {
+            return localStorage.getItem('language') || 'en';
+        } catch {
+            return 'en';
+        }
+    };
 
-    try {
-        const langCtx = useLanguage();
-        t = langCtx.t;
-        language = langCtx.language;
-    } catch {
-        // Fallback if Context fails
-        language = 'en';
-        t = {
-            error_title: "Something went wrong",
-            error_desc: "We apologize for the inconvenience. An unexpected error has occurred.",
-            page_not_found: "Page Not Found",
-            page_not_found_desc: "The page you are looking for does not exist.",
-            go_home: "Go Back Home",
-            contact_support: "Contact Support",
-            developer_contact: "Contact Developer",
-            association_name: "Ambassadors of Good Association",
-            support_label: "Support",
-            developer_label: "Developer"
-        };
-    }
+    const language = getLanguage();
+    const t = translations[language] || translations['en'];
 
     // Default translations if keys missing (or if fallback used above with limited keys)
     const title = is404 ? t.page_not_found : t.error_title;
