@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { FaHeart, FaCreditCard, FaPaypal, FaUniversity, FaLock, FaCheck } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
+import { compressImage } from '../utils/imageUtils';
 
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Elements } from '@stripe/react-stripe-js';
@@ -159,53 +160,61 @@ const Donate = () => {
     };
 
     const [uploading, setUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
 
-    const handleFileUpload = async (e) => {
-        try {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            setUploading(true);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            const { error } = await supabase.storage
-                .from('donations')
-                .upload(filePath, file);
-
-            if (error) throw error;
-
-            const { data: publicUrlData } = supabase.storage
-                .from('donations')
-                .getPublicUrl(filePath);
-
-            setDonationForm(prev => ({ ...prev, proof_url: publicUrlData.publicUrl }));
-            toast.success(t.proof_uploaded || "Proof Uploaded");
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            toast.error("Error uploading file. Please try again.");
-        } finally {
-            setUploading(false);
-        }
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        // Just store the file locally — don't upload yet
+        setSelectedFile(file);
     };
 
-    // Fallback manual submit for transfer
+    // Manual submit for bank transfer — upload happens here on submit
     const handleManualSubmit = async (e) => {
         if (e) e.preventDefault();
 
-        if (!donationForm.proof_url) {
+        if (!donationForm.amount || donationForm.amount < 1) {
+            toast.error(t.amount_required || "Please enter a donation amount");
+            return;
+        }
+
+        if (!selectedFile) {
             toast.error(t.upload_proof_req || "Please upload a proof of payment");
             return;
         }
 
+        setUploading(true);
+        let proofUrl = donationForm.proof_url || null;
+
         try {
-            await addDonation(donationForm);
+            // Upload file now (on submit) if one was selected
+            if (selectedFile) {
+                const compressed = await compressImage(selectedFile);
+                const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('donations')
+                    .upload(fileName, compressed);
+
+                if (uploadError) throw uploadError;
+
+                const { data: publicUrlData } = supabase.storage
+                    .from('donations')
+                    .getPublicUrl(fileName);
+
+                proofUrl = publicUrlData.publicUrl;
+            }
+
+            await addDonation({ ...donationForm, proof_url: proofUrl });
             toast.success(t.donation_success);
             setShowModal(false);
-            setDonationForm({ name: '', amount: '', method: 'online', proof_url: null });
-        } catch {
-            toast.error(t.donation_error);
+            setSelectedFile(null);
+            setDonationForm({ name: '', amount: '', method: 'transfer', proof_url: null });
+        } catch (error) {
+            console.error('Transfer submit error:', error);
+            toast.error(t.donation_error || "Failed to submit. Please try again.");
+        } finally {
+            setUploading(false);
         }
     }
 
@@ -493,23 +502,25 @@ const Donate = () => {
                                             dark:file:bg-gray-700 dark:file:text-gray-300
                                         "
                                     />
-                                    {uploading && <p className="text-xs text-blue-600 mt-2">{t.uploading}</p>}
-                                    {donationForm.proof_url && (
+                                    {selectedFile && !uploading && (
                                         <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                                            <FaCheck /> {t.proof_uploaded}
+                                            <FaCheck /> {selectedFile.name}
                                         </p>
                                     )}
+                                    {uploading && <p className="text-xs text-blue-600 mt-2 animate-pulse">{t.uploading || 'Uploading...'}</p>}
                                 </div>
 
                                 <button
                                     onClick={handleManualSubmit}
-                                    disabled={uploading || !donationForm.proof_url}
+                                    disabled={uploading || !donationForm.amount || !selectedFile}
                                     className={`w-full text-white font-bold py-4 rounded-lg transition shadow-lg flex justify-center items-center gap-2
-                                        ${uploading || !donationForm.proof_url
+                                        ${uploading || !donationForm.amount || !selectedFile
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-blue-900 hover:bg-blue-800'}`}
                                 >
-                                    <FaUniversity /> {t.record_transfer}
+                                    {uploading
+                                        ? <><FaCheck className="animate-spin" /> {t.uploading || 'Submitting...'}</>
+                                        : <><FaUniversity /> {t.record_transfer}</>}
                                 </button>
                             </div>
                         )}

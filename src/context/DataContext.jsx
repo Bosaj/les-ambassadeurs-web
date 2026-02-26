@@ -53,78 +53,74 @@ export const DataProvider = ({ children }) => {
         try {
             setLoading(true);
 
-            // Fetch News (with pinning)
-            const { data: newsData, error: newsError } = await supabase
-                .from('news')
-                .select('*')
-                .order('is_pinned', { ascending: false })
-                .order('created_at', { ascending: false });
+            // Fire ALL queries in parallel — much faster than sequential awaits
+            const [
+                { data: newsData, error: newsError },
+                eventsResult,
+                { data: testimonialsData, error: testimonialsError },
+                { data: partnersData, error: partnersError },
+            ] = await Promise.all([
+                // 1. News
+                supabase
+                    .from('news')
+                    .select('*')
+                    .order('is_pinned', { ascending: false })
+                    .order('created_at', { ascending: false }),
+
+                // 2. Events (try with attendees join, fall back if it fails)
+                supabase
+                    .from('events')
+                    .select('*, attendees:event_attendees(id, name, email, status, user_id)')
+                    .order('is_pinned', { ascending: false })
+                    .order('date', { ascending: false })
+                    .then(result => {
+                        if (result.error) {
+                            console.warn('Retrying events fetch without join:', result.error.message);
+                            return supabase
+                                .from('events')
+                                .select('*')
+                                .order('is_pinned', { ascending: false })
+                                .order('date', { ascending: false });
+                        }
+                        return result;
+                    }),
+
+                // 3. Testimonials
+                supabase
+                    .from('testimonials')
+                    .select('*')
+                    .order('rating', { ascending: false })
+                    .order('created_at', { ascending: false }),
+
+                // 4. Partners
+                supabase
+                    .from('partners')
+                    .select('*')
+                    .order('created_at', { ascending: false }),
+            ]);
+
+            // --- Process results ---
 
             if (newsError) throw newsError;
             setNews(newsData || []);
 
-            // Fetch All Events/Programs/Projects (with robust error handling for joins)
-            let allEventsData = [];
+            const { data: allEventsData, error: eventsError } = eventsResult;
+            if (eventsError) throw eventsError;
 
-            try {
-                // Try fetching with attendees first
-                const { data, error } = await supabase
-                    .from('events')
-                    .select('*, attendees:event_attendees(id, name, email, status, user_id)')
-                    .order('is_pinned', { ascending: false })
-                    .order('date', { ascending: false });
-
-                if (error) throw error;
-                allEventsData = data || [];
-            } catch (joinError) {
-                console.warn("Retrying fetch without join due to error:", joinError);
-                // Fallback: Fetch without join if the above fails (e.g. RLS on joined table)
-                const { data, error } = await supabase
-                    .from('events')
-                    .select('*')
-                    .order('is_pinned', { ascending: false })
-                    .order('date', { ascending: false });
-
-                if (error) throw error;
-                allEventsData = data || [];
-            }
-
-
-            // Filter into categories
-            const p = [];
-            const e = [];
-            const proj = [];
-
+            const p = [], e = [], proj = [];
             (allEventsData || []).forEach(item => {
-                // Ensure attendees is an array
                 if (!item.attendees) item.attendees = [];
-
                 const cat = item.category || 'program';
                 if (cat === 'program') p.push(item);
                 else if (cat === 'event') e.push(item);
                 else if (cat === 'project') proj.push(item);
             });
-
             setPrograms(p);
             setEvents(e);
             setProjects(proj);
 
-            // Fetch Testimonials
-            const { data: testimonialsData, error: testimonialsError } = await supabase
-                .from('testimonials')
-                .select('*')
-                // .eq('is_approved', true) // Removed to allow admin to see all. Filtered in component.
-                .order('rating', { ascending: false })
-                .order('created_at', { ascending: false });
-
             if (testimonialsError) throw testimonialsError;
             setTestimonials(testimonialsData || []);
-
-            // Fetch Partners
-            const { data: partnersData, error: partnersError } = await supabase
-                .from('partners')
-                .select('*')
-                .order('created_at', { ascending: false });
 
             if (partnersError) throw partnersError;
             setPartners(partnersData || []);
@@ -132,7 +128,7 @@ export const DataProvider = ({ children }) => {
         } catch (error) {
             console.error("Error fetching data:", error);
             if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
-                toast.error("Network connection error. working offline?");
+                toast.error("Network connection error. Working offline?");
             }
         } finally {
             setLoading(false);
@@ -140,8 +136,19 @@ export const DataProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        fetchData();
-        fetchUsers();
+        const controller = new AbortController();
+
+        const run = async () => {
+            try {
+                await Promise.all([fetchData(), fetchUsers()]);
+            } catch (err) {
+                if (err?.name !== 'AbortError') console.error('Init fetch error:', err);
+            }
+        };
+
+        run();
+
+        return () => controller.abort();
     }, []);
 
     // Helper to get localized string is now imported from utils
@@ -200,19 +207,23 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            console.log(`[addPost] Inserting into ${table}:`, insertData);
-
             const { data, error } = await supabase
                 .from(table)
                 .insert([insertData])
                 .select()
                 .single();
 
-            console.log(`[addPost] Result:`, { data, error });
-
             if (error) throw error;
 
-            fetchData();
+            // Optimistic update — prepend new item to local state instantly (no full refetch)
+            const newItem = { ...data, attendees: [] };
+            if (type === 'news') setNews(prev => [newItem, ...prev]);
+            else if (type === 'programs') setPrograms(prev => [newItem, ...prev]);
+            else if (type === 'events') setEvents(prev => [newItem, ...prev]);
+            else if (type === 'projects') setProjects(prev => [newItem, ...prev]);
+            else if (type === 'testimonials') setTestimonials(prev => [newItem, ...prev]);
+            else if (type === 'partners') setPartners(prev => [newItem, ...prev]);
+
             return data;
         } catch (error) {
             console.error(`Error adding ${type}:`, error);
@@ -263,8 +274,6 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            console.log(`[updatePost] Updating ${table} ID ${id}:`, updateData);
-
             const { data, error } = await supabase
                 .from(table)
                 .update(updateData)
@@ -272,11 +281,17 @@ export const DataProvider = ({ children }) => {
                 .select()
                 .single();
 
-            console.log(`[updatePost] Result:`, { data, error });
-
             if (error) throw error;
 
-            fetchData();
+            // Optimistic update — replace the item in local state instantly
+            const applyUpdate = (list) => list.map(item => item.id === id ? { ...item, ...data } : item);
+            if (type === 'news') setNews(prev => applyUpdate(prev));
+            else if (type === 'programs') setPrograms(prev => applyUpdate(prev));
+            else if (type === 'events') setEvents(prev => applyUpdate(prev));
+            else if (type === 'projects') setProjects(prev => applyUpdate(prev));
+            else if (type === 'testimonials') setTestimonials(prev => applyUpdate(prev));
+            else if (type === 'partners') setPartners(prev => applyUpdate(prev));
+
             return data;
         } catch (error) {
             console.error(`Error updating ${type}:`, error);
@@ -329,7 +344,13 @@ export const DataProvider = ({ children }) => {
                 .eq('id', id);
 
             if (error) throw error;
-            fetchData();
+
+            // Optimistic update — flip pin status locally, no refetch
+            const applyPin = (list) => list.map(item => item.id === id ? { ...item, is_pinned: !currentStatus } : item);
+            if (type === 'news') setNews(prev => applyPin(prev));
+            else if (type === 'programs') setPrograms(prev => applyPin(prev));
+            else if (type === 'events') setEvents(prev => applyPin(prev));
+            else if (type === 'projects') setProjects(prev => applyPin(prev));
         } catch (error) {
             console.error("Error toggling pin:", error);
             toast.error("Failed to update pin status");
@@ -484,7 +505,7 @@ export const DataProvider = ({ children }) => {
 
     // --- New Dashboard Features ---
 
-    const fetchUserActivities = async (email) => {
+    const fetchUserActivities = React.useCallback(async (email) => {
         if (!email) return [];
         try {
             const { data, error } = await supabase
@@ -504,9 +525,9 @@ export const DataProvider = ({ children }) => {
             console.error("Error fetching activities:", err);
             return [];
         }
-    };
+    }, []);
 
-    const fetchUserDonations = async (email, userId = null) => {
+    const fetchUserDonations = React.useCallback(async (email, userId = null) => {
         if (!email && !userId) return [];
         try {
             let query = supabase
@@ -515,7 +536,7 @@ export const DataProvider = ({ children }) => {
                 .order('created_at', { ascending: false });
 
             if (userId) {
-                // If we have a user ID, fetch by ID OR email to be comprehensive
+                // Fetch by ID OR email to be comprehensive
                 query = query.or(`email.eq.${email},user_id.eq.${userId}`);
             } else {
                 query = query.eq('email', email);
@@ -529,7 +550,7 @@ export const DataProvider = ({ children }) => {
             console.error("Error fetching donations:", err);
             return [];
         }
-    };
+    }, []);
 
     const fetchAllDonations = React.useCallback(async () => {
         try {

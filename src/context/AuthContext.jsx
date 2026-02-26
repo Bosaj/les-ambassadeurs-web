@@ -5,10 +5,30 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+// Synchronously read the stored session from localStorage — zero network calls.
+// This lets us initialize auth state instantly so we never block the UI on load.
+const STORAGE_KEY = 'sb-ambassadeurs-auth';
+const getStoredSession = () => {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw || raw === 'null') return null;
+        return JSON.parse(raw);
+    } catch { return null; }
+};
 
+export const AuthProvider = ({ children }) => {
+    // Pre-populate user from localStorage synchronously — eliminates the
+    // 'Initializing...' flash on every page load, HMR reload, and token refresh.
+    const [user, setUser] = useState(() => {
+        const session = getStoredSession();
+        return session?.user ?? null;
+    });
+    // Never start in a loading state — user is already known from localStorage.
+    // getSession() still validates the token in the background.
+    const [loading, setLoading] = useState(false);
+
+    // Fetches the DB profile and merges it onto the auth user object.
+    // Does NOT control `loading` — the UI is unblocked before this runs.
     const fetchProfile = async (authUser) => {
         try {
             const { data: profile, error } = await supabase
@@ -17,7 +37,7 @@ export const AuthProvider = ({ children }) => {
                 .eq('id', authUser.id)
                 .single();
 
-            if (error) {
+            if (error && error.code !== 'PGRST116') {
                 console.error('Error fetching profile:', error);
             }
 
@@ -29,48 +49,62 @@ export const AuthProvider = ({ children }) => {
                     .eq('id', authUser.id);
 
                 if (!updateError) {
-                    profile.email = authUser.email; // Update local object
+                    profile.email = authUser.email;
                 }
             }
 
-            const activeUser = { ...authUser, ...profile };
+            const activeUser = { ...authUser, ...(profile || {}) };
             setUser(activeUser);
-            return activeUser; // Return for direct usage in login/signup
+            return activeUser;
         } catch (error) {
             console.error('Profile fetch error:', error);
             setUser(authUser);
             return authUser;
-        } finally {
-            setLoading(false);
         }
     };
 
     useEffect(() => {
-        // Check active session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                fetchProfile(session.user);
-            } else {
-                setLoading(false);
+        let initialized = false;
+
+        // Check active session on mount — only once
+        // Wrapping in try/catch handles the "Invalid Refresh Token" 400 error
+        // that occurs when old sessionStorage tokens exist but localStorage has nothing valid.
+        // Validate session in background — doesn't block the UI
+        supabase.auth.getSession().then(({ data: { session }, error }) => {
+            initialized = true;
+            if (error) {
+                console.warn('[Auth] Session init error, clearing stale token:', error.message);
+                supabase.auth.signOut({ scope: 'local' });
+                setUser(null);
+                return;
             }
+            if (session?.user) {
+                setUser(session.user);
+                fetchProfile(session.user); // background — no await
+            } else {
+                setUser(null);
+            }
+        }).catch(() => {
+            initialized = true;
+            setUser(null);
         });
 
-        // Listen for changes
+        // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            // Skip token refreshes and other background events to avoid unnecessary DB calls
+            if (event === 'TOKEN_REFRESHED' || event === 'MFA_CHALLENGE_VERIFIED') return;
+
             if (session?.user) {
-                // Handle new OAuth sign-in (SIGNED_IN event from Google/OAuth)
                 if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-                    // Check if profile exists
+                    // Check if profile exists, create if not (new OAuth users)
                     const { data: existingProfile } = await supabase
                         .from('profiles')
                         .select('id')
                         .eq('id', session.user.id)
                         .single();
 
-                    // If no profile exists, create one from auth metadata
                     if (!existingProfile) {
                         const fullName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User';
-
                         await supabase
                             .from('profiles')
                             .insert({
@@ -81,13 +115,17 @@ export const AuthProvider = ({ children }) => {
                                 avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
                             });
                     }
-                }
 
-                // Fetch profile (will now exist)
-                await fetchProfile(session.user);
+                    await fetchProfile(session.user);
+                } else if (!initialized) {
+                    // INITIAL_SESSION or other first-load event
+                    await fetchProfile(session.user);
+                }
+                initialized = true;
             } else {
                 setUser(null);
                 setLoading(false);
+                initialized = true;
             }
         });
 

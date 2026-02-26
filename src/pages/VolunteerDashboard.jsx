@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import {
     FaUserShield, FaSignOutAlt, FaHandHoldingHeart, FaCalendarCheck,
     FaStar, FaHistory, FaListAlt, FaLightbulb, FaCheckCircle,
-    FaClock, FaTimesCircle, FaMoneyBillWave, FaTimes, FaIdCard
+    FaClock, FaTimesCircle, FaMoneyBillWave, FaTimes, FaIdCard, FaHeart
 } from 'react-icons/fa';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MembershipRenewalModal from '../components/MembershipRenewalModal';
@@ -63,13 +63,13 @@ const VolunteerDashboard = () => {
             setUserActivities(activities);
         }
         if (activeTab === 'impact' || activeTab === 'overview') {
-            const donations = await fetchUserDonations(user.email);
+            const donations = await fetchUserDonations(user.email, user.id);
             setUserDonations(donations);
         }
         if (activeTab === 'membership' || activeTab === 'overview') {
             loadMembershipHistory();
         }
-    }, [activeTab, user.email, fetchUserActivities, fetchUserDonations, loadMembershipHistory]);
+    }, [activeTab, user.email, user.id, fetchUserActivities, fetchUserDonations, loadMembershipHistory]);
 
 
 
@@ -436,11 +436,25 @@ const VolunteerDashboard = () => {
                                 <p className="text-xl mb-2 opacity-90">{t.total_contribution || "Total Contribution"}</p>
                                 <h3 className="text-5xl font-bold">{totalDonated} <span className="text-2xl">{t.currency_mad || "DH"}</span></h3>
                                 <p className="mt-4 text-sm opacity-75">{t.thank_you_diff || "Thank you for making a difference!"}</p>
+                                <button
+                                    onClick={() => navigate('/donate')}
+                                    className="mt-6 inline-flex items-center gap-2 bg-white text-blue-900 font-bold px-6 py-3 rounded-full hover:bg-blue-50 transition shadow-lg"
+                                >
+                                    <FaHeart className="text-red-500" /> {t.donate_now || "Donate Now"}
+                                </button>
                             </div>
 
                             <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">{t.donation_history || "Donation History"}</h3>
                             {userDonations.length === 0 ? (
-                                <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t.no_donations_found || "No donations found yet."}</p>
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 dark:text-gray-400 mb-4">{t.no_donations_found || "No donations found yet."}</p>
+                                    <button
+                                        onClick={() => navigate('/donate')}
+                                        className="inline-flex items-center gap-2 bg-blue-900 text-white font-bold px-6 py-3 rounded-full hover:bg-blue-800 transition shadow-md"
+                                    >
+                                        <FaHeart /> {t.make_first_donation || "Make Your First Donation"}
+                                    </button>
+                                </div>
                             ) : (
                                 <div className="space-y-3">
                                     {userDonations.map(donation => (

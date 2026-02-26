@@ -18,10 +18,12 @@ const Branches = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     useEffect(() => {
-        fetchBranches();
+        const controller = new AbortController();
+        fetchBranches(controller.signal);
+        return () => controller.abort();
     }, []);
 
-    const fetchBranches = async () => {
+    const fetchBranches = async (signal) => {
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -29,13 +31,14 @@ const Branches = () => {
                 .select('*')
                 .order('city', { ascending: true });
 
+            if (signal?.aborted) return;
             if (error) throw error;
             setBranches(data || []);
         } catch (error) {
+            if (error?.name === 'AbortError') return; // StrictMode cleanup — silent
             console.error('Error fetching branches:', error);
-            // toast.error("Error loading branches"); // Optional: silent fail for public view
         } finally {
-            setLoading(false);
+            if (!signal?.aborted) setLoading(false);
         }
     };
 

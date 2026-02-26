@@ -83,9 +83,10 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
         }
     };
 
-    const handleFileUpload = async (e) => {
+    const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        // Store locally - upload only on submit
         setProofFile(file);
     };
 
@@ -94,6 +95,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
         let proofUrl = null;
 
         try {
+            // Upload file on submit (if provided)
             if (paymentMethod === 'bank' && proofFile) {
                 setUploading(true);
                 const fileExt = proofFile.name.split('.').pop();
@@ -101,7 +103,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                 const filePath = `membership-proofs/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
-                    .from('receipts') // Reusing receipts bucket
+                    .from('receipts')
                     .upload(filePath, proofFile);
 
                 if (uploadError) throw uploadError;
@@ -117,7 +119,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                     user_id: user.id,
                     year: currentYear,
                     amount: MEMBERSHIP_FEE,
-                    status: 'pending', // Pending for manual verification
+                    status: 'pending',
                     payment_method: paymentMethod,
                     proof_url: proofUrl
                 });
@@ -255,7 +257,11 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                                         disabled={loading || !proofFile}
                                         className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
                                     >
-                                        {uploading || loading ? <FaSpinner className="animate-spin" /> : t.confirm_renewal}
+                                        {uploading
+                                            ? <><FaSpinner className="animate-spin" /> {t.uploading || 'Uploading...'}</>
+                                            : loading
+                                                ? <><FaSpinner className="animate-spin" /> {t.processing}</>
+                                                : t.confirm_renewal}
                                     </button>
                                 </div>
                             )}

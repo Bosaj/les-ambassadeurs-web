@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import { FaUpload, FaTimes } from 'react-icons/fa';
+import { compressImage } from '../../utils/imageUtils';
 
 const PartnerForm = ({ formData, setFormData, onCancel, t, handleFormSubmit }) => {
     const [loading, setLoading] = useState(false);
@@ -19,12 +20,12 @@ const PartnerForm = ({ formData, setFormData, onCancel, t, handleFormSubmit }) =
         const toastId = toast.loading(t.uploading_image || "Uploading...");
         setLoading(true);
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `partners/${Math.random()}.${fileExt}`;
+            const compressed = await compressImage(file);
+            const fileName = `partners/${Math.random()}.jpg`;
 
             const { error: uploadError } = await supabase.storage
                 .from('images')
-                .upload(fileName, file);
+                .upload(fileName, compressed);
 
             if (uploadError) throw uploadError;
 

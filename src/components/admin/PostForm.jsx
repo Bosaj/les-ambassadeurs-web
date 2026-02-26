@@ -1,6 +1,7 @@
 import React from 'react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
+import { compressImage } from '../../utils/imageUtils';
 
 const PostForm = ({
     type,
@@ -21,11 +22,12 @@ const PostForm = ({
 
         const toastId = toast.loading(t.uploading_image || "Uploading...");
         try {
-            const fileExt = file.name.split('.').pop();
+            const compressed = await compressImage(file);
+            const fileExt = 'jpg';
             const fileName = `${type}/${Math.random()}.${fileExt}`;
             const { error: uploadError } = await supabase.storage
                 .from('images')
-                .upload(fileName, file);
+                .upload(fileName, compressed);
 
             if (uploadError) throw uploadError;
 
