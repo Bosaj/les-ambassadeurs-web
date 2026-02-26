@@ -2,9 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaTrophy, FaStar, FaLock, FaCheckCircle, FaMedal } from 'react-icons/fa';
-import * as FaIcons from 'react-icons/fa'; // Dynamic icon loading
+import {
+    FaTrophy, FaStar, FaLock, FaCheckCircle, FaMedal,
+    FaAward, FaHeart, FaHandHoldingHeart, FaLeaf, FaFire,
+    FaBolt, FaCrown, FaGem, FaRocket, FaGlobe, FaShieldAlt,
+    FaUsers, FaCalendarCheck, FaHandshake, FaSeedling, FaMountain,
+    FaLightbulb, FaPeace, FaDove, FaBookOpen, FaMicroscope,
+    FaPaintBrush, FaMusic, FaCode, FaTree, FaWater
+} from 'react-icons/fa';
 import toast from 'react-hot-toast';
+
+// Curated map of icon names usable as badge icons.
+// Avoids `import * as FaIcons` which pulls in all 1000+ FA icons.
+const BADGE_ICONS = {
+    FaTrophy, FaStar, FaMedal, FaAward, FaCrown, FaGem,
+    FaHeart, FaHandHoldingHeart, FaHandshake, FaDove, FaPeace,
+    FaLeaf, FaSeedling, FaTree, FaWater, FaGlobe, FaMountain,
+    FaFire, FaBolt, FaRocket, FaShieldAlt,
+    FaUsers, FaCalendarCheck, FaLightbulb,
+    FaBookOpen, FaMicroscope, FaPaintBrush, FaMusic, FaCode,
+    FaCheckCircle, FaLock,
+};
 
 const GamificationHub = () => {
     const { user, refreshProfile } = useAuth();
@@ -102,7 +120,7 @@ const GamificationHub = () => {
     };
 
     const renderIcon = (iconName, className) => {
-        const Icon = FaIcons[iconName] || FaIcons.FaAward;
+        const Icon = BADGE_ICONS[iconName] || BADGE_ICONS.FaAward;
         return <Icon className={className} />;
     };
 

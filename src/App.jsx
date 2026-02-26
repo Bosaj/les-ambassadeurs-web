@@ -9,6 +9,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import ScrollToTopWrapper from './components/ScrollToTopWrapper';
 import LoadingSpinner from './components/LoadingSpinner';
+// ErrorPage is statically imported (not lazy) because ErrorBoundary uses it
+// synchronously — lazy() here would conflict with the static import and produce a Vite warning.
+import ErrorPage from './pages/ErrorPage';
 
 // ─── Lazy-load all pages ───────────────────────────────────────────────────
 // Each page only downloads when the user actually navigates to it.
@@ -29,7 +32,6 @@ const GamificationHub = lazy(() => import('./components/GamificationHub'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
 const ReportProblem = lazy(() => import('./pages/ReportProblem'));
-const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 
 // Minimal fallback shown while a lazy page chunk loads
 const PageLoader = () => <LoadingSpinner fullScreen={true} message="Loading..." />;
