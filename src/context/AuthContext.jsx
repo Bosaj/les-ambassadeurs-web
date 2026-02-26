@@ -5,27 +5,9 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const AuthContext = createContext(null);
 
-// Synchronously read the stored session from localStorage — zero network calls.
-// This lets us initialize auth state instantly so we never block the UI on load.
-const STORAGE_KEY = 'sb-ambassadeurs-auth';
-const getStoredSession = () => {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw || raw === 'null') return null;
-        return JSON.parse(raw);
-    } catch { return null; }
-};
-
 export const AuthProvider = ({ children }) => {
-    // Pre-populate user from localStorage synchronously — eliminates the
-    // 'Initializing...' flash on every page load, HMR reload, and token refresh.
-    const [user, setUser] = useState(() => {
-        const session = getStoredSession();
-        return session?.user ?? null;
-    });
-    // Never start in a loading state — user is already known from localStorage.
-    // getSession() still validates the token in the background.
-    const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // Fetches the DB profile and merges it onto the auth user object.
     // Does NOT control `loading` — the UI is unblocked before this runs.
@@ -69,13 +51,16 @@ export const AuthProvider = ({ children }) => {
         // Check active session on mount — only once
         // Wrapping in try/catch handles the "Invalid Refresh Token" 400 error
         // that occurs when old sessionStorage tokens exist but localStorage has nothing valid.
-        // Validate session in background — doesn't block the UI
+        // Validate the stored session in the background.
+        // setLoading(false) is called immediately so the UI never blocks.
+        // If the token is invalid/expired, getSession() will handle sign-out.
         supabase.auth.getSession().then(({ data: { session }, error }) => {
             initialized = true;
             if (error) {
                 console.warn('[Auth] Session init error, clearing stale token:', error.message);
                 supabase.auth.signOut({ scope: 'local' });
                 setUser(null);
+                setLoading(false);
                 return;
             }
             if (session?.user) {
@@ -84,9 +69,11 @@ export const AuthProvider = ({ children }) => {
             } else {
                 setUser(null);
             }
+            setLoading(false);
         }).catch(() => {
             initialized = true;
             setUser(null);
+            setLoading(false);
         });
 
         // Listen for auth state changes

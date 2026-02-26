@@ -58,6 +58,7 @@ const VolunteerDashboard = () => {
     }, [user, fetchMembershipHistory]);
 
     const loadUserData = useCallback(async () => {
+        if (!user?.email) return; // Guard: auth not yet confirmed
         if (activeTab === 'activities' || activeTab === 'overview') {
             const activities = await fetchUserActivities(user.email);
             setUserActivities(activities);

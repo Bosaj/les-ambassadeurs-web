@@ -17,12 +17,6 @@ const Branches = () => {
     const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    useEffect(() => {
-        const controller = new AbortController();
-        fetchBranches(controller.signal);
-        return () => controller.abort();
-    }, []);
-
     const fetchBranches = async (signal) => {
         try {
             setLoading(true);
@@ -41,6 +35,12 @@ const Branches = () => {
             if (!signal?.aborted) setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const controller = new AbortController();
+        fetchBranches(controller.signal);
+        return () => controller.abort();
+    }, []);
 
     const filteredBranches = selectedCity
         ? branches.filter(branch => branch.city.toLowerCase() === selectedCity.toLowerCase())
