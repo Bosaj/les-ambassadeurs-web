@@ -2,26 +2,30 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import LoadingSpinner from './LoadingSpinner';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
     const { user, loading } = useAuth();
     const { t } = useLanguage();
 
-    if (loading) {
-        return <div className="min-h-screen flex items-center justify-center">{t.loading}</div>;
+    // Still waiting for session validation (e.g. token refresh on slow network)
+    // AND we have no cached user yet — show a minimal spinner
+    if (loading && !user) {
+        return <LoadingSpinner fullScreen={true} message={t.loading || 'Loading...'} />;
     }
 
+    // Auth resolved: no user → redirect to login
     if (!user) {
         return <Navigate to="/login" replace />;
     }
 
+    // Role check
     if (requiredRole && user.role !== requiredRole) {
-        // Allow admin to access volunteer routes (since admins are also volunteers)
+        // Admin can access volunteer routes
         if (user.role === 'admin' && requiredRole === 'volunteer') {
             return children;
         }
-
-        // Redirect based on their actul role if they try to access wrong dashboard
+        // Redirect to their correct dashboard
         if (user.role === 'admin') return <Navigate to="/dashboard/admin" replace />;
         if (user.role === 'volunteer') return <Navigate to="/dashboard/volunteer" replace />;
         return <Navigate to="/" replace />;
