@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaSave, FaCamera, FaHistory, FaCheckCircle, FaCalendarAlt, FaTrash, FaExclamationTriangle, FaAward, FaStar } from 'react-icons/fa';
 import BadgeDisplay from '../components/BadgeDisplay';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { compressImage } from '../utils/imageUtils';
 
 const Profile = () => {
     const { user, refreshProfile, setIsLoggingOut } = useAuth();
@@ -148,13 +149,14 @@ const Profile = () => {
             // 2. Upload Avatar
             let avatarUrl = user.avatar_url;
             if (avatarFile) {
-                const fileExt = avatarFile.name.split('.').pop();
+                const compressed = await compressImage(avatarFile);
+                const fileExt = 'jpg';
                 const fileName = `${user.id}-${Math.random()}.${fileExt}`;
                 const filePath = `avatars/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('images')
-                    .upload(filePath, avatarFile);
+                    .upload(filePath, compressed);
 
                 if (uploadError) throw uploadError;
 
@@ -284,6 +286,7 @@ const Profile = () => {
                                 value={formData.username}
                                 onChange={handleChange}
                                 placeholder="coolUser123"
+                                autoComplete="username"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                             />
                         </div>
@@ -297,6 +300,7 @@ const Profile = () => {
                                 name="full_name"
                                 value={formData.full_name}
                                 onChange={handleChange}
+                                autoComplete="name"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                                 required
                             />
@@ -313,6 +317,7 @@ const Profile = () => {
                                 value={formData.full_name_ar}
                                 onChange={handleChange}
                                 placeholder={t.full_name_ar_placeholder}
+                                autoComplete="name"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition text-right"
                                 dir="rtl"
                             />
@@ -328,6 +333,7 @@ const Profile = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
+                                autoComplete="email"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                                 required
                             />
@@ -360,6 +366,7 @@ const Profile = () => {
                                 value={formData.phone}
                                 onChange={handleChange}
                                 placeholder="+212 6..."
+                                autoComplete="tel"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                             />
                         </div>
@@ -375,6 +382,7 @@ const Profile = () => {
                                 value={formData.city}
                                 onChange={handleChange}
                                 placeholder="Casablanca"
+                                autoComplete="address-level2"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                             />
                         </div>
@@ -390,6 +398,7 @@ const Profile = () => {
                                 value={formData.city_ar}
                                 onChange={handleChange}
                                 placeholder={t.city_ar_placeholder}
+                                autoComplete="address-level2"
                                 className="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition text-right"
                                 dir="rtl"
                             />
