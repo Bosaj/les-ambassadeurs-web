@@ -668,3 +668,8 @@ export const DataProvider = ({ children }) => {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useData = () => useContext(DataContext);
+
+// Prevent Vite HMR from partially reloading this context module.
+if (import.meta.hot) {
+    import.meta.hot.decline();
+}

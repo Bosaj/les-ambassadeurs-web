@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import LogoutAnimation from '../components/LogoutAnimation';
-import LoadingSpinner from '../components/LoadingSpinner';
 
 const AuthContext = createContext(null);
 
@@ -241,12 +240,21 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember, hasPermission, isLoggingOut, setIsLoggingOut }}>
-            {/* Show animation overlay when logging out */}
+            {/* Logout animation overlay — shown on top of everything */}
             <LogoutAnimation isVisible={isLoggingOut} />
-            {loading ? <LoadingSpinner fullScreen={true} message="Initializing..." /> : children}
+            {/* Always render children immediately. Public pages are never blocked.
+                Protected pages are guarded by <ProtectedRoute> which checks loading. */}
+            {children}
         </AuthContext.Provider>
     );
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
+
+// Prevent Vite HMR from partially replacing this module.
+// A full page reload is safer and prevents useAuth() returning null
+// due to a stale AuthContext object reference in consuming components.
+if (import.meta.hot) {
+    import.meta.hot.decline();
+}
