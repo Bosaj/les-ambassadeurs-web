@@ -8,10 +8,9 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Fetches the DB profile and merges it onto the auth user object.
-    // Does NOT control `loading` — the UI is unblocked before this runs.
     const fetchProfile = async (authUser) => {
         try {
+            console.log('[Auth v4] Fetching profile for UID:', authUser.id);
             const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -19,103 +18,105 @@ export const AuthProvider = ({ children }) => {
                 .single();
 
             if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching profile:', error);
+                console.error('[Auth v4] DB Error fetching profile:', error);
+            }
+
+            if (!profile) {
+                console.warn('[Auth v4] No profile row found! RLS could be blocking or profile is missing.');
             }
 
             if (profile && !profile.email && authUser.email) {
-                // Lazy sync: If profile exists but has no email, update it
                 const { error: updateError } = await supabase
                     .from('profiles')
                     .update({ email: authUser.email })
                     .eq('id', authUser.id);
-
-                if (!updateError) {
-                    profile.email = authUser.email;
-                }
+                if (!updateError) profile.email = authUser.email;
             }
 
-            const activeUser = { ...authUser, ...(profile || {}) };
+            // Fallback role to 'volunteer' just in case the profile fetch failed
+            const baseUser = { role: 'volunteer', ...authUser };
+            const activeUser = { ...baseUser, ...(profile || {}) };
+
+            console.log('[Auth v4] Active user assembled, role:', activeUser.role);
             setUser(activeUser);
             return activeUser;
         } catch (error) {
-            console.error('Profile fetch error:', error);
-            setUser(authUser);
-            return authUser;
+            console.error('[Auth v4] Profile fetch exception:', error);
+            const fallbackUser = { role: 'volunteer', ...authUser };
+            setUser(fallbackUser);
+            return fallbackUser;
         }
     };
 
-    useEffect(() => {
-        let initialized = false;
+    let globalInitPromise = null;
 
-        // Check active session on mount — only once
-        // Wrapping in try/catch handles the "Invalid Refresh Token" 400 error
-        // that occurs when old sessionStorage tokens exist but localStorage has nothing valid.
-        // Validate the stored session in the background.
-        // setLoading(false) is called immediately so the UI never blocks.
-        // If the token is invalid/expired, getSession() will handle sign-out.
-        supabase.auth.getSession().then(({ data: { session }, error }) => {
-            initialized = true;
-            if (error) {
-                console.warn('[Auth] Session init error, clearing stale token:', error.message);
-                supabase.auth.signOut({ scope: 'local' });
-                setUser(null);
-                setLoading(false);
+    useEffect(() => {
+        let isMounted = true;
+
+        const initializeAuth = async () => {
+            try {
+                if (!globalInitPromise) {
+                    globalInitPromise = supabase.auth.getSession();
+                }
+
+                const { data: { session }, error } = await globalInitPromise;
+
+                if (error) {
+                    console.error('[Auth v7] getSession Error:', error.message);
+                    await supabase.auth.signOut({ scope: 'local' });
+                    if (isMounted) { setUser(null); setLoading(false); }
+                    return;
+                }
+
+                if (session?.user) {
+                    await fetchProfile(session.user);
+                } else {
+                    if (isMounted) setUser(null);
+                }
+            } catch (err) {
+                console.error('[Auth v7] Unexpected init error:', err);
+                if (isMounted) setUser(null);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        initializeAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'TOKEN_REFRESHED' || event === 'MFA_CHALLENGE_VERIFIED' || event === 'INITIAL_SESSION') {
                 return;
             }
-            if (session?.user) {
-                setUser(session.user);
-                fetchProfile(session.user); // background — no await
-            } else {
-                setUser(null);
-            }
-            setLoading(false);
-        }).catch(() => {
-            initialized = true;
-            setUser(null);
-            setLoading(false);
-        });
-
-        // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            // Skip token refreshes and other background events to avoid unnecessary DB calls
-            if (event === 'TOKEN_REFRESHED' || event === 'MFA_CHALLENGE_VERIFIED') return;
 
             if (session?.user) {
-                if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-                    // Check if profile exists, create if not (new OAuth users)
-                    const { data: existingProfile } = await supabase
-                        .from('profiles')
-                        .select('id')
-                        .eq('id', session.user.id)
-                        .single();
-
-                    if (!existingProfile) {
-                        const fullName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User';
-                        await supabase
-                            .from('profiles')
-                            .insert({
-                                id: session.user.id,
-                                email: session.user.email,
-                                full_name: fullName,
-                                role: 'volunteer',
-                                avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
-                            });
+                if (event === 'SIGNED_IN') {
+                    const { data: existing } = await supabase.from('profiles').select('id').eq('id', session.user.id).single();
+                    if (!existing) {
+                        await supabase.from('profiles').insert({
+                            id: session.user.id,
+                            email: session.user.email,
+                            full_name: session.user.user_metadata?.full_name || 'User',
+                            role: 'volunteer'
+                        });
                     }
-
-                    await fetchProfile(session.user);
-                } else if (!initialized) {
-                    // INITIAL_SESSION or other first-load event
+                }
+                if (isMounted && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
                     await fetchProfile(session.user);
                 }
-                initialized = true;
-            } else {
-                setUser(null);
-                setLoading(false);
-                initialized = true;
+            } else if (event === 'SIGNED_OUT') {
+                if (isMounted) {
+                    setUser(null);
+                    setLoading(false);
+                }
             }
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            isMounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     const login = async (email, password) => {

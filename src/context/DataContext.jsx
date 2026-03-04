@@ -491,8 +491,11 @@ export const DataProvider = ({ children }) => {
                     amount: donationData.amount,
                     method: donationData.method,
                     email: donationData.email,
-                    proof_url: donationData.proof_url, // Save proof URL
-                    status: 'pending'
+                    proof_url: donationData.proof_url,
+                    status: 'pending',
+                    donation_type: donationData.donation_type || 'general',
+                    related_item_id: donationData.related_item_id || null,
+                    related_item_title: donationData.related_item_title || null
                 }]);
 
             if (error) throw error;
@@ -668,8 +671,3 @@ export const DataProvider = ({ children }) => {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useData = () => useContext(DataContext);
-
-// Prevent Vite HMR from partially reloading this context module.
-if (import.meta.hot) {
-    import.meta.hot.decline();
-}
