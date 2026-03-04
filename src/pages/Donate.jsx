@@ -16,8 +16,8 @@ import StripeCheckout from '../components/StripeCheckout';
 import { getStripe } from '../lib/stripe';
 
 const Donate = () => {
-    const { t } = useLanguage();
-    const { addDonation } = useData();
+    const { t, language } = useLanguage();
+    const { addDonation, events, programs, projects, getLocalizedContent } = useData();
     const { user } = useAuth();
 
     const [showModal, setShowModal] = useState(false);
@@ -30,7 +30,10 @@ const Donate = () => {
         phone: user?.user_metadata?.phone || '',
         amount: '',
         method: 'transfer', // 'online', 'paypal', 'transfer'
-        isAnonymous: false
+        isAnonymous: false,
+        donation_type: 'general',
+        related_item_id: null,
+        related_item_title: null
     });
 
     const [clientSecret, setClientSecret] = useState("");
@@ -378,6 +381,69 @@ const Donate = () => {
                             </div>
                         </>
                     )}
+                    {/* Donation Purpose Selector */}
+                    <div>
+                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                            {t.donation_purpose_label || "Donation Purpose"}
+                        </label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                            {[
+                                { key: 'general', label: t.donation_type_general || 'General' },
+                                { key: 'event', label: t.donation_type_event || 'Event' },
+                                { key: 'program', label: t.donation_type_program || 'Program' },
+                                { key: 'project', label: t.donation_type_project || 'Project' },
+                            ].map(({ key, label }) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setDonationForm(prev => ({ ...prev, donation_type: key, related_item_id: null, related_item_title: null }))}
+                                    className={`py-2 px-3 rounded-xl border-2 text-sm font-semibold transition-all duration-200 ${donationForm.donation_type === key
+                                        ? 'border-blue-900 bg-blue-50 text-blue-900 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-400'
+                                        : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
+                                        }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Item Selector — shown for event/program/project */}
+                        {donationForm.donation_type !== 'general' && (() => {
+                            const itemMap = {
+                                event: events || [],
+                                program: programs || [],
+                                project: projects || [],
+                            };
+                            const items = itemMap[donationForm.donation_type] || [];
+                            return items.length > 0 ? (
+                                <div className="mt-2">
+                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                        {t.donation_select_item || "Select a specific item (optional)"}
+                                    </label>
+                                    <select
+                                        className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white text-sm"
+                                        value={donationForm.related_item_id || ''}
+                                        onChange={e => {
+                                            const selected = items.find(i => i.id === e.target.value);
+                                            setDonationForm(prev => ({
+                                                ...prev,
+                                                related_item_id: e.target.value || null,
+                                                related_item_title: selected ? getLocalizedContent(selected.title, language) : null
+                                            }));
+                                        }}
+                                    >
+                                        <option value="">{t.donation_no_specific || '— No specific item —'}</option>
+                                        {items.map(item => (
+                                            <option key={item.id} value={item.id}>
+                                                {getLocalizedContent(item.title, language)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : null;
+                        })()}
+                    </div>
+
                     <div>
                         <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">{t.amount_label}</label>
                         <div className="relative">

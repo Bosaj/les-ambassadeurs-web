@@ -401,7 +401,17 @@ const AdminDashboard = () => {
 
     const { news, programs, projects, events, testimonials, partners, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions, users } = useData();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('overview');
+
+    // Persist active tab in URL hash so page refresh returns to same panel
+    const validTabs = ['overview', 'news', 'programs', 'projects', 'events', 'partners', 'users', 'memberships', 'donations', 'testimonials', 'admins'];
+    const hashTab = window.location.hash.replace('#', '');
+    const [activeTab, setActiveTabState] = useState(validTabs.includes(hashTab) ? hashTab : 'overview');
+
+    const setActiveTab = (tab) => {
+        window.location.hash = tab;
+        setActiveTabState(tab);
+    };
+
     const [editingId, setEditingId] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaMoneyBillWave, FaCheck, FaTimes, FaSearch, FaFileInvoiceDollar, FaUser, FaEnvelope, FaCalendarAlt, FaCreditCard, FaTrash } from 'react-icons/fa';
+import { FaMoneyBillWave, FaCheck, FaTimes, FaSearch, FaFileInvoiceDollar, FaUser, FaEnvelope, FaCalendarAlt, FaCreditCard, FaTrash, FaTag, FaFilter } from 'react-icons/fa';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
 import toast from 'react-hot-toast';
@@ -11,6 +11,7 @@ const DonationsList = () => {
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [typeFilter, setTypeFilter] = useState('all');
     const [selectedDonation, setSelectedDonation] = useState(null);
 
     const loadDonations = useCallback(async () => {
@@ -85,10 +86,22 @@ const DonationsList = () => {
         return t[key] || method;
     };
 
-    const filteredDonations = donations.filter(d =>
-        (d.donor_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (d.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const getPurposeLabel = (type, relatedTitle) => {
+        if (!type || type === 'general') return t.donation_type_general || 'General';
+        const typeLabel = {
+            event: t.donation_type_event || 'Event',
+            program: t.donation_type_program || 'Program',
+            project: t.donation_type_project || 'Project',
+        }[type] || type;
+        return relatedTitle ? `${typeLabel}: ${relatedTitle}` : typeLabel;
+    };
+
+    const filteredDonations = donations.filter(d => {
+        const matchesSearch = (d.donor_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (d.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = typeFilter === 'all' || (d.donation_type || 'general') === typeFilter;
+        return matchesSearch && matchesType;
+    });
 
     const totalAmount = donations
         .filter(d => d.status === 'verified')
@@ -116,16 +129,32 @@ const DonationsList = () => {
                 </div>
             </div>
 
-            {/* Search */}
-            <div className="mb-6 relative">
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                    type="text"
-                    placeholder={t.search_donations_placeholder || "Search donor name or email..."}
-                    className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-green-500 dark:text-white shadow-sm transition-all"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            {/* Search + Filter */}
+            <div className="mb-6 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder={t.search_donations_placeholder || "Search donor name or email..."}
+                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-green-500 dark:text-white shadow-sm transition-all"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="relative">
+                    <FaFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select
+                        className="pl-9 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-green-500 dark:text-white shadow-sm transition-all text-sm"
+                        value={typeFilter}
+                        onChange={e => setTypeFilter(e.target.value)}
+                    >
+                        <option value="all">{t.all_types || 'All Types'}</option>
+                        <option value="general">{t.donation_type_general || 'General'}</option>
+                        <option value="event">{t.donation_type_event || 'Event'}</option>
+                        <option value="program">{t.donation_type_program || 'Program'}</option>
+                        <option value="project">{t.donation_type_project || 'Project'}</option>
+                    </select>
+                </div>
             </div>
 
             {/* Table */}
@@ -139,6 +168,7 @@ const DonationsList = () => {
                                 <tr>
                                     <th className="p-4">{t.donor_name || "Donor Name"}</th>
                                     <th className="p-4">{t.amount || "Amount"}</th>
+                                    <th className="p-4">{t.donation_purpose_label || "Purpose"}</th>
                                     <th className="p-4">{t.method || "Method"}</th>
                                     <th className="p-4">{t.date || "Date"}</th>
                                     <th className="p-4">{t.status || "Status"}</th>
@@ -154,6 +184,16 @@ const DonationsList = () => {
                                         </td>
                                         <td className="p-4 font-bold text-green-600 dark:text-green-400">
                                             {parseFloat(donation.amount).toLocaleString()} {t.currency_mad || 'DH'}
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-semibold ${donation.donation_type === 'event' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                                                donation.donation_type === 'program' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
+                                                    donation.donation_type === 'project' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                                                        'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                                                }`}>
+                                                <FaTag size={9} />
+                                                {getPurposeLabel(donation.donation_type, donation.related_item_title)}
+                                            </span>
                                         </td>
                                         <td className="p-4">
                                             <span className={`text-xs px-2 py-1 rounded-full uppercase font-bold tracking-wide
@@ -217,7 +257,7 @@ const DonationsList = () => {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan="6" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                        <td colSpan="7" className="p-8 text-center text-gray-500 dark:text-gray-400">
                                             {t.no_donations_found || "No donations found."}
                                         </td>
                                     </tr>
@@ -265,6 +305,14 @@ const DonationsList = () => {
                                         </div>
                                         <div className="font-semibold text-gray-800 dark:text-white pl-6 capitalize">
                                             {getMethodLabel(selectedDonation.method)}
+                                        </div>
+                                    </div>
+                                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                        <div className="flex items-center gap-2 text-gray-500 mb-1 text-sm">
+                                            <FaTag className="text-teal-500" /> {t.donation_purpose_label || 'Purpose'}
+                                        </div>
+                                        <div className="font-semibold text-gray-800 dark:text-white pl-6 capitalize">
+                                            {getPurposeLabel(selectedDonation.donation_type, selectedDonation.related_item_title)}
                                         </div>
                                     </div>
                                     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
