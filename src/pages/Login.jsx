@@ -26,10 +26,13 @@ const Login = () => {
     }, [user, navigate, location]);
 
     // Get the redirect path from location state or default to dashboard
-    // Get the redirect path from location state or default to dashboard
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!email.trim() || !password.trim()) {
+            toast.error(t.invalid_credentials);
+            return;
+        }
         setLoading(true);
         try {
             const user = await login(email, password);
@@ -69,6 +72,7 @@ const Login = () => {
                             <input
                                 type="email"
                                 required
+                                autoComplete="email"
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                 placeholder={t.email_placeholder}
                                 value={email}
@@ -79,6 +83,7 @@ const Login = () => {
                             <input
                                 type={showPassword ? "text" : "password"}
                                 required
+                                autoComplete="current-password"
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm pr-10"
                                 placeholder={t.password_placeholder}
                                 value={password}

@@ -8,8 +8,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     const { user, loading } = useAuth();
     const { t } = useLanguage();
 
-    console.log(`[ProtectedRoute] Mount Check: role_req=${requiredRole}, loading=${loading}, user=${user?.role}`);
-
     // Still waiting for session validation (e.g. token refresh on slow network)
     // AND we have no cached user yet — show a minimal spinner
     if (loading && !user) {
