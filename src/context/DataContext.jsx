@@ -24,7 +24,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             setUsers(data || []);
         } catch (error) {
-            console.error("Error fetching users:", error);
+            if (import.meta.env.DEV) console.error("Error fetching users:", error);
         }
     };
 
@@ -43,7 +43,7 @@ export const DataProvider = ({ children }) => {
             fetchUsers(); // Refresh list
             return { success: true };
         } catch (error) {
-            console.error("Error verifying member:", error);
+            if (import.meta.env.DEV) console.error("Error verifying member:", error);
             return { success: false, error };
         }
     };
@@ -54,7 +54,7 @@ export const DataProvider = ({ children }) => {
             // Do NOT guard with a session check here: these tables have public RLS policies,
             // and blocking on session presence causes permanent "Loading..." for everyone
             // when a token refresh fails on page load.
-            console.log('[DataContext] 🟢 fetchData starting (public content fetch)...');
+            if (import.meta.env.DEV) console.log('[DataContext] 🟢 fetchData starting (public content fetch)...');
             setLoading(true);
 
             // Fire ALL queries in parallel — much faster than sequential awaits
@@ -79,7 +79,7 @@ export const DataProvider = ({ children }) => {
                     .order('date', { ascending: false })
                     .then(result => {
                         if (result.error) {
-                            console.warn('Retrying events fetch without join:', result.error.message);
+                            if (import.meta.env.DEV) console.warn('Retrying events fetch without join:', result.error.message);
                             return supabase
                                 .from('events')
                                 .select('*')
@@ -130,7 +130,7 @@ export const DataProvider = ({ children }) => {
             setPartners(partnersData || []);
 
         } catch (error) {
-            console.error("Error fetching data:", error);
+            if (import.meta.env.DEV) console.error("Error fetching data:", error);
             if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
                 toast.error("Network connection error. Working offline?");
             }
@@ -140,17 +140,17 @@ export const DataProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        console.log('[DataContext] 🟢 Mounting DataContext');
+        if (import.meta.env.DEV) console.log('[DataContext] 🟢 Mounting DataContext');
         let isMounted = true;
 
         const initializeData = async () => {
-            console.log('[DataContext] 🔵 Starting initializeData...');
+            if (import.meta.env.DEV) console.log('[DataContext] 🔵 Starting initializeData...');
             try {
                 // Always fetch public data (news, events, programs, etc.) — no auth needed.
                 // Separately check session to also load auth-gated data (users list, etc.)
                 const { data: { session }, error } = await supabase.auth.getSession();
 
-                console.log('[DataContext] 🔍 Session check result:', {
+                if (import.meta.env.DEV) console.log('[DataContext] 🔍 Session check result:', {
                     hasSession: !!session,
                     userId: session?.user?.id ?? 'none',
                     error: error?.message ?? null
@@ -163,15 +163,15 @@ export const DataProvider = ({ children }) => {
 
                 // User-specific / admin data only if authenticated
                 if (session && !error) {
-                    console.log('[DataContext] ✅ Session found — also fetching user data...');
+                    if (import.meta.env.DEV) console.log('[DataContext] ✅ Session found — also fetching user data...');
                     fetches.push(fetchUsers());
                 } else {
-                    console.log('[DataContext] ℹ️ No session — loading public data only.');
+                    if (import.meta.env.DEV) console.log('[DataContext] ℹ️ No session — loading public data only.');
                 }
 
                 await Promise.all(fetches);
             } catch (err) {
-                console.error('[DataContext] ❌ Init error:', err);
+                if (import.meta.env.DEV) console.error('[DataContext] ❌ Init error:', err);
                 if (isMounted) setLoading(false);
             }
         };
@@ -180,7 +180,7 @@ export const DataProvider = ({ children }) => {
 
         // Re-fetch when auth state changes so data is always in sync.
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('[DataContext] 🔔 Auth state changed:', {
+            if (import.meta.env.DEV) console.log('[DataContext] 🔔 Auth state changed:', {
                 event,
                 hasSession: !!session,
                 userId: session?.user?.id ?? 'none'
@@ -189,7 +189,7 @@ export const DataProvider = ({ children }) => {
             if (!isMounted) return;
 
             if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
-                console.log('[DataContext] 🔓 Signed in / token refreshed — fetching data...');
+                if (import.meta.env.DEV) console.log('[DataContext] 🔓 Signed in / token refreshed — fetching data...');
                 await Promise.all([fetchData(), fetchUsers()]);
             } else if (event === 'SIGNED_OUT') {
                 // Guard: only wipe data if auth confirms this is an intentional logout.
@@ -197,10 +197,10 @@ export const DataProvider = ({ children }) => {
                 // not clear data — the user is still authenticated in localStorage.
                 const { data: { session: currentSession } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
                 if (currentSession) {
-                    console.warn('[DataContext] 🚫 SIGNED_OUT ignored — session still valid in storage (likely network refresh failure).');
+                    if (import.meta.env.DEV) console.warn('[DataContext] 🚫 SIGNED_OUT ignored — session still valid in storage (likely network refresh failure).');
                     return;
                 }
-                console.log('[DataContext] 🔒 Signed out — clearing all data.');
+                if (import.meta.env.DEV) console.log('[DataContext] 🔒 Signed out — clearing all data.');
                 setNews([]);
                 setPrograms([]);
                 setEvents([]);
@@ -213,7 +213,7 @@ export const DataProvider = ({ children }) => {
         });
 
         return () => {
-            console.log('[DataContext] 🔴 Unmounting DataContext');
+            if (import.meta.env.DEV) console.log('[DataContext] 🔴 Unmounting DataContext');
             isMounted = false;
             subscription.unsubscribe();
         };
@@ -294,7 +294,7 @@ export const DataProvider = ({ children }) => {
 
             return data;
         } catch (error) {
-            console.error(`Error adding ${type}:`, error);
+            if (import.meta.env.DEV) console.error(`Error adding ${type}:`, error);
             throw error;
         }
     };
@@ -362,7 +362,7 @@ export const DataProvider = ({ children }) => {
 
             return data;
         } catch (error) {
-            console.error(`Error updating ${type}:`, error);
+            if (import.meta.env.DEV) console.error(`Error updating ${type}:`, error);
             throw error;
         }
     };
@@ -393,7 +393,7 @@ export const DataProvider = ({ children }) => {
                 setProjects(prev => prev.filter(item => item.id !== id));
             }
         } catch (error) {
-            console.error(`Error deleting ${type}:`, error);
+            if (import.meta.env.DEV) console.error(`Error deleting ${type}:`, error);
             throw error;
         }
     };
@@ -420,7 +420,7 @@ export const DataProvider = ({ children }) => {
             else if (type === 'events') setEvents(prev => applyPin(prev));
             else if (type === 'projects') setProjects(prev => applyPin(prev));
         } catch (error) {
-            console.error("Error toggling pin:", error);
+            if (import.meta.env.DEV) console.error("Error toggling pin:", error);
             toast.error("Failed to update pin status");
         }
     };
@@ -443,7 +443,7 @@ export const DataProvider = ({ children }) => {
                 .select();
 
             if (error) {
-                console.error("Supabase connect error:", error);
+                if (import.meta.env.DEV) console.error("Supabase connect error:", error);
                 throw error;
             }
 
@@ -474,7 +474,7 @@ export const DataProvider = ({ children }) => {
             return true;
 
         } catch (error) {
-            console.error("Error registering:", error);
+            if (import.meta.env.DEV) console.error("Error registering:", error);
             throw error;
         }
     };
@@ -511,7 +511,7 @@ export const DataProvider = ({ children }) => {
 
             return true;
         } catch (error) {
-            console.error("Error cancelling registration:", error);
+            if (import.meta.env.DEV) console.error("Error cancelling registration:", error);
             throw error;
         }
     };
@@ -545,7 +545,7 @@ export const DataProvider = ({ children }) => {
 
             return data;
         } catch (error) {
-            console.error("Error updating attendance status:", error);
+            if (import.meta.env.DEV) console.error("Error updating attendance status:", error);
             throw error;
         }
     };
@@ -569,7 +569,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return true;
         } catch (error) {
-            console.error("Error adding donation:", error);
+            if (import.meta.env.DEV) console.error("Error adding donation:", error);
             throw error;
         }
     };
@@ -593,7 +593,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return data || [];
         } catch (err) {
-            console.error("Error fetching activities:", err);
+            if (import.meta.env.DEV) console.error("Error fetching activities:", err);
             return [];
         }
     }, []);
@@ -618,7 +618,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return data || [];
         } catch (err) {
-            console.error("Error fetching donations:", err);
+            if (import.meta.env.DEV) console.error("Error fetching donations:", err);
             return [];
         }
     }, []);
@@ -633,7 +633,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return data || [];
         } catch (err) {
-            console.error("Error fetching all donations:", err);
+            if (import.meta.env.DEV) console.error("Error fetching all donations:", err);
             return [];
         }
     }, []);
@@ -654,7 +654,7 @@ export const DataProvider = ({ children }) => {
                 return false;
             }
         } catch (err) {
-            console.error("Error updating donation status:", err);
+            if (import.meta.env.DEV) console.error("Error updating donation status:", err);
             return false;
         }
     }, []);
@@ -669,7 +669,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return true;
         } catch (err) {
-            console.error("Error deleting donation:", err);
+            if (import.meta.env.DEV) console.error("Error deleting donation:", err);
             return false;
         }
     }, []);
@@ -685,7 +685,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return { data, error: null };
         } catch (err) {
-            console.error("Error submitting suggestion:", err);
+            if (import.meta.env.DEV) console.error("Error submitting suggestion:", err);
             return { data: null, error: err };
         }
     };
@@ -702,7 +702,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return data || [];
         } catch (err) {
-            console.error("Error fetching suggestions:", err);
+            if (import.meta.env.DEV) console.error("Error fetching suggestions:", err);
             return [];
         }
     };
@@ -719,7 +719,7 @@ export const DataProvider = ({ children }) => {
             if (error) throw error;
             return data || [];
         } catch (err) {
-            console.error("Error fetching membership history:", err);
+            if (import.meta.env.DEV) console.error("Error fetching membership history:", err);
             return [];
         }
     };

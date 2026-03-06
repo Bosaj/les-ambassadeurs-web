@@ -1,7 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mimfwguttesvrmejlibq.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbWZ3Z3V0dGVzdnJtZWpsaWJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3OTMyODgsImV4cCI6MjA4NTM2OTI4OH0.NEY7qHJ7S-FoEkx6meDx798_yTYrlgAQhQGfx-A7byo';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    '[Supabase] Missing environment variables.\n' +
+    'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file or Netlify dashboard.'
+  );
+}
 
 // Singleton guard — prevents multiple GoTrueClient instances during Vite HMR
 // (Vite re-executes modules on hot reload; storing on globalThis avoids duplication)
@@ -14,8 +21,8 @@ if (!globalThis[STORAGE_KEY]) {
       persistSession: true,
       detectSessionInUrl: true,
       storageKey: 'association-ab-auth-token',
-      storage: window.localStorage
-    }
+      storage: window.localStorage,
+    },
   });
 }
 

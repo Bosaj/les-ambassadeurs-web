@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
         const executeFetch = async () => {
             try {
-                console.log('[Auth v4] Fetching profile for UID:', authUser.id);
+                if (import.meta.env.DEV) console.log('[Auth v4] Fetching profile for UID:', authUser.id);
                 const { data: profile, error } = await supabase
                     .from('profiles')
                     .select('*')
@@ -31,11 +31,11 @@ export const AuthProvider = ({ children }) => {
                     .single();
 
                 if (error && error.code !== 'PGRST116') {
-                    console.error('[Auth v4] DB Error fetching profile:', error);
+                    if (import.meta.env.DEV) console.error('[Auth v4] DB Error fetching profile:', error);
                 }
 
                 if (!profile) {
-                    console.warn('[Auth v4] No profile row found! RLS could be blocking or profile is missing.');
+                    if (import.meta.env.DEV) console.warn('[Auth v4] No profile row found! RLS could be blocking or profile is missing.');
                 }
 
                 if (profile && !profile.email && authUser.email) {
@@ -50,10 +50,10 @@ export const AuthProvider = ({ children }) => {
                 const baseUser = { role: 'volunteer', ...authUser };
                 const activeUser = { ...baseUser, ...(profile || {}) };
 
-                console.log('[Auth v4] Active user assembled, role:', activeUser.role);
+                if (import.meta.env.DEV) console.log('[Auth v4] Active user assembled, role:', activeUser.role);
                 return activeUser;
             } catch (error) {
-                console.error('[Auth v4] Profile fetch exception:', error);
+                if (import.meta.env.DEV) console.error('[Auth v4] Profile fetch exception:', error);
                 const fallbackUser = { role: 'volunteer', ...authUser };
                 return fallbackUser;
             }
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         let isMounted = true;
-        console.log('[AuthContext] 🟢 Mounting AuthContext');
+        if (import.meta.env.DEV) console.log('[AuthContext] 🟢 Mounting AuthContext');
 
         // Pre-warm the global session promise so DataContext can also use it.
         // We do NOT await it here — INITIAL_SESSION handles our state.
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('[AuthContext] � Auth state changed:', { event, hasSession: !!session, userId: session?.user?.id ?? 'none' });
+            if (import.meta.env.DEV) console.log('[AuthContext] 🔔 Auth state changed:', { event, hasSession: !!session, userId: session?.user?.id ?? 'none' });
 
             if (!isMounted) return;
 
@@ -83,25 +83,23 @@ export const AuthProvider = ({ children }) => {
                 // ✅ THE KEY FIX: INITIAL_SESSION fires from localStorage BEFORE any
                 // network-based token refresh. This guarantees we get the valid session
                 // even if the subsequent refresh attempt fails (ERR_NAME_NOT_RESOLVED).
-                // Previously we used getSession() in initializeAuth() which ran AFTER
-                // the refresh and returned null on failure → user appeared logged out.
-                console.log('[AuthContext] 🔵 INITIAL_SESSION processing...');
+                if (import.meta.env.DEV) console.log('[AuthContext] 🔵 INITIAL_SESSION processing...');
                 if (session?.user) {
-                    console.log('[AuthContext] ✅ Session found in storage — fetching profile...');
+                    if (import.meta.env.DEV) console.log('[AuthContext] ✅ Session found in storage — fetching profile...');
                     const activeUser = await fetchProfile(session.user);
                     if (isMounted) {
-                        console.log('[AuthContext] ✅ User ready, role:', activeUser?.role);
+                        if (import.meta.env.DEV) console.log('[AuthContext] ✅ User ready, role:', activeUser?.role);
                         setAuthState({ user: activeUser, loading: false });
                     }
                 } else {
-                    console.log('[AuthContext] ℹ️ No session in storage — user is logged out.');
+                    if (import.meta.env.DEV) console.log('[AuthContext] ℹ️ No session in storage — user is logged out.');
                     if (isMounted) setAuthState({ user: null, loading: false });
                 }
                 return;
             }
 
             if (event === 'TOKEN_REFRESHED' || event === 'MFA_CHALLENGE_VERIFIED') {
-                console.log('[AuthContext] ⏭️ Skipping event:', event);
+                if (import.meta.env.DEV) console.log('[AuthContext] ⏭️ Skipping event:', event);
                 return;
             }
 
@@ -128,10 +126,10 @@ export const AuthProvider = ({ children }) => {
                 // Only clear state on intentional logout — ignore SIGNED_OUT from
                 // failed token refresh (the user is still authenticated in storage).
                 if (!intentionalLogout) {
-                    console.warn('[AuthContext] 🚫 Ignoring unexpected SIGNED_OUT (token refresh network failure). User stays logged in.');
+                    if (import.meta.env.DEV) console.warn('[AuthContext] 🚫 Ignoring unexpected SIGNED_OUT (token refresh network failure). User stays logged in.');
                     return;
                 }
-                console.log('[AuthContext] 🔒 Intentional logout confirmed — clearing auth state.');
+                if (import.meta.env.DEV) console.log('[AuthContext] 🔒 Intentional logout confirmed — clearing auth state.');
                 intentionalLogout = false;
                 globalProfilePromise = null;
                 globalProfileUserId = null;
@@ -140,7 +138,7 @@ export const AuthProvider = ({ children }) => {
         });
 
         return () => {
-            console.log('[AuthContext] 🔴 Unmounting AuthContext');
+            if (import.meta.env.DEV) console.log('[AuthContext] 🔴 Unmounting AuthContext');
             isMounted = false;
             subscription.unsubscribe();
         };
@@ -155,48 +153,6 @@ export const AuthProvider = ({ children }) => {
         const activeUser = await fetchProfile(data.user);
         setAuthState({ user: activeUser, loading: false });
         return activeUser;
-    };
-
-    const signup = async (name, email, password, phone, city) => {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: name,
-                    role: 'volunteer',
-                    phone: phone,
-                    city: city
-                }
-            }
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-            // Explicitly update profile to ensure data persistence for admin dashboard
-            try {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .update({
-                        full_name: name,
-                        phone_number: phone,
-                        city: city,
-                        role: 'volunteer'
-                    })
-                    .eq('id', data.user.id);
-
-                if (profileError) {
-                    console.error("Error updating profile details:", profileError);
-                }
-            } catch (err) {
-                console.error("Profile update exception:", err);
-            }
-
-            const activeUser = await fetchProfile(data.user);
-            setAuthState({ user: activeUser, loading: false });
-            return activeUser;
-        }
     };
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -223,7 +179,7 @@ export const AuthProvider = ({ children }) => {
                 if (key.startsWith('sb-')) localStorage.removeItem(key);
             });
         } catch (e) {
-            console.warn('[Auth] localStorage clear error:', e.message);
+            if (import.meta.env.DEV) console.warn('[Auth] localStorage clear error:', e.message);
         }
 
         setAuthState({ user: null, loading: false });
@@ -294,7 +250,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember, hasPermission, isLoggingOut, setIsLoggingOut }}>
+        <AuthContext.Provider value={{ user, login, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember, hasPermission, isLoggingOut, setIsLoggingOut }}>
             {/* Logout animation overlay — shown on top of everything */}
             <LogoutAnimation isVisible={isLoggingOut} />
             {/* Always render children immediately. Public pages are never blocked.
