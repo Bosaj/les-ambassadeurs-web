@@ -5,7 +5,7 @@ import MembershipHistoryModal from './MembershipHistoryModal';
 import AwardPointsModal from './AwardPointsModal';
 import ConfirmationModal from '../ConfirmationModal';
 import { useLanguage } from '../../context/LanguageContext';
-import { useData } from '../../context/DataContext';
+import { useData } from '../../hooks/useData';
 import toast from 'react-hot-toast';
 
 const CommunityManagement = ({ t, onViewUser }) => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckout from './StripeCheckout';
 import toast from 'react-hot-toast';

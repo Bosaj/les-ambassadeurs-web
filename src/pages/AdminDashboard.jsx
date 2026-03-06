@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { useAuth } from '../context/AuthContext';
-import { useData } from '../context/DataContext';
+import { useAuth } from '../hooks/useAuth';
+import { useData } from '../hooks/useData';
 import { useNavigate } from 'react-router-dom';
 import {
     FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash,

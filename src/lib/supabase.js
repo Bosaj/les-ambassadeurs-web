@@ -10,7 +10,11 @@ const STORAGE_KEY = '__supabase_client__';
 if (!globalThis[STORAGE_KEY]) {
   globalThis[STORAGE_KEY] = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      autoRefreshToken: true
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      storageKey: 'association-ab-auth-token',
+      storage: window.localStorage
     }
   });
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import {
     FaTrophy, FaStar, FaLock, FaCheckCircle, FaMedal,

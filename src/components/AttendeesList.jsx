@@ -1,5 +1,5 @@
 import React from 'react';
-import { useData } from '../context/DataContext';
+import { useData } from '../hooks/useData';
 import { useLanguage } from '../context/LanguageContext';
 
 const AttendeesList = ({ attendees, max = 3, size = "w-8 h-8", showName = false }) => {

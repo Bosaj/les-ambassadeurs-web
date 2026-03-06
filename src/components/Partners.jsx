@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { useData } from '../context/DataContext';
+import { useData } from '../hooks/useData';
 import { translations } from '../translations';
 
 const Partners = () => {

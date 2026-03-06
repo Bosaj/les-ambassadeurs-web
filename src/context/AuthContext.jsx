@@ -1,92 +1,107 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import LogoutAnimation from '../components/LogoutAnimation';
+import { AuthContext } from './contexts';
 
-const AuthContext = createContext(null);
+let globalInitPromise = null;
+let globalProfilePromise = null;
+let globalProfileUserId = null;
+// Flag that is ONLY set to true when the user explicitly clicks the Logout button.
+// This lets us distinguish a real logout from a false SIGNED_OUT caused by
+// a failed token refresh (e.g., ERR_NAME_NOT_RESOLVED on page refresh).
+let intentionalLogout = false;
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [authState, setAuthState] = useState({ user: null, loading: true });
+    const { user, loading } = authState;
 
     const fetchProfile = async (authUser) => {
-        try {
-            console.log('[Auth v4] Fetching profile for UID:', authUser.id);
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', authUser.id)
-                .single();
-
-            if (error && error.code !== 'PGRST116') {
-                console.error('[Auth v4] DB Error fetching profile:', error);
-            }
-
-            if (!profile) {
-                console.warn('[Auth v4] No profile row found! RLS could be blocking or profile is missing.');
-            }
-
-            if (profile && !profile.email && authUser.email) {
-                const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update({ email: authUser.email })
-                    .eq('id', authUser.id);
-                if (!updateError) profile.email = authUser.email;
-            }
-
-            // Fallback role to 'volunteer' just in case the profile fetch failed
-            const baseUser = { role: 'volunteer', ...authUser };
-            const activeUser = { ...baseUser, ...(profile || {}) };
-
-            console.log('[Auth v4] Active user assembled, role:', activeUser.role);
-            setUser(activeUser);
-            return activeUser;
-        } catch (error) {
-            console.error('[Auth v4] Profile fetch exception:', error);
-            const fallbackUser = { role: 'volunteer', ...authUser };
-            setUser(fallbackUser);
-            return fallbackUser;
+        // Deduplicate simultaneous identical fetch requests during Strict Mode mounts
+        if (globalProfilePromise && globalProfileUserId === authUser.id) {
+            return globalProfilePromise;
         }
-    };
 
-    let globalInitPromise = null;
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const initializeAuth = async () => {
+        const executeFetch = async () => {
             try {
-                if (!globalInitPromise) {
-                    globalInitPromise = supabase.auth.getSession();
+                console.log('[Auth v4] Fetching profile for UID:', authUser.id);
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', authUser.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error('[Auth v4] DB Error fetching profile:', error);
                 }
 
-                const { data: { session }, error } = await globalInitPromise;
-
-                if (error) {
-                    console.error('[Auth v7] getSession Error:', error.message);
-                    await supabase.auth.signOut({ scope: 'local' });
-                    if (isMounted) { setUser(null); setLoading(false); }
-                    return;
+                if (!profile) {
+                    console.warn('[Auth v4] No profile row found! RLS could be blocking or profile is missing.');
                 }
 
-                if (session?.user) {
-                    await fetchProfile(session.user);
-                } else {
-                    if (isMounted) setUser(null);
+                if (profile && !profile.email && authUser.email) {
+                    const { error: updateError } = await supabase
+                        .from('profiles')
+                        .update({ email: authUser.email })
+                        .eq('id', authUser.id);
+                    if (!updateError) profile.email = authUser.email;
                 }
-            } catch (err) {
-                console.error('[Auth v7] Unexpected init error:', err);
-                if (isMounted) setUser(null);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
+
+                // Fallback role to 'volunteer' just in case the profile fetch failed
+                const baseUser = { role: 'volunteer', ...authUser };
+                const activeUser = { ...baseUser, ...(profile || {}) };
+
+                console.log('[Auth v4] Active user assembled, role:', activeUser.role);
+                return activeUser;
+            } catch (error) {
+                console.error('[Auth v4] Profile fetch exception:', error);
+                const fallbackUser = { role: 'volunteer', ...authUser };
+                return fallbackUser;
             }
         };
 
-        initializeAuth();
+        globalProfileUserId = authUser.id;
+        globalProfilePromise = executeFetch();
+        return globalProfilePromise;
+    };
+
+    useEffect(() => {
+        let isMounted = true;
+        console.log('[AuthContext] 🟢 Mounting AuthContext');
+
+        // Pre-warm the global session promise so DataContext can also use it.
+        // We do NOT await it here — INITIAL_SESSION handles our state.
+        if (!globalInitPromise) {
+            globalInitPromise = supabase.auth.getSession();
+        }
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'TOKEN_REFRESHED' || event === 'MFA_CHALLENGE_VERIFIED' || event === 'INITIAL_SESSION') {
+            console.log('[AuthContext] � Auth state changed:', { event, hasSession: !!session, userId: session?.user?.id ?? 'none' });
+
+            if (!isMounted) return;
+
+            if (event === 'INITIAL_SESSION') {
+                // ✅ THE KEY FIX: INITIAL_SESSION fires from localStorage BEFORE any
+                // network-based token refresh. This guarantees we get the valid session
+                // even if the subsequent refresh attempt fails (ERR_NAME_NOT_RESOLVED).
+                // Previously we used getSession() in initializeAuth() which ran AFTER
+                // the refresh and returned null on failure → user appeared logged out.
+                console.log('[AuthContext] 🔵 INITIAL_SESSION processing...');
+                if (session?.user) {
+                    console.log('[AuthContext] ✅ Session found in storage — fetching profile...');
+                    const activeUser = await fetchProfile(session.user);
+                    if (isMounted) {
+                        console.log('[AuthContext] ✅ User ready, role:', activeUser?.role);
+                        setAuthState({ user: activeUser, loading: false });
+                    }
+                } else {
+                    console.log('[AuthContext] ℹ️ No session in storage — user is logged out.');
+                    if (isMounted) setAuthState({ user: null, loading: false });
+                }
+                return;
+            }
+
+            if (event === 'TOKEN_REFRESHED' || event === 'MFA_CHALLENGE_VERIFIED') {
+                console.log('[AuthContext] ⏭️ Skipping event:', event);
                 return;
             }
 
@@ -103,17 +118,29 @@ export const AuthProvider = ({ children }) => {
                     }
                 }
                 if (isMounted && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-                    await fetchProfile(session.user);
+                    globalProfilePromise = null;
+                    const activeUser = await fetchProfile(session.user);
+                    if (isMounted) {
+                        setAuthState(prev => ({ ...prev, user: activeUser, loading: false }));
+                    }
                 }
             } else if (event === 'SIGNED_OUT') {
-                if (isMounted) {
-                    setUser(null);
-                    setLoading(false);
+                // Only clear state on intentional logout — ignore SIGNED_OUT from
+                // failed token refresh (the user is still authenticated in storage).
+                if (!intentionalLogout) {
+                    console.warn('[AuthContext] 🚫 Ignoring unexpected SIGNED_OUT (token refresh network failure). User stays logged in.');
+                    return;
                 }
+                console.log('[AuthContext] 🔒 Intentional logout confirmed — clearing auth state.');
+                intentionalLogout = false;
+                globalProfilePromise = null;
+                globalProfileUserId = null;
+                if (isMounted) setAuthState({ user: null, loading: false });
             }
         });
 
         return () => {
+            console.log('[AuthContext] 🔴 Unmounting AuthContext');
             isMounted = false;
             subscription.unsubscribe();
         };
@@ -125,7 +152,9 @@ export const AuthProvider = ({ children }) => {
             password
         });
         if (error) throw error;
-        return await fetchProfile(data.user);
+        const activeUser = await fetchProfile(data.user);
+        setAuthState({ user: activeUser, loading: false });
+        return activeUser;
     };
 
     const signup = async (name, email, password, phone, city) => {
@@ -164,7 +193,9 @@ export const AuthProvider = ({ children }) => {
                 console.error("Profile update exception:", err);
             }
 
-            return await fetchProfile(data.user);
+            const activeUser = await fetchProfile(data.user);
+            setAuthState({ user: activeUser, loading: false });
+            return activeUser;
         }
     };
 
@@ -172,17 +203,38 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         setIsLoggingOut(true);
-        // Wait for animation (reduced to 800ms for snappier feel)
-        await new Promise(resolve => setTimeout(resolve, 800));
 
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error("Logout error:", error);
+        // Let the 2-second progress bar animation play fully
+        await new Promise(resolve => setTimeout(resolve, 1800));
+
+        globalInitPromise = null;
+        globalProfilePromise = null;
+        globalProfileUserId = null;
+        intentionalLogout = true;
+
+        try {
+            // ✅ BYPASS supabase.auth.signOut() — it uses an internal async mutex that
+            // can get stuck if a previous token-refresh operation failed (ERR_NAME_NOT_RESOLVED).
+            // Instead, directly clear the session key from localStorage (guaranteed instant).
+            localStorage.removeItem('association-ab-auth-token');
+
+            // Also clear any other sb- prefixed keys Supabase may have written
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('sb-')) localStorage.removeItem(key);
+            });
+        } catch (e) {
+            console.warn('[Auth] localStorage clear error:', e.message);
         }
 
-        setUser(null);
+        setAuthState({ user: null, loading: false });
         setIsLoggingOut(false);
-        // Force redirect to home to clear state and ensure clean slate
+
+        // Best-effort server-side token invalidation AFTER we've already navigated away.
+        // If network is down this fails silently — the token will expire naturally.
+        setTimeout(() => {
+            supabase.auth.signOut({ scope: 'global' }).catch(() => { });
+        }, 100);
+
         window.location.href = '/';
     };
 
@@ -206,7 +258,9 @@ export const AuthProvider = ({ children }) => {
     const refreshProfile = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-            await fetchProfile(session.user);
+            globalProfilePromise = null; // Force fresh fetch
+            const activeUser = await fetchProfile(session.user);
+            setAuthState(prev => ({ ...prev, user: activeUser }));
         }
     };
 
@@ -250,12 +304,3 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);
-
-// Prevent Vite HMR from partially replacing this module.
-// A full page reload is safer and prevents useAuth() returning null
-// due to a stale AuthContext object reference in consuming components.
-if (import.meta.hot) {
-    import.meta.hot.decline();
-}

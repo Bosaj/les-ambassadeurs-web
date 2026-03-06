@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { FaHandHoldingHeart, FaHandsHelping, FaEnvelope, FaBars, FaTimes, FaUser, FaSignOutAlt, FaTachometerAlt, FaMoon, FaSun, FaChevronDown, FaStar } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import NotificationBell from './NotificationBell';

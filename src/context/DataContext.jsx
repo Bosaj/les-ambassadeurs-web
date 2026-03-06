@@ -1,9 +1,8 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { getLocalizedContent } from '../utils/languageUtils';
-
-const DataContext = createContext(null);
+import { DataContext } from './contexts';
 
 export const DataProvider = ({ children }) => {
     const [news, setNews] = useState([]);
@@ -51,6 +50,11 @@ export const DataProvider = ({ children }) => {
 
     const fetchData = async () => {
         try {
+            // Public data — news, events, programs, testimonials, partners are visible to everyone.
+            // Do NOT guard with a session check here: these tables have public RLS policies,
+            // and blocking on session presence causes permanent "Loading..." for everyone
+            // when a token refresh fails on page load.
+            console.log('[DataContext] 🟢 fetchData starting (public content fetch)...');
             setLoading(true);
 
             // Fire ALL queries in parallel — much faster than sequential awaits
@@ -136,19 +140,83 @@ export const DataProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const controller = new AbortController();
+        console.log('[DataContext] 🟢 Mounting DataContext');
+        let isMounted = true;
 
-        const run = async () => {
+        const initializeData = async () => {
+            console.log('[DataContext] 🔵 Starting initializeData...');
             try {
-                await Promise.all([fetchData(), fetchUsers()]);
+                // Always fetch public data (news, events, programs, etc.) — no auth needed.
+                // Separately check session to also load auth-gated data (users list, etc.)
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                console.log('[DataContext] 🔍 Session check result:', {
+                    hasSession: !!session,
+                    userId: session?.user?.id ?? 'none',
+                    error: error?.message ?? null
+                });
+
+                if (!isMounted) return;
+
+                // Public data always loads — regardless of session state
+                const fetches = [fetchData()];
+
+                // User-specific / admin data only if authenticated
+                if (session && !error) {
+                    console.log('[DataContext] ✅ Session found — also fetching user data...');
+                    fetches.push(fetchUsers());
+                } else {
+                    console.log('[DataContext] ℹ️ No session — loading public data only.');
+                }
+
+                await Promise.all(fetches);
             } catch (err) {
-                if (err?.name !== 'AbortError') console.error('Init fetch error:', err);
+                console.error('[DataContext] ❌ Init error:', err);
+                if (isMounted) setLoading(false);
             }
         };
 
-        run();
+        initializeData();
 
-        return () => controller.abort();
+        // Re-fetch when auth state changes so data is always in sync.
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('[DataContext] 🔔 Auth state changed:', {
+                event,
+                hasSession: !!session,
+                userId: session?.user?.id ?? 'none'
+            });
+
+            if (!isMounted) return;
+
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+                console.log('[DataContext] 🔓 Signed in / token refreshed — fetching data...');
+                await Promise.all([fetchData(), fetchUsers()]);
+            } else if (event === 'SIGNED_OUT') {
+                // Guard: only wipe data if auth confirms this is an intentional logout.
+                // An unexpected SIGNED_OUT from a failed token refresh (network error) should
+                // not clear data — the user is still authenticated in localStorage.
+                const { data: { session: currentSession } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+                if (currentSession) {
+                    console.warn('[DataContext] 🚫 SIGNED_OUT ignored — session still valid in storage (likely network refresh failure).');
+                    return;
+                }
+                console.log('[DataContext] 🔒 Signed out — clearing all data.');
+                setNews([]);
+                setPrograms([]);
+                setEvents([]);
+                setProjects([]);
+                setTestimonials([]);
+                setPartners([]);
+                setUsers([]);
+                setLoading(false);
+            }
+        });
+
+        return () => {
+            console.log('[DataContext] 🔴 Unmounting DataContext');
+            isMounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     // Helper to get localized string is now imported from utils
@@ -669,5 +737,3 @@ export const DataProvider = ({ children }) => {
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useData = () => useContext(DataContext);
