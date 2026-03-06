@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { FaFilePdf, FaCheckCircle, FaLock, FaUserShield, FaFileUpload, FaBuilding, FaGlobe } from 'react-icons/fa';

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { useData } from '../context/DataContext';
-import { useAuth } from '../context/AuthContext';
+import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
 import { FaHeart, FaCreditCard, FaPaypal, FaUniversity, FaLock, FaCheck } from 'react-icons/fa';

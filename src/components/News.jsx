@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { useData } from '../context/DataContext';
+import { useData } from '../hooks/useData';
 import { translations } from '../translations';
 import { FaCalendarAlt, FaMapMarkerAlt, FaArrowRight, FaThumbtack, FaUserPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import Modal from './Modal';
 import ConfirmationModal from './ConfirmationModal';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import AttendeesList from './AttendeesList';
 import { formatDateRange, calculateDuration } from '../utils/dateUtils';

@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
 import { FaStar } from 'react-icons/fa';
-import { useData } from '../context/DataContext';
+import { useData } from '../hooks/useData';
 
 const Testimonials = () => {
     const { language } = useLanguage();

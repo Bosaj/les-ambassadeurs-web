@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaBell, FaCheck, FaExclamationTriangle, FaInfoCircle, FaTimes, FaTrash } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import NotificationItem from './NotificationItem';
 import toast from 'react-hot-toast';

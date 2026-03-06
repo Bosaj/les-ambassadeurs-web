@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaMoneyBillWave, FaCheck, FaTimes, FaSearch, FaFileInvoiceDollar, FaUser, FaEnvelope, FaCalendarAlt, FaCreditCard, FaTrash, FaTag, FaFilter } from 'react-icons/fa';
-import { useData } from '../../context/DataContext';
+import { useData } from '../../hooks/useData';
 import { useLanguage } from '../../context/LanguageContext';
 import toast from 'react-hot-toast';
 import Modal from '../Modal';

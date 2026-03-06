@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaEdit } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import BranchMap from './BranchMap';
 import BranchesManagementModal from './admin/BranchesManagementModal';
 

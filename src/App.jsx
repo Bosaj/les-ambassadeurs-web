@@ -40,8 +40,8 @@ function App() {
     return (
         <LanguageProvider>
             <ThemeProvider>
-                <DataProvider>
-                    <AuthProvider>
+                <AuthProvider>
+                    <DataProvider>
                         <Router>
                             <ScrollToTopWrapper />
                             <ErrorBoundary>
@@ -87,10 +87,10 @@ function App() {
                                 </Suspense>
                             </ErrorBoundary>
                         </Router>
-                    </AuthProvider>
-                </DataProvider>
+                    </DataProvider>
+                </AuthProvider>
             </ThemeProvider>
-        </LanguageProvider>
+        </LanguageProvider >
     );
 }
 
