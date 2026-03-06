@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import AttendeesList from '../components/AttendeesList';
+import SupportersList from '../components/SupportersList';
 import { formatDateRange, calculateDuration } from '../utils/dateUtils';
 
 const ProgramsPage = () => {
@@ -132,11 +133,21 @@ const ProgramsPage = () => {
                         {getLocalizedContent(item.description, language)}
                     </p>
                     <div className="flex items-center gap-6 mt-auto">
-                        <div className="flex items-center gap-2">
-                            <span className="text-blue-900 dark:text-blue-300 font-semibold">
-                                {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {isProject ? t.supporters : t.participants}
-                            </span>
-                            <AttendeesList attendees={item.attendees} />
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-2">
+                                <span className="text-blue-900 dark:text-blue-300 font-semibold">
+                                    {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {isProject ? t.supporters : t.participants}
+                                </span>
+                                <AttendeesList attendees={item.attendees} />
+                            </div>
+                            {item.supporters && item.supporters.length > 0 && (
+                                <div className="flex items-center justify-start gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                                    <span className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                                        {item.supporters.length} {t.supporters || 'Supporters'}
+                                    </span>
+                                    <SupportersList supporters={item.supporters} size="w-6 h-6" />
+                                </div>
+                            )}
                         </div>
                         {isJoined ? (
                             <button
@@ -232,6 +243,25 @@ const ProgramsPage = () => {
                             {selectedItem?.location && getLocalizedContent(selectedItem.location, language) && (
                                 <div className="flex items-center gap-2 text-sm font-semibold text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-2 rounded">
                                     <FaMapMarkerAlt /> {getLocalizedContent(selectedItem.location, language)}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap gap-4 mb-4">
+                            {/* Attendees List in Modal */}
+                            <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/10 p-2 rounded-lg w-fit border border-blue-100 dark:border-blue-800">
+                                <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+                                    {selectedItem?.attendees?.filter(a => a.status !== 'rejected').length || 0} {t.participants}
+                                </span>
+                                <AttendeesList attendees={selectedItem?.attendees} />
+                            </div>
+
+                            {/* Supporters List in Modal */}
+                            {selectedItem?.supporters && selectedItem.supporters.length > 0 && (
+                                <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/10 p-2 rounded-lg w-fit border border-amber-100 dark:border-amber-800">
+                                    <span className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+                                        {selectedItem.supporters.length} {t.supporters || 'Supporters'}
+                                    </span>
+                                    <SupportersList supporters={selectedItem.supporters} size="w-8 h-8" />
                                 </div>
                             )}
                         </div>
