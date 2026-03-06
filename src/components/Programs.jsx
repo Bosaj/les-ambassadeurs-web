@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../hooks/useData';
 import { translations } from '../translations';
-import { FaHandsHelping, FaArrowRight, FaMapMarkerAlt, FaCheckCircle, FaUserPlus, FaCalendarAlt } from 'react-icons/fa';
+import { FaHandsHelping, FaArrowRight, FaMapMarkerAlt, FaCheckCircle, FaUserPlus, FaCalendarAlt, FaUsers, FaDonate } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 import ConfirmationModal from './ConfirmationModal';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import AttendeesList from './AttendeesList';
+import SupportersList from './SupportersList';
 import { formatDateRange, calculateDuration } from '../utils/dateUtils';
 
 const Programs = () => {
@@ -117,23 +118,34 @@ const Programs = () => {
                                 <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-6 flex-1 text-sm leading-relaxed">
                                     {getLocalizedContent(item.description, language)}
                                 </p>
-                                <div className="flex items-center justify-between w-full mt-auto">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-gray-500 font-medium">
-                                            {item.attendees?.filter(a => a.status !== 'rejected').length || 0} {item.type === 'projects' ? t.supporters : t.participants}
-                                        </span>
-                                        <AttendeesList attendees={item.attendees} />
+                                <div className="flex flex-col gap-3 w-full mt-auto">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm text-gray-500 font-medium">
+                                                {item.attendees?.filter(a => a.status !== 'rejected').length || 0} {t.participants}
+                                            </span>
+                                            <AttendeesList attendees={item.attendees} />
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedProgramId({ id: item.id, type: item.type });
+                                            }}
+                                            className="inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
+                                        >
+                                            <span>{t.learn_more}</span>
+                                            <FaArrowRight className={`${language === 'ar' ? 'mr-1 rotate-180' : 'ml-1'} `} />
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedProgramId({ id: item.id, type: item.type });
-                                        }}
-                                        className="inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
-                                    >
-                                        <span>{t.learn_more}</span>
-                                        <FaArrowRight className={`${language === 'ar' ? 'mr-1 rotate-180' : 'ml-1'}`} />
-                                    </button>
+
+                                    {item.supporters && item.supporters.length > 0 && (
+                                        <div className="flex items-center justify-start gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                                            <span className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                                                {item.supporters.length} {t.supporters || 'Supporters'}
+                                            </span>
+                                            <SupportersList supporters={item.supporters} size="w-6 h-6" />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -149,7 +161,7 @@ const Programs = () => {
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     >
                         <span>{t.discover_all}</span>
-                        <FaArrowRight className={`${language === 'ar' ? 'mr-2 rotate-180' : 'ml-2'}`} />
+                        <FaArrowRight className={`${language === 'ar' ? 'mr-2 rotate-180' : 'ml-2'} `} />
                     </Link>
                 </div>
             </div>
@@ -161,12 +173,12 @@ const Programs = () => {
                 heroImage={activeItem?.image_url}
             >
                 <div className="relative" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-                    {/* Hero image is handled by Modal component now */
-                        !activeItem?.image_url && (
-                            <div className="flex justify-center items-center h-48 bg-blue-50 dark:bg-gray-800 rounded-lg mb-6">
-                                <FaHandsHelping className="text-blue-900/40 text-6xl" />
-                            </div>
-                        )}
+                    {/* Hero image is handled by Modal component now */}
+                    {!activeItem?.image_url && (
+                        <div className="flex justify-center items-center h-48 bg-blue-50 dark:bg-gray-800 rounded-lg mb-6">
+                            <FaHandsHelping className="text-blue-900/40 text-6xl" />
+                        </div>
+                    )}
 
                     <div className="prose dark:prose-invert max-w-none">
                         <div className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-8 text-start">
@@ -188,12 +200,24 @@ const Programs = () => {
                                     </div>
                                 )}
                             </div>
-                            {/* Attendees List in Modal */}
-                            <div className="flex items-center gap-2 mb-4 bg-blue-50 dark:bg-blue-900/10 p-2 rounded-lg w-fit border border-blue-100 dark:border-blue-800">
-                                <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
-                                    {activeItem?.attendees?.filter(a => a.status !== 'rejected').length || 0} {activeItem?.type === 'projects' ? t.supporters : t.participants}
-                                </span>
-                                <AttendeesList attendees={activeItem?.attendees} />
+                            <div className="flex flex-wrap gap-4 mb-4">
+                                {/* Attendees List in Modal */}
+                                <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/10 p-2 rounded-lg w-fit border border-blue-100 dark:border-blue-800">
+                                    <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+                                        {activeItem?.attendees?.filter(a => a.status !== 'rejected').length || 0} {t.participants}
+                                    </span>
+                                    <AttendeesList attendees={activeItem?.attendees} />
+                                </div>
+
+                                {/* Supporters List in Modal */}
+                                {activeItem?.supporters && activeItem.supporters.length > 0 && (
+                                    <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/10 p-2 rounded-lg w-fit border border-amber-100 dark:border-amber-800">
+                                        <span className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+                                            {activeItem.supporters.length} {t.supporters || 'Supporters'}
+                                        </span>
+                                        <SupportersList supporters={activeItem.supporters} size="w-8 h-8" />
+                                    </div>
+                                )}
                             </div>
 
                             {getLocalizedContent(activeItem?.description, language)}

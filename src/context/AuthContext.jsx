@@ -68,10 +68,51 @@ export const AuthProvider = ({ children }) => {
         let isMounted = true;
         if (import.meta.env.DEV) console.log('[AuthContext] 🟢 Mounting AuthContext');
 
-        // Pre-warm the global session promise so DataContext can also use it.
-        // We do NOT await it here — INITIAL_SESSION handles our state.
+        // Manually fetch session instead of relying on INITIAL_SESSION.
+        // This solves the race condition where a lagging token refresh causes INITIAL_SESSION
+        // to return no session momentarily, causing a premature redirect to /login.
+        const initializeAuth = async () => {
+            try {
+                if (import.meta.env.DEV) console.log('[AuthContext] 🔵 Manually fetching getSession()...');
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                
+                if (!isMounted) return;
+
+                if (session?.user) {
+                    if (import.meta.env.DEV) console.log('[AuthContext] ✅ Session found — fetching profile...');
+                    const activeUser = await fetchProfile(session.user);
+                    if (isMounted) {
+                        if (import.meta.env.DEV) console.log('[AuthContext] ✅ User ready, role:', activeUser?.role);
+                        setAuthState({ user: activeUser, loading: false });
+                    }
+                } else {
+                    if (import.meta.env.DEV) console.log('[AuthContext] ℹ️ No session found — user is logged out.');
+                    if (isMounted) setAuthState({ user: null, loading: false });
+                }
+            } catch (err) {
+                if (import.meta.env.DEV) console.error('[AuthContext] Init error:', err);
+                if (isMounted) setAuthState({ user: null, loading: false });
+            }
+        };
+
         if (!globalInitPromise) {
-            globalInitPromise = supabase.auth.getSession();
+            globalInitPromise = initializeAuth();
+        } else {
+            // Wait for existing initialization to finish, then sync our mount's state
+            globalInitPromise.then(() => {
+                if (!isMounted) return;
+                supabase.auth.getSession().then(({ data: { session } }) => {
+                    if (!isMounted) return;
+                    if (session?.user) {
+                        fetchProfile(session.user).then(activeUser => {
+                            if (isMounted) setAuthState({ user: activeUser, loading: false });
+                        });
+                    } else {
+                        if (isMounted) setAuthState({ user: null, loading: false });
+                    }
+                });
+            });
         }
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -79,22 +120,8 @@ export const AuthProvider = ({ children }) => {
 
             if (!isMounted) return;
 
+            // Ignore INITIAL_SESSION as we handle it manually and reliably above
             if (event === 'INITIAL_SESSION') {
-                // ✅ THE KEY FIX: INITIAL_SESSION fires from localStorage BEFORE any
-                // network-based token refresh. This guarantees we get the valid session
-                // even if the subsequent refresh attempt fails (ERR_NAME_NOT_RESOLVED).
-                if (import.meta.env.DEV) console.log('[AuthContext] 🔵 INITIAL_SESSION processing...');
-                if (session?.user) {
-                    if (import.meta.env.DEV) console.log('[AuthContext] ✅ Session found in storage — fetching profile...');
-                    const activeUser = await fetchProfile(session.user);
-                    if (isMounted) {
-                        if (import.meta.env.DEV) console.log('[AuthContext] ✅ User ready, role:', activeUser?.role);
-                        setAuthState({ user: activeUser, loading: false });
-                    }
-                } else {
-                    if (import.meta.env.DEV) console.log('[AuthContext] ℹ️ No session in storage — user is logged out.');
-                    if (isMounted) setAuthState({ user: null, loading: false });
-                }
                 return;
             }
 

@@ -63,6 +63,7 @@ export const DataProvider = ({ children }) => {
                 eventsResult,
                 { data: testimonialsData, error: testimonialsError },
                 { data: partnersData, error: partnersError },
+                { data: supportersData, error: supportersError }
             ] = await Promise.all([
                 // 1. News
                 supabase
@@ -101,6 +102,9 @@ export const DataProvider = ({ children }) => {
                     .from('partners')
                     .select('*')
                     .order('created_at', { ascending: false }),
+
+                // 5. Public Supporters
+                supabase.rpc('get_public_supporters')
             ]);
 
             // --- Process results ---
@@ -111,9 +115,16 @@ export const DataProvider = ({ children }) => {
             const { data: allEventsData, error: eventsError } = eventsResult;
             if (eventsError) throw eventsError;
 
+            if (supportersError && import.meta.env.DEV) {
+                console.error("Error fetching supporters:", supportersError);
+            }
+            const supportersList = supportersData || [];
+
             const p = [], e = [], proj = [];
             (allEventsData || []).forEach(item => {
                 if (!item.attendees) item.attendees = [];
+                item.supporters = supportersList.filter(s => s.related_item_id === item.id);
+
                 const cat = item.category || 'program';
                 if (cat === 'program') p.push(item);
                 else if (cat === 'event') e.push(item);

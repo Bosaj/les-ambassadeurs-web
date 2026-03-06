@@ -338,9 +338,14 @@ const Donate = () => {
                             }}
                             className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                         />
-                        <label htmlFor="anonymous" className="text-gray-700 dark:text-gray-300 font-medium">
-                            {t.donate_anonymous}
-                        </label>
+                        <div className="flex flex-col">
+                            <label htmlFor="anonymous" className="text-gray-700 dark:text-gray-300 font-medium">
+                                {t.donate_anonymous}
+                            </label>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {t.donate_anonymous_desc || "Your name will be hidden from the public supporters list."}
+                            </span>
+                        </div>
                     </div>
 
                     {!donationForm.isAnonymous && (
