@@ -845,7 +845,8 @@ export const translations = {
         "awarding_process": "جاري المنح...",
         "points_awarded_success": "تم منح النقاط بنجاح!",
         "donate_now": "تبرع الآن",
-        "make_first_donation": "كن أول من يتبرع"
+        "make_first_donation": "كن أول من يتبرع",
+        "expired": "منتهي"
     },
     "en": {
         "loading": "Loading...",
@@ -1690,7 +1691,8 @@ export const translations = {
         "awarding_process": "Awarding...",
         "points_awarded_success": "Points awarded successfully!",
         "donate_now": "Donate Now",
-        "make_first_donation": "Make Your First Donation"
+        "make_first_donation": "Make Your First Donation",
+        "expired": "Expired"
     },
     "fr": {
         "manage_partners": "Gérer les Partenaires",
@@ -2528,6 +2530,7 @@ export const translations = {
         "awarding_process": "Attribution...",
         "points_awarded_success": "Points attribués avec succès !",
         "donate_now": "Faire un Don",
-        "make_first_donation": "Faire Votre Premier Don"
+        "make_first_donation": "Faire Votre Premier Don",
+        "expired": "Expiré"
     }
 };

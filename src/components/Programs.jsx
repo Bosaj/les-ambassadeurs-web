@@ -10,7 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import AttendeesList from './AttendeesList';
 import SupportersList from './SupportersList';
-import { formatDateRange, calculateDuration } from '../utils/dateUtils';
+import { formatDateRange, calculateDuration, isExpired } from '../utils/dateUtils';
 
 const Programs = () => {
     const { language } = useLanguage();
@@ -72,84 +72,92 @@ const Programs = () => {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-8">
-                    {displayItems.length > 0 ? displayItems.map((item, index) => (
-                        <div
-                            key={item.id || index}
-                            className="bg-transparent rounded-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group flex flex-col items-center w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-2rem)] max-w-sm border border-gray-200 dark:border-gray-700"
-                            // Removed overflow-hidden to allow tooltips
-                            onClick={() => {
-                                navigate('/programs', { state: { selectedProgram: item, type: item.type } });
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                        >
-                            <div className="w-full h-48 bg-gray-200 dark:bg-gray-600 relative rounded-t-xl overflow-hidden">
-                                {item.image_url ? (
-                                    <img
-                                        src={item.image_url}
-                                        alt={getLocalizedContent(item.title, language)}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-blue-900/20 dark:text-white/20">
-                                        <FaHandsHelping className="text-6xl" />
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                                    <span className="text-white font-semibold">{t.learn_more}</span>
-                                </div>
-                                {/* Type Badge */}
-                                <div className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} bg-white/90 dark:bg-black/60 text-xs font-bold px-2 py-1 rounded shadow text-blue-900 dark:text-white`}>
-                                    {item.type === 'programs' ? (t.programs_section_title || "Program") : (t.projects_section_title || "Project")}
-                                </div>
-                            </div>
-
-                            <div className="p-6 flex flex-col flex-1 w-full text-center">
-                                <div className="mb-4 text-blue-900 dark:text-blue-300">
-                                    {/* Optional: Icon overlay or category badge could go here */}
-                                    {item.location && getLocalizedContent(item.location, language) && (
-                                        <span className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold mb-2">
-                                            <FaMapMarkerAlt /> {getLocalizedContent(item.location, language)}
-                                        </span>
-                                    )}
-                                </div>
-                                <h3 className="text-xl font-bold mb-3 text-blue-900 dark:text-white line-clamp-1 border-b-2 border-transparent group-hover:border-red-500 transition-colors inline-block mx-auto pb-1">
-                                    {getLocalizedContent(item.title, language)}
-                                </h3>
-                                <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-6 flex-1 text-sm leading-relaxed">
-                                    {getLocalizedContent(item.description, language)}
-                                </p>
-                                <div className="flex flex-col gap-3 w-full mt-auto">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm text-gray-500 font-medium">
-                                                {item.attendees?.filter(a => a.status !== 'rejected').length || 0} {t.participants}
-                                            </span>
-                                            <AttendeesList attendees={item.attendees} />
+                    {displayItems.length > 0 ? displayItems.map((item, index) => {
+                        const expired = isExpired(item.end_date || item.date);
+                        return (
+                            <div
+                                key={item.id || index}
+                                className={`bg-transparent rounded-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group flex flex-col items-center w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-2rem)] max-w-sm border border-gray-200 dark:border-gray-700 ${expired ? 'opacity-75 grayscale' : ''}`}
+                                // Removed overflow-hidden to allow tooltips
+                                onClick={() => {
+                                    navigate('/programs', { state: { selectedProgram: item, type: item.type } });
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                            >
+                                <div className="w-full h-48 bg-gray-200 dark:bg-gray-600 relative rounded-t-xl overflow-hidden">
+                                    {item.image_url ? (
+                                        <img
+                                            src={item.image_url}
+                                            alt={getLocalizedContent(item.title, language)}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-blue-900/20 dark:text-white/20">
+                                            <FaHandsHelping className="text-6xl" />
                                         </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedProgramId({ id: item.id, type: item.type });
-                                            }}
-                                            className="inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
-                                        >
-                                            <span>{t.learn_more}</span>
-                                            <FaArrowRight className={`${language === 'ar' ? 'mr-1 rotate-180' : 'ml-1'} `} />
-                                        </button>
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                                        <span className="text-white font-semibold">{t.learn_more}</span>
                                     </div>
-
-                                    {item.supporters && item.supporters.length > 0 && (
-                                        <div className="flex items-center justify-start gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-                                            <span className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                                                {item.supporters.length} {t.supporters || 'Supporters'}
-                                            </span>
-                                            <SupportersList supporters={item.supporters} size="w-6 h-6" />
+                                    {/* Type Badge */}
+                                    <div className={`absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} bg-white/90 dark:bg-black/60 text-xs font-bold px-2 py-1 rounded shadow text-blue-900 dark:text-white`}>
+                                        {item.type === 'programs' ? (t.programs_section_title || "Program") : (t.projects_section_title || "Project")}
+                                    </div>
+                                    {expired && (
+                                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-600/90 text-white text-lg font-bold px-4 py-2 rounded shadow uppercase tracking-wider z-10 w-3/4 text-center">
+                                            {t.expired}
                                         </div>
                                     )}
                                 </div>
+
+                                <div className="p-6 flex flex-col flex-1 w-full text-center">
+                                    <div className="mb-4 text-blue-900 dark:text-blue-300">
+                                        {/* Optional: Icon overlay or category badge could go here */}
+                                        {item.location && getLocalizedContent(item.location, language) && (
+                                            <span className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                                                <FaMapMarkerAlt /> {getLocalizedContent(item.location, language)}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-3 text-blue-900 dark:text-white line-clamp-1 border-b-2 border-transparent group-hover:border-red-500 transition-colors inline-block mx-auto pb-1">
+                                        {getLocalizedContent(item.title, language)}
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-6 flex-1 text-sm leading-relaxed">
+                                        {getLocalizedContent(item.description, language)}
+                                    </p>
+                                    <div className="flex flex-col gap-3 w-full mt-auto">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm text-gray-500 font-medium">
+                                                    {item.attendees?.filter(a => a.status !== 'rejected').length || 0} {t.participants}
+                                                </span>
+                                                <AttendeesList attendees={item.attendees} />
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedProgramId({ id: item.id, type: item.type });
+                                                }}
+                                                className="inline-flex items-center text-red-500 hover:text-red-600 font-bold uppercase tracking-wide text-sm group-hover:gap-2 transition-all"
+                                            >
+                                                <span>{t.learn_more}</span>
+                                                <FaArrowRight className={`${language === 'ar' ? 'mr-1 rotate-180' : 'ml-1'} `} />
+                                            </button>
+                                        </div>
+
+                                        {item.supporters && item.supporters.length > 0 && (
+                                            <div className="flex items-center justify-start gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                                                <span className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                                                    {item.supporters.length} {t.supporters || 'Supporters'}
+                                                </span>
+                                                <SupportersList supporters={item.supporters} size="w-6 h-6" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )) : (
+                        );
+                    }) : (
                         <p className="col-span-full text-center text-gray-500 text-lg">{t.loading_programs}</p>
                     )}
                 </div>

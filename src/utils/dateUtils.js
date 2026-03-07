@@ -32,3 +32,13 @@ export const calculateDuration = (startDateStr, endDateStr, t) => {
         return `${months} ${t.months}`;
     }
 };
+
+export const isExpired = (endDateStr) => {
+    if (!endDateStr) return false;
+    const end = new Date(endDateStr);
+
+    // Set the time of the end date to 23:59:59 to include the whole day
+    end.setHours(23, 59, 59, 999);
+
+    return end < new Date();
+};
