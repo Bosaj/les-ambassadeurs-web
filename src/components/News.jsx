@@ -9,7 +9,7 @@ import ConfirmationModal from './ConfirmationModal';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import AttendeesList from './AttendeesList';
-import { formatDateRange, calculateDuration } from '../utils/dateUtils';
+import { formatDateRange, calculateDuration, isExpired } from '../utils/dateUtils';
 
 const News = () => {
     const { language } = useLanguage();
@@ -75,72 +75,80 @@ const News = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {displayItems.length > 0 ? displayItems.map((item, index) => (
-                        <div
-                            key={item.id || index}
-                            className="bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer flex flex-col"
-                            // Removed overflow-hidden to allow tooltips to show
-                            onClick={() => setSelectedNewsId({ id: item.id, type: item.type })}
-                        >
-                            <div className="relative">
-                                <img
-                                    src={item.image_url || "https://via.placeholder.com/300"}
-                                    alt={getLocalizedContent(item.title, language)}
-                                    className="w-full h-48 object-cover transition group-hover:scale-105 rounded-t-lg"
-                                />
-                                <span className={`absolute top-3 ${language === 'ar' ? 'right-3' : 'left-3'} text-xs font-bold px-2 py-1 rounded shadow-md uppercase tracking-wider ${item.type === 'news' ? 'bg-red-500 text-white' :
-                                    item.category === 'program' ? 'bg-purple-500 text-white' :
-                                        item.category === 'project' ? 'bg-amber-500 text-white' :
-                                            'bg-blue-500 text-white'
-                                    }`}>
-                                    {item.displayCategory}
-                                </span>
-                            </div>
-                            <div className="p-6 flex-1 flex flex-col text-start">
-                                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                    <span className="flex items-center gap-1">
-                                        <FaCalendarAlt /> <span>{formatDateRange(item.date, item.end_date, language)}</span>
-                                    </span>
-                                    {item.location && (
-                                        <span className={`flex items-center gap-1 ${language === 'ar' ? 'mr-3' : 'ml-3'}`}>
-                                            <FaMapMarkerAlt /> <span>{getLocalizedContent(item.location, language)}</span>
-                                        </span>
-                                    )}
-                                    {item.is_pinned && <span className={`flex items-center gap-1 text-blue-600 ${language === 'ar' ? 'mr-auto' : 'ml-auto'}`}><FaThumbtack /> {t.pin_item || "Pinned"}</span>}
-                                </div>
-                                <h3 className="text-xl font-bold text-blue-900 dark:text-white mb-3 line-clamp-2">
-                                    {getLocalizedContent(item.title, language)}
-                                </h3>
-                                <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3 flex-1">
-                                    {getLocalizedContent(item.description, language)}
-                                </p>
-                                <div className="flex items-center justify-between mt-4">
-                                    {item.type === 'event' ? (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full whitespace-nowrap">
-                                                {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees || "Attendees"}
-                                            </span>
-                                            <div className={`flex items-center ${language === 'ar' ? 'mr-2' : 'ml-2'}`}>
-                                                <AttendeesList attendees={item.attendees} size="w-8 h-8" showName={true} />
-                                            </div>
+                    {displayItems.length > 0 ? displayItems.map((item, index) => {
+                        const expired = item.type === 'event' && isExpired(item.end_date || item.date);
+                        return (
+                            <div
+                                key={item.id || index}
+                                className={`bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition group cursor-pointer flex flex-col ${expired ? 'opacity-75 grayscale' : ''}`}
+                                // Removed overflow-hidden to allow tooltips to show
+                                onClick={() => setSelectedNewsId({ id: item.id, type: item.type })}
+                            >
+                                <div className="relative">
+                                    <img
+                                        src={item.image_url || "https://via.placeholder.com/300"}
+                                        alt={getLocalizedContent(item.title, language)}
+                                        className="w-full h-48 object-cover transition group-hover:scale-105 rounded-t-lg"
+                                    />
+                                    {expired && (
+                                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-600/90 text-white text-lg font-bold px-4 py-2 rounded shadow uppercase tracking-wider z-10 text-center w-3/4 pointer-events-none">
+                                            {t.expired}
                                         </div>
-                                    ) : (
-                                        <div></div> // Spacer
                                     )}
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedNewsId({ id: item.id, type: item.type });
-                                        }}
-                                        className={`inline-flex items-center text-red-500 hover:text-red-600 font-medium hover:underline ${language === 'ar' ? 'mr-auto' : 'ml-auto'}`}
-                                    >
-                                        <span>{t.read_more}</span>
-                                        <FaArrowRight className={`${language === 'ar' ? 'mr-1 rotate-180' : 'ml-1'}`} />
-                                    </button>
+                                    <span className={`absolute top-3 ${language === 'ar' ? 'right-3' : 'left-3'} text-xs font-bold px-2 py-1 rounded shadow-md uppercase tracking-wider ${item.type === 'news' ? 'bg-red-500 text-white' :
+                                        item.category === 'program' ? 'bg-purple-500 text-white' :
+                                            item.category === 'project' ? 'bg-amber-500 text-white' :
+                                                'bg-blue-500 text-white'
+                                        }`}>
+                                        {item.displayCategory}
+                                    </span>
+                                </div>
+                                <div className="p-6 flex-1 flex flex-col text-start">
+                                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                        <span className="flex items-center gap-1">
+                                            <FaCalendarAlt /> <span>{formatDateRange(item.date, item.end_date, language)}</span>
+                                        </span>
+                                        {item.location && (
+                                            <span className={`flex items-center gap-1 ${language === 'ar' ? 'mr-3' : 'ml-3'}`}>
+                                                <FaMapMarkerAlt /> <span>{getLocalizedContent(item.location, language)}</span>
+                                            </span>
+                                        )}
+                                        {item.is_pinned && <span className={`flex items-center gap-1 text-blue-600 ${language === 'ar' ? 'mr-auto' : 'ml-auto'}`}><FaThumbtack /> {t.pin_item || "Pinned"}</span>}
+                                    </div>
+                                    <h3 className="text-xl font-bold text-blue-900 dark:text-white mb-3 line-clamp-2">
+                                        {getLocalizedContent(item.title, language)}
+                                    </h3>
+                                    <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3 flex-1">
+                                        {getLocalizedContent(item.description, language)}
+                                    </p>
+                                    <div className="flex items-center justify-between mt-4">
+                                        {item.type === 'event' ? (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full whitespace-nowrap">
+                                                    {item.attendees ? item.attendees.filter(a => a.status !== 'rejected').length : 0} {t.attendees || "Attendees"}
+                                                </span>
+                                                <div className={`flex items-center ${language === 'ar' ? 'mr-2' : 'ml-2'}`}>
+                                                    <AttendeesList attendees={item.attendees} size="w-8 h-8" showName={true} />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div></div> // Spacer
+                                        )}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedNewsId({ id: item.id, type: item.type });
+                                            }}
+                                            className={`inline-flex items-center text-red-500 hover:text-red-600 font-medium hover:underline ${language === 'ar' ? 'mr-auto' : 'ml-auto'}`}
+                                        >
+                                            <span>{t.read_more}</span>
+                                            <FaArrowRight className={`${language === 'ar' ? 'mr-1 rotate-180' : 'ml-1'}`} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )) : (
+                        );
+                    }) : (
                         <p className="col-span-full text-center text-gray-500">{t.loading_events}</p>
                     )}
                 </div>

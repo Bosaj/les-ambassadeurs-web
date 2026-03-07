@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import ConfirmationModal from '../components/ConfirmationModal';
 import AttendeesList from '../components/AttendeesList';
 import SupportersList from '../components/SupportersList';
-import { formatDateRange, calculateDuration } from '../utils/dateUtils';
+import { formatDateRange, calculateDuration, isExpired } from '../utils/dateUtils';
 
 const EventsPage = () => {
     const { events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
@@ -64,9 +64,17 @@ const EventsPage = () => {
                 <div className="space-y-8">
                     {events.length > 0 ? events.map((event) => {
                         const isJoined = user && event.attendees.some(a => a.email === user.email && a.status !== 'rejected');
+                        const expired = isExpired(event.end_date || event.date);
                         return (
-                            <div key={event.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300">
-                                <img src={event.image_url || event.image} alt={getLocalizedContent(event.title, language)} className="h-64 md:h-auto md:w-1/3 object-cover" />
+                            <div key={event.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300 ${expired ? 'opacity-75 grayscale' : ''}`}>
+                                <div className="relative md:w-1/3 shrink-0">
+                                    <img src={event.image_url || event.image} alt={getLocalizedContent(event.title, language)} className="h-64 w-full md:h-full object-cover" />
+                                    {expired && (
+                                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-600/90 text-white text-lg font-bold px-4 py-2 rounded shadow uppercase tracking-wider z-10 text-center w-3/4">
+                                            {t.expired}
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="p-8 flex flex-col justify-center flex-1">
                                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                         <div className="flex items-center">

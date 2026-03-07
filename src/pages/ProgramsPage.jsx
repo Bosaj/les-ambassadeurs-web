@@ -9,7 +9,7 @@ import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import AttendeesList from '../components/AttendeesList';
 import SupportersList from '../components/SupportersList';
-import { formatDateRange, calculateDuration } from '../utils/dateUtils';
+import { formatDateRange, calculateDuration, isExpired } from '../utils/dateUtils';
 
 const ProgramsPage = () => {
     const { programs, projects, registerForEvent, getLocalizedContent, cancelRegistration } = useData();
@@ -91,17 +91,26 @@ const ProgramsPage = () => {
         const isJoined = user && item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected');
         const isProject = type === 'projects';
 
+        const expired = isExpired(item.end_date || item.date);
+
         return (
             <div
                 key={item.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${expired ? 'opacity-75 grayscale' : ''}`}
                 onClick={() => setModalState({ id: item.id, type })}
             >
-                <img
-                    src={item.image_url || "https://via.placeholder.com/400"}
-                    alt={getLocalizedContent(item.title, language)}
-                    className="h-64 md:h-auto md:w-1/3 object-cover"
-                />
+                <div className="relative md:w-1/3 shrink-0">
+                    <img
+                        src={item.image_url || "https://via.placeholder.com/400"}
+                        alt={getLocalizedContent(item.title, language)}
+                        className="h-64 w-full md:h-full object-cover"
+                    />
+                    {expired && (
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-600/90 text-white text-lg font-bold px-4 py-2 rounded shadow uppercase tracking-wider z-10 text-center w-3/4">
+                            {t.expired}
+                        </div>
+                    )}
+                </div>
                 <div className="p-8 flex flex-col justify-center flex-1">
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2 justify-between">
                         <div className="flex items-center">
