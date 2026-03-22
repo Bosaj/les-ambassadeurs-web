@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { getLocalizedContent } from '../utils/languageUtils';
 import { DataContext } from './contexts';
+import { useAuth } from '../hooks/useAuth';
 
 export const DataProvider = ({ children }) => {
+    const { user, loading: authLoading } = useAuth();
+    const hasFetchedPublicData = useRef(false);
+
     const [news, setNews] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [events, setEvents] = useState([]);
@@ -151,84 +155,26 @@ export const DataProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        if (import.meta.env.DEV) console.log('[DataContext] 🟢 Mounting DataContext');
-        let isMounted = true;
-
-        const initializeData = async () => {
-            if (import.meta.env.DEV) console.log('[DataContext] 🔵 Starting initializeData...');
-            try {
-                // Always fetch public data (news, events, programs, etc.) — no auth needed.
-                // Separately check session to also load auth-gated data (users list, etc.)
-                const { data: { session }, error } = await supabase.auth.getSession();
-
-                if (import.meta.env.DEV) console.log('[DataContext] 🔍 Session check result:', {
-                    hasSession: !!session,
-                    userId: session?.user?.id ?? 'none',
-                    error: error?.message ?? null
-                });
-
-                if (!isMounted) return;
-
-                // Public data always loads — regardless of session state
-                const fetches = [fetchData()];
-
-                // User-specific / admin data only if authenticated
-                if (session && !error) {
-                    if (import.meta.env.DEV) console.log('[DataContext] ✅ Session found — also fetching user data...');
-                    fetches.push(fetchUsers());
-                } else {
-                    if (import.meta.env.DEV) console.log('[DataContext] ℹ️ No session — loading public data only.');
-                }
-
-                await Promise.all(fetches);
-            } catch (err) {
-                if (import.meta.env.DEV) console.error('[DataContext] ❌ Init error:', err);
-                if (isMounted) setLoading(false);
-            }
-        };
-
-        initializeData();
-
-        // Re-fetch when auth state changes so data is always in sync.
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (import.meta.env.DEV) console.log('[DataContext] 🔔 Auth state changed:', {
-                event,
-                hasSession: !!session,
-                userId: session?.user?.id ?? 'none'
+        if (!authLoading && !hasFetchedPublicData.current) {
+            if (import.meta.env.DEV) console.log('[DataContext] 🔓 Auth initialization settled. Fetching public data securely...');
+            hasFetchedPublicData.current = true;
+            fetchData().catch(err => {
+                if (import.meta.env.DEV) console.error('[DataContext] ❌ Initial fetchData error:', err);
             });
+        }
+    }, [authLoading]);
 
-            if (!isMounted) return;
-
-            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
-                if (import.meta.env.DEV) console.log('[DataContext] 🔓 Signed in / token refreshed — fetching data...');
-                await Promise.all([fetchData(), fetchUsers()]);
-            } else if (event === 'SIGNED_OUT') {
-                // Guard: only wipe data if auth confirms this is an intentional logout.
-                // An unexpected SIGNED_OUT from a failed token refresh (network error) should
-                // not clear data — the user is still authenticated in localStorage.
-                const { data: { session: currentSession } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-                if (currentSession) {
-                    if (import.meta.env.DEV) console.warn('[DataContext] 🚫 SIGNED_OUT ignored — session still valid in storage (likely network refresh failure).');
-                    return;
-                }
-                if (import.meta.env.DEV) console.log('[DataContext] 🔒 Signed out — clearing all data.');
-                setNews([]);
-                setPrograms([]);
-                setEvents([]);
-                setProjects([]);
-                setTestimonials([]);
-                setPartners([]);
+    useEffect(() => {
+        if (!authLoading) {
+            if (user) {
+                if (import.meta.env.DEV) console.log('[DataContext] ✅ User identified — syncing private user data...');
+                fetchUsers();
+            } else {
+                if (import.meta.env.DEV) console.log('[DataContext] 🔒 User is logged out — clearing private user data only.');
                 setUsers([]);
-                setLoading(false);
             }
-        });
-
-        return () => {
-            if (import.meta.env.DEV) console.log('[DataContext] 🔴 Unmounting DataContext');
-            isMounted = false;
-            subscription.unsubscribe();
-        };
-    }, []);
+        }
+    }, [user, authLoading]);
 
     // Helper to get localized string is now imported from utils
 
@@ -242,6 +188,7 @@ export const DataProvider = ({ children }) => {
 
     const addPost = async (type, postData) => {
         try {
+            console.log(`[DataContext] Starting addPost for type: ${type}`, postData);
             let table = '';
             let insertData = {};
 
@@ -286,14 +233,18 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            const { data, error } = await supabase
-                .from(table)
-                .insert([insertData])
-                .select()
-                .single();
+            console.log(`[DataContext] table configured: ${table}, insertData payload:`, insertData);
 
+            // Adding a 15-second timeout in case Supabase fetch is completely frozen
+            const fetchPromise = supabase.from(table).insert([insertData]).select().single();
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Supabase insert request timed out after 15 seconds")), 15000));
+            
+            const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+            console.log(`[DataContext] DB insert returned – data:`, data, `, error:`, error);
             if (error) throw error;
 
+            console.log(`[DataContext] Optimistically updating local state for ${type}`);
             // Optimistic update — prepend new item to local state instantly (no full refetch)
             const newItem = { ...data, attendees: [] };
             if (type === 'news') setNews(prev => [newItem, ...prev]);
@@ -312,6 +263,7 @@ export const DataProvider = ({ children }) => {
 
     const updatePost = async (type, id, postData) => {
         try {
+            console.log(`[DataContext] Starting updatePost for type: ${type}, id: ${id}`, postData);
             let table = '';
             let updateData = {};
 
@@ -353,27 +305,31 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            const { data, error } = await supabase
-                .from(table)
-                .update(updateData)
-                .eq('id', id)
-                .select()
-                .single();
+            console.log(`[DataContext] table configured: ${table}, updateData payload:`, updateData);
 
+            // Adding a 15-second timeout in case Supabase fetch is completely frozen
+            const fetchPromise = supabase.from(table).update(updateData).eq('id', id).select().single();
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Supabase update request timed out after 15 seconds")), 15000));
+            
+            const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+            console.log(`[DataContext] DB update returned – data:`, data, `, error:`, error);
             if (error) throw error;
 
-            // Optimistic update — replace the item in local state instantly
-            const applyUpdate = (list) => list.map(item => item.id === id ? { ...item, ...data } : item);
-            if (type === 'news') setNews(prev => applyUpdate(prev));
-            else if (type === 'programs') setPrograms(prev => applyUpdate(prev));
-            else if (type === 'events') setEvents(prev => applyUpdate(prev));
-            else if (type === 'projects') setProjects(prev => applyUpdate(prev));
-            else if (type === 'testimonials') setTestimonials(prev => applyUpdate(prev));
-            else if (type === 'partners') setPartners(prev => applyUpdate(prev));
+            console.log(`[DataContext] Optimistically updating local state for ${type}`);
+            // Optimistic update
+            const updateState = (setter) => setter(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
+            
+            if (type === 'news') updateState(setNews);
+            else if (type === 'programs') updateState(setPrograms);
+            else if (type === 'events') updateState(setEvents);
+            else if (type === 'projects') updateState(setProjects);
+            else if (type === 'testimonials') updateState(setTestimonials);
+            else if (type === 'partners') updateState(setPartners);
 
             return data;
         } catch (error) {
-            console.error(`Error updating ${type}:`, error);
+            console.error(`[Production Trace] Error updating ${type}:`, error);
             throw error;
         }
     };

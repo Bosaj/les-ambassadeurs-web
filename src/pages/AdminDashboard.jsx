@@ -585,24 +585,29 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleFormSubmit = (e, type) => {
+    const handleFormSubmit = async (e, type) => {
         e.preventDefault();
         const targetType = type || formType;
         const toastId = toast.loading(t.processing || "Processing...");
 
-        const action = editingId
-            ? updatePost(targetType, editingId, formData)
-            : addPost(targetType, formData);
-
-        action
-            .then(() => {
-                toast.success(editingId ? t.item_updated_success : t.item_added_success, { id: toastId });
-                handleCancelEdit(); // Reset form & close modal
-            })
-            .catch((error) => {
-                console.error(error);
-                toast.error(t.error_adding_item || "Error saving item", { id: toastId });
-            });
+        try {
+            console.log(`[AdminDashboard] Awaiting action for ${targetType}...`);
+            if (editingId) {
+                await updatePost(targetType, editingId, formData);
+            } else {
+                await addPost(targetType, formData);
+            }
+            console.log(`[AdminDashboard] Action resolved successfully for ${targetType}!`);
+            
+            // Adding aggressive fallbacks to prevent undefined strings from crashing toast
+            toast.success(editingId ? (t.item_updated_success || "Item updated successfully!") : (t.item_added_success || "Item added successfully!"), { id: toastId });
+            
+            console.log(`[AdminDashboard] Closing modal and resetting form...`);
+            handleCancelEdit(); // Reset form & close modal
+        } catch (error) {
+            console.error("[AdminDashboard] Error in handleFormSubmit:", error);
+            toast.error(t.error_adding_item || "Error saving item. Check console.", { id: toastId });
+        }
     };
 
     return (

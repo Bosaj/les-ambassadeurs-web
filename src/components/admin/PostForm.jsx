@@ -22,19 +22,26 @@ const PostForm = ({
 
         const toastId = toast.loading(t.uploading_image || "Uploading...");
         try {
+            console.log("Starting compression...");
             const compressed = await compressImage(file);
+            console.log("Compression done. Starting upload...", compressed);
             const fileExt = 'jpg';
             const fileName = `${type}/${Math.random()}.${fileExt}`;
-            const { error: uploadError } = await supabase.storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('images')
-                .upload(fileName, compressed);
+                .upload(fileName, compressed, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
 
+            console.log("Upload API returned:", { uploadData, uploadError });
             if (uploadError) throw uploadError;
 
             const { data: { publicUrl } } = supabase.storage
                 .from('images')
                 .getPublicUrl(fileName);
 
+            console.log("Public URL:", publicUrl);
             setFormData({ ...formData, image: publicUrl });
             toast.success(t.image_uploaded || "Image uploaded!", { id: toastId });
         } catch (error) {
