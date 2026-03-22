@@ -40,10 +40,10 @@ export const compressImage = (file, { maxWidth = 1200, maxHeight = 1200, quality
                 canvas.toBlob(
                     (blob) => {
                         if (!blob) { resolve(file); return; }
-                        // Keep original filename & type metadata
-                        const compressed = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
-                        console.log(`[imageUtils] Compressed ${file.name}: ${(file.size / 1024).toFixed(0)}KB → ${(compressed.size / 1024).toFixed(0)}KB`);
-                        resolve(compressed);
+                        // Some browser fetch implementations freeze when uploading a dynamically constructed File object.
+                        // Passing the raw Blob directly to Supabase storage is much safer.
+                        console.log(`[imageUtils] Compressed ${file.name}: ${(file.size / 1024).toFixed(0)}KB → ${(blob.size / 1024).toFixed(0)}KB`);
+                        resolve(blob);
                     },
                     'image/jpeg',
                     quality

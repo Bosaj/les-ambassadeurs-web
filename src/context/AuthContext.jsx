@@ -86,13 +86,16 @@ export const AuthProvider = ({ children }) => {
                         if (import.meta.env.DEV) console.log('[AuthContext] ✅ User ready, role:', activeUser?.role);
                         setAuthState({ user: activeUser, loading: false });
                     }
+                    return activeUser;
                 } else {
                     if (import.meta.env.DEV) console.log('[AuthContext] ℹ️ No session found — user is logged out.');
                     if (isMounted) setAuthState({ user: null, loading: false });
+                    return null;
                 }
             } catch (err) {
                 if (import.meta.env.DEV) console.error('[AuthContext] Init error:', err);
                 if (isMounted) setAuthState({ user: null, loading: false });
+                return null;
             }
         };
 
@@ -100,18 +103,10 @@ export const AuthProvider = ({ children }) => {
             globalInitPromise = initializeAuth();
         } else {
             // Wait for existing initialization to finish, then sync our mount's state
-            globalInitPromise.then(() => {
+            // directly without calling getSession() again (prevents deadlocks).
+            globalInitPromise.then((activeUser) => {
                 if (!isMounted) return;
-                supabase.auth.getSession().then(({ data: { session } }) => {
-                    if (!isMounted) return;
-                    if (session?.user) {
-                        fetchProfile(session.user).then(activeUser => {
-                            if (isMounted) setAuthState({ user: activeUser, loading: false });
-                        });
-                    } else {
-                        if (isMounted) setAuthState({ user: null, loading: false });
-                    }
-                });
+                setAuthState({ user: activeUser || null, loading: false });
             });
         }
 
