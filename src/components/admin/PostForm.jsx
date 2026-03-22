@@ -157,7 +157,6 @@ const PostForm = ({
                             </label>
                             <input
                                 type="text"
-                                required
                                 className="border border-gray-300 dark:border-gray-600 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all"
                                 dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                 value={formData.title[activeLang] || ''}
@@ -251,13 +250,12 @@ const PostForm = ({
                             {t.description_label} ({activeLang.toUpperCase()})
                         </label>
                         <textarea
-                            required
                             rows="6"
                             className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white transition-all resize-y"
                             dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                             value={formData.description[activeLang] || ''}
                             onChange={e => setFormData({ ...formData, description: { ...formData.description, [activeLang]: e.target.value } })}
-                            placeholder={`${t.description_label} in ${activeLang}`}
+                            placeholder={`${t.description_placeholder || "Description"} in ${activeLang}`}
                         ></textarea>
                     </div>
                 )
