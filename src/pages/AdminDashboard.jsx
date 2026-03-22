@@ -429,10 +429,13 @@ const AdminDashboard = () => {
         end_date: '',
         image: '',
         description: { en: '', fr: '', ar: '' },
+        location: { en: '', fr: '', ar: '' },
         name: '',
         role: { en: '', fr: '', ar: '' },
         content: { en: '', fr: '', ar: '' },
-        rating: 5
+        rating: 5,
+        website_url: '',
+        image_url: ''
     });
 
     // User Details Modal State
@@ -531,8 +534,10 @@ const AdminDashboard = () => {
         setFormData({
             title: { en: '', fr: '', ar: '' },
             date: new Date().toISOString().split('T')[0],
+            end_date: '',
             image: '',
             description: { en: '', fr: '', ar: '' },
+            location: { en: '', fr: '', ar: '' },
             name: '',
             role: { en: '', fr: '', ar: '' },
             content: { en: '', fr: '', ar: '' },
@@ -544,13 +549,16 @@ const AdminDashboard = () => {
     };
 
     const handleCancelEdit = () => {
-        setEditingId(null);
         setIsModalOpen(false);
+        setEditingId(null);
+        setFormType('news');
         setFormData({
             title: { en: '', fr: '', ar: '' },
             date: '',
+            end_date: '',
             image: '',
             description: { en: '', fr: '', ar: '' },
+            location: { en: '', fr: '', ar: '' },
             name: '',
             role: { en: '', fr: '', ar: '' },
             content: { en: '', fr: '', ar: '' },
@@ -558,6 +566,7 @@ const AdminDashboard = () => {
             website_url: '',
             image_url: ''
         });
+        setActiveLang('en');
     };
 
     const handleToggleApproval = async (item) => {

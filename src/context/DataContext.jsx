@@ -252,7 +252,7 @@ export const DataProvider = ({ children }) => {
                     date: safeISOString(postData.date) || new Date().toISOString(),
                     image_url: postData.image,
                     description: postData.description,
-                    location: postData.location || {}
+                    location: postData.location?.en !== undefined ? postData.location : { en: '', fr: '', ar: '' }
                 };
             } else if (['programs', 'events', 'projects'].includes(type)) {
                 table = 'events';
@@ -263,7 +263,7 @@ export const DataProvider = ({ children }) => {
                     end_date: safeISOString(postData.end_date),
                     image_url: postData.image,
                     description: postData.description,
-                    location: postData.location || {},
+                    location: postData.location?.en !== undefined ? postData.location : { en: '', fr: '', ar: '' },
                     category: categoryMap[type] || 'program',
                     is_pinned: false
                 };
@@ -305,7 +305,7 @@ export const DataProvider = ({ children }) => {
 
             return data;
         } catch (error) {
-            if (import.meta.env.DEV) console.error(`Error adding ${type}:`, error);
+            console.error(`[Production Trace] Error adding ${type}:`, error);
             throw error;
         }
     };
@@ -322,7 +322,7 @@ export const DataProvider = ({ children }) => {
                     date: safeISOString(postData.date) || new Date().toISOString(),
                     image_url: postData.image,
                     description: postData.description,
-                    location: postData.location || {}
+                    location: postData.location?.en !== undefined ? postData.location : { en: '', fr: '', ar: '' },
                 };
             } else if (['programs', 'events', 'projects'].includes(type)) {
                 table = 'events';
@@ -332,7 +332,7 @@ export const DataProvider = ({ children }) => {
                     end_date: safeISOString(postData.end_date),
                     image_url: postData.image,
                     description: postData.description,
-                    location: postData.location || {},
+                    location: postData.location?.en !== undefined ? postData.location : { en: '', fr: '', ar: '' },
                 };
             } else if (type === 'testimonials') {
                 table = 'testimonials';
@@ -373,7 +373,7 @@ export const DataProvider = ({ children }) => {
 
             return data;
         } catch (error) {
-            if (import.meta.env.DEV) console.error(`Error updating ${type}:`, error);
+            console.error(`Error updating ${type}:`, error);
             throw error;
         }
     };
