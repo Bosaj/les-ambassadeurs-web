@@ -25,26 +25,33 @@ export const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState({ user: null, loading: true });
     const { user, loading } = authState;
 
-    const fetchProfile = async (authUser) => {
+    const fetchProfile = async (session) => {
         try {
-            // DETACH FROM SUPABASE AUTH EVENT LOOP (CRITICAL FIX FOR MUTEX DEADLOCK)
-            // Supabase-js v2 implicitly calls getSession() before every .from() query.
-            // If fired immediately inside onAuthStateChange, it hangs forever waiting for the internal lock.
-            await new Promise(resolve => setTimeout(resolve, 150));
-
-            if (import.meta.env.DEV) console.log('[Auth v4] Fetching profile for UID:', authUser.id);
-            if (import.meta.env.DEV) console.log('[Auth v4] >>> Executing database query...');
+            const authUser = session.user;
+            if (import.meta.env.DEV) console.log('[Auth v4] Fetching profile via NATIVE API for UID:', authUser.id);
             
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', authUser.id)
-                .single();
+            // CRITICAL FIX: We bypass 'supabase.from()' completely and use a raw native fetch.
+            // This is because supabase-js v2 implicitly calls getSession() before every query,
+            // which acquires an internal Mutex lock. If React Strict Mode interrupts the browser,
+            // that lock becomes permanently deadlocked and all queries freeze locally.
+            const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${authUser.id}`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${session.access_token}`, // Use explicit session token for RLS
+                    'Accept': 'application/vnd.pgrst.object+json' // Equivalent to .single()
+                }
+            });
 
-            if (import.meta.env.DEV) console.log('[Auth v4] <<< Query returned! Data:', !!profile, 'Error:', !!error);
+            if (!response.ok && response.status !== 406) {
+                // 406 Not Acceptable is PGRST116 (No rows found)
+                if (import.meta.env.DEV) console.error('[Auth v4] DB Error fetching profile:', await response.text());
+            }
 
-            if (error && error.code !== 'PGRST116') {
-                if (import.meta.env.DEV) console.error('[Auth v4] DB Error fetching profile:', error);
+            let profile = null;
+            if (response.ok) {
+                profile = await response.json();
             }
 
             if (!profile) {
@@ -76,7 +83,7 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
             try {
-                const activeUser = await fetchProfile(session.user);
+                const activeUser = await fetchProfile(session);
                 if (isMounted) setAuthState({ user: activeUser, loading: false });
             } catch (err) {
                 if (import.meta.env.DEV) console.error('[AuthContext] Profile fetch error:', err);
@@ -154,7 +161,7 @@ export const AuthProvider = ({ children }) => {
                 password
             });
             if (error) throw error;
-            const activeUser = await fetchProfile(data.user);
+            const activeUser = await fetchProfile(data.session);
             setAuthState({ user: activeUser, loading: false });
             return activeUser;
         };
