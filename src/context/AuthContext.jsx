@@ -26,46 +26,44 @@ export const AuthProvider = ({ children }) => {
     const { user, loading } = authState;
 
     const fetchProfile = async (authUser) => {
-        // Deduplicate simultaneous identical fetch requests during Strict Mode mounts
-        if (globalProfilePromise && globalProfileUserId === authUser.id) {
-            return globalProfilePromise;
-        }
+        try {
+            // DETACH FROM SUPABASE AUTH EVENT LOOP (CRITICAL FIX FOR MUTEX DEADLOCK)
+            // Supabase-js v2 implicitly calls getSession() before every .from() query.
+            // If fired immediately inside onAuthStateChange, it hangs forever waiting for the internal lock.
+            await new Promise(resolve => setTimeout(resolve, 150));
 
-        const executeFetch = async () => {
-            try {
-                if (import.meta.env.DEV) console.log('[Auth v4] Fetching profile for UID:', authUser.id);
-                const { data: profile, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', authUser.id)
-                    .single();
+            if (import.meta.env.DEV) console.log('[Auth v4] Fetching profile for UID:', authUser.id);
+            if (import.meta.env.DEV) console.log('[Auth v4] >>> Executing database query...');
+            
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', authUser.id)
+                .single();
 
-                if (error && error.code !== 'PGRST116') {
-                    if (import.meta.env.DEV) console.error('[Auth v4] DB Error fetching profile:', error);
-                }
+            if (import.meta.env.DEV) console.log('[Auth v4] <<< Query returned! Data:', !!profile, 'Error:', !!error);
 
-                if (!profile) {
-                    if (import.meta.env.DEV) console.warn('[Auth v4] No profile row found! RLS could be blocking or profile is missing.');
-                }
-
-                await syncProfileEmail(profile, authUser);
-
-                // Fallback role to 'volunteer' just in case the profile fetch failed
-                const baseUser = { role: 'volunteer', ...authUser };
-                const activeUser = { ...baseUser, ...profile };
-
-                if (import.meta.env.DEV) console.log('[Auth v4] Active user assembled, role:', activeUser.role);
-                return activeUser;
-            } catch (error) {
-                if (import.meta.env.DEV) console.error('[Auth v4] Profile fetch exception:', error);
-                const fallbackUser = { role: 'volunteer', ...authUser };
-                return fallbackUser;
+            if (error && error.code !== 'PGRST116') {
+                if (import.meta.env.DEV) console.error('[Auth v4] DB Error fetching profile:', error);
             }
-        };
 
-        globalProfileUserId = authUser.id;
-        globalProfilePromise = executeFetch();
-        return globalProfilePromise;
+            if (!profile) {
+                if (import.meta.env.DEV) console.warn('[Auth v4] No profile row found! RLS could be blocking or profile is missing.');
+            }
+
+            await syncProfileEmail(profile, authUser);
+
+            // Fallback role to 'volunteer' just in case the profile fetch failed
+            const baseUser = { role: 'volunteer', ...authUser };
+            const activeUser = { ...baseUser, ...profile };
+
+            if (import.meta.env.DEV) console.log('[Auth v4] Active user assembled, role:', activeUser.role);
+            return activeUser;
+        } catch (error) {
+            if (import.meta.env.DEV) console.error('[Auth v4] Profile fetch exception:', error);
+            const fallbackUser = { role: 'volunteer', ...authUser };
+            return fallbackUser;
+        }
     };
 
     useEffect(() => {
@@ -114,17 +112,33 @@ export const AuthProvider = ({ children }) => {
         });
 
             // Fail-safe to ensure loading completes even if Supabase triggers silently fail
+            // Increased to 15000ms to gracefully handle Supabase free-tier cold starts (10-15s pauses)
             const timeout = setTimeout(() => {
                 if (isMounted) {
                     setAuthState(prev => {
                         if (prev.loading) {
                             if (import.meta.env.DEV) console.warn('[AuthContext] ⚠️ Auth resolution timed out! Forcing loading: false to unblock app.');
-                            return { ...prev, loading: false };
+                            
+                            // SEVERE ERROR HANDLING: Supabase client is deadlocked or network severely stalled.
+                            // Wipe the corrupted tokens from localStorage safely so the browser isn't permanently poisoned.
+                            // This ensures the next immediate refresh will cleanly bypass Auth and render as a Public user,
+                            // rather than hanging forever behind a ghost session.
+                            try {
+                                Object.keys(localStorage).forEach(key => {
+                                    if (key.startsWith('sb-') || key.includes('auth-token')) {
+                                        localStorage.removeItem(key);
+                                    }
+                                });
+                            } catch (e) {
+                                // Silently catch DOMException if localStorage is restricted
+                            }
+                            
+                            return { ...prev, user: null, loading: false };
                         }
                         return prev;
                     });
                 }
-            }, 3000);
+            }, 15000);
 
             return () => {
                 if (import.meta.env.DEV) console.log('[AuthContext] 🔴 Unmounting AuthContext');
