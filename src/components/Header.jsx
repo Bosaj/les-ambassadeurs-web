@@ -165,6 +165,7 @@ const Header = () => {
 
                             <li><button onClick={(e) => handleNavigation(e, 'branches')} className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition cursor-pointer">{t.branches}</button></li>
                             <li><NavLink to="/news" className={navLinkClass} onClick={handleScrollToTop}>{t.news}</NavLink></li>
+                            <li><NavLink to="/gallery" className={navLinkClass} onClick={handleScrollToTop}>{t.gallery}</NavLink></li>
                             <li><button onClick={(e) => handleNavigation(e, 'contact')} className="text-blue-900 dark:text-gray-200 hover:text-red-500 font-medium transition cursor-pointer">{t.contact_us}</button></li>
                         </ul>
                     </nav>
@@ -225,6 +226,7 @@ const Header = () => {
 
                                 <li><button className="block py-2 text-blue-900 text-start hover:text-red-500" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'branches'); }}>{t.branches}</button></li>
                                 <li><NavLink to="/news" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.news}</NavLink></li>
+                                <li><NavLink to="/gallery" className="block py-2 text-blue-900 hover:text-red-500" onClick={toggleMobileMenu}>{t.gallery}</NavLink></li>
                                 <li><button className="block py-2 text-blue-900 text-start hover:text-red-500" onClick={(e) => { toggleMobileMenu(); handleNavigation(e, 'contact'); }}>{t.contact_us}</button></li>
                                 {!user ? (
                                     <li><Link to="/login" className="block py-2 text-blue-900 hover:text-red-500 font-bold" onClick={toggleMobileMenu}>{t.login_btn}</Link></li>

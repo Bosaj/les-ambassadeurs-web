@@ -64,6 +64,7 @@ const Footer = () => {
                             <li><button onClick={(e) => handleNavigation(e, 'programs')} className="text-gray-400 hover:text-white transition text-start">{t.programs}</button></li>
                             <li><button onClick={(e) => handleNavigation(e, 'branches')} className="text-gray-400 hover:text-white transition text-start">{t.branches}</button></li>
                             <li><button onClick={(e) => handleNavigation(e, 'news')} className="text-gray-400 hover:text-white transition text-start">{t.news}</button></li>
+                            <li><Link to="/gallery" className="text-gray-400 hover:text-white transition">{t.gallery}</Link></li>
                         </ul>
                     </div>
 

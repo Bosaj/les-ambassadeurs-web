@@ -32,6 +32,7 @@ const GamificationHub = lazy(() => import('./components/GamificationHub'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
 const ReportProblem = lazy(() => import('./pages/ReportProblem'));
+const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 
 // Minimal fallback shown while a lazy page chunk loads
 const PageLoader = () => <LoadingSpinner fullScreen={true} message="Loading..." />;
@@ -63,6 +64,7 @@ function App() {
                                             <Route path="privacy-policy" element={<PrivacyPolicy />} />
                                             <Route path="terms-of-use" element={<TermsOfUse />} />
                                             <Route path="report-problem" element={<ReportProblem />} />
+                                            <Route path="gallery" element={<GalleryPage />} />
 
                                             <Route
                                                 path="dashboard/admin"

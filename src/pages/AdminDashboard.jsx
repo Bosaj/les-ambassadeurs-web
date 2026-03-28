@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash,
     FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck,
-    FaPhone, FaHandHoldingHeart, FaChartPie, FaPlus, FaHandshake, FaEdit, FaPause, FaPlay
+    FaPhone, FaHandHoldingHeart, FaChartPie, FaPlus, FaHandshake, FaEdit, FaPause, FaPlay, FaImages
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -19,6 +19,7 @@ import DashboardStats from '../components/admin/DashboardStats';
 import CommunityManagement from '../components/admin/CommunityManagement';
 import DonationsList from '../components/admin/DonationsList';
 import PostList from '../components/admin/PostList';
+import GalleryManagement from '../components/admin/GalleryManagement';
 import { useLanguage } from '../context/LanguageContext';
 
 const AdminManagement = () => {
@@ -40,6 +41,7 @@ const AdminManagement = () => {
         { id: 'manage_community', label: t.perm_community },
         { id: 'manage_donations', label: t.perm_donations },
         { id: 'manage_testimonials', label: t.perm_testimonials },
+        { id: 'manage_gallery', label: t.perm_gallery },
         { id: 'manage_admins', label: t.perm_admins },
     ];
 
@@ -403,7 +405,7 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
 
     // Persist active tab in URL hash so page refresh returns to same panel
-    const validTabs = ['overview', 'news', 'programs', 'projects', 'events', 'partners', 'users', 'memberships', 'donations', 'testimonials', 'admins'];
+    const validTabs = ['overview', 'news', 'programs', 'projects', 'events', 'partners', 'users', 'memberships', 'donations', 'testimonials', 'admins', 'gallery'];
     const hashTab = window.location.hash.replace('#', '');
     const [activeTab, setActiveTabState] = useState(validTabs.includes(hashTab) ? hashTab : 'overview');
 
@@ -640,6 +642,7 @@ const AdminDashboard = () => {
                         { id: 'memberships', icon: FaUserShield, label: t.manage_memberships || "Membership Requests", show: hasPermission('manage_community') },
                         { id: 'donations', icon: FaMoneyBillWave, label: t.donations, show: hasPermission('manage_donations') },
                         { id: 'testimonials', icon: FaComments, label: t.manage_testimonials, show: hasPermission('manage_testimonials') },
+                        { id: 'gallery', icon: FaImages, label: t.manage_gallery || 'Gallery', show: hasPermission('manage_gallery') || hasPermission('manage_all') },
                         { id: 'admins', icon: FaUserShield, label: t.manage_admins, show: hasPermission('manage_admins'), className: 'text-yellow-300' },
                     ].map(item => item.show && (
                         <button
@@ -718,6 +721,10 @@ const AdminDashboard = () => {
                             {activeTab === 'projects' && hasPermission('manage_projects') && <PostList type="projects" data={projects} onDelete={handleDelete} onAdd={() => handleAdd('projects')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'projects')} />}
                             {activeTab === 'events' && hasPermission('manage_events') && <PostList type="events" data={events} onDelete={handleDelete} onAdd={() => handleAdd('events')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'events')} />}
                             {activeTab === 'partners' && hasPermission('manage_partners') && <PostList type="partners" data={partners} onDelete={handleDelete} onAdd={() => handleAdd('partners')} searchTerm={searchTerm} setSearchTerm={setSearchTerm} activeLang={language} t={t} togglePin={togglePin} onEdit={(item) => handleEdit(item, 'partners')} />}
+
+                            {activeTab === 'gallery' && (hasPermission('manage_gallery') || hasPermission('manage_all')) && (
+                                <GalleryManagement />
+                            )}
 
 
                             {activeTab === 'testimonials' && hasPermission('manage_testimonials') && (

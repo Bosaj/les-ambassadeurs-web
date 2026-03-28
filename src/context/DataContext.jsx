@@ -15,6 +15,7 @@ export const DataProvider = ({ children }) => {
     const [projects, setProjects] = useState([]);
     const [testimonials, setTestimonials] = useState([]);
     const [partners, setPartners] = useState([]);
+    const [galleryImages, setGalleryImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState([]); // Added to store user data
 
@@ -691,13 +692,91 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    // ─── Gallery CRUD ───────────────────────────────────────────────────────────
+
+    const fetchGalleryImages = React.useCallback(async () => {
+        try {
+            const { data, error } = await supabase
+                .from('gallery_images')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setGalleryImages(data || []);
+            return data || [];
+        } catch (err) {
+            if (import.meta.env.DEV) console.error('Error fetching gallery:', err);
+            return [];
+        }
+    }, []);
+
+    const addGalleryImage = async (imageData) => {
+        try {
+            const { data, error } = await supabase
+                .from('gallery_images')
+                .insert([{
+                    image_url: imageData.image_url,
+                    caption: imageData.caption || { en: '', fr: '', ar: '' },
+                    related_type: imageData.related_type || 'general',
+                    related_item_id: imageData.related_item_id || null,
+                    is_featured: imageData.is_featured || false
+                }])
+                .select()
+                .single();
+            if (error) throw error;
+            setGalleryImages(prev => [data, ...prev]);
+            return data;
+        } catch (err) {
+            if (import.meta.env.DEV) console.error('Error adding gallery image:', err);
+            throw err;
+        }
+    };
+
+    const updateGalleryImage = async (id, imageData) => {
+        try {
+            const { data, error } = await supabase
+                .from('gallery_images')
+                .update({
+                    image_url: imageData.image_url,
+                    caption: imageData.caption || { en: '', fr: '', ar: '' },
+                    related_type: imageData.related_type || 'general',
+                    related_item_id: imageData.related_item_id || null,
+                    is_featured: imageData.is_featured || false
+                })
+                .eq('id', id)
+                .select()
+                .single();
+            if (error) throw error;
+            setGalleryImages(prev => prev.map(img => img.id === id ? data : img));
+            return data;
+        } catch (err) {
+            if (import.meta.env.DEV) console.error('Error updating gallery image:', err);
+            throw err;
+        }
+    };
+
+    const deleteGalleryImage = async (id) => {
+        try {
+            const { error } = await supabase
+                .from('gallery_images')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            setGalleryImages(prev => prev.filter(img => img.id !== id));
+            return true;
+        } catch (err) {
+            if (import.meta.env.DEV) console.error('Error deleting gallery image:', err);
+            throw err;
+        }
+    };
+
     return (
         <DataContext.Provider value={{
-            news, programs, events, projects, testimonials, users, partners,
+            news, programs, events, projects, testimonials, users, partners, galleryImages,
             addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
             getLocalizedContent, loading,
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
-            verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus, deleteDonation, fetchMembershipHistory
+            verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus, deleteDonation, fetchMembershipHistory,
+            fetchGalleryImages, addGalleryImage, updateGalleryImage, deleteGalleryImage
         }}>
             {children}
         </DataContext.Provider>

@@ -14,6 +14,7 @@ import Partners from '../components/Partners';
 import Testimonials from '../components/Testimonials';
 import Contact from '../components/Contact';
 import Newsletter from '../components/Newsletter';
+import GalleryPreview from '../components/GalleryPreview';
 import { motion } from 'framer-motion';
 
 const Home = () => {
@@ -62,6 +63,7 @@ const Home = () => {
             <Team />
             <Partners />
             <Testimonials />
+            <GalleryPreview />
             <Contact />
             <Newsletter />
         </motion.div>
