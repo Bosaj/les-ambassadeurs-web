@@ -9,6 +9,21 @@ import BadgeDisplay from '../components/BadgeDisplay';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { compressImage } from '../utils/imageUtils';
 
+const getSafeImageUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    try {
+        if (trimmed.startsWith('/') || trimmed.startsWith('data:image/')) return trimmed;
+        const parsed = new URL(trimmed);
+        if (parsed.protocol === 'https:' || parsed.protocol === 'http:' || parsed.protocol === 'blob:') {
+            return parsed.href;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+};
+
 const Profile = () => {
     const { user, refreshProfile, setIsLoggingOut } = useAuth();
     const { t } = useLanguage();
@@ -245,8 +260,8 @@ const Profile = () => {
                     <div className="bg-blue-900 dark:bg-gray-700 p-6 text-white text-center relative">
                         <div className="w-32 h-32 mx-auto relative group">
                             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/30 bg-white/20 flex items-center justify-center">
-                                {avatarPreview ? (
-                                    <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
+                                {getSafeImageUrl(avatarPreview) ? (
+                                    <img src={getSafeImageUrl(avatarPreview)} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     <FaUser className="text-4xl" />
                                 )}
