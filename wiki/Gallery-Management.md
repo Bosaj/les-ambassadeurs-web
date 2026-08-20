@@ -1,49 +1,30 @@
 # Gallery Management & Marquee Engine
 
-The photo gallery system is split between a public browsing experience (`/gallery`), a home page preview marquee (`GalleryPreview.jsx`), and an administrative management panel (`GalleryManagement.jsx`).
+The photo gallery system delivers both a dedicated visual explorer (`/gallery`) and an interactive home page preview marquee (`GalleryPreview.jsx`).
 
 ---
 
-## 🖼️ Architecture & Workflow
+## 🖼️ Upload & Management Workflow
 
-1. **Uploading Images**:
+1. **Upload Process**:
    * Admin navigates to **Admin Dashboard > Gallery**.
    * Clicks **Add Image**.
-   * Enters the direct Image URL or uploads a file to the Supabase `gallery` storage bucket.
-   * Enters multilingual captions in Arabic, French, and English.
-   * Selects category (`event`, `project`, `program`, `general`).
-   * (Optional) Links the image to a specific Event or Program ID.
-   * (Optional) Checks **Featured** to include the image in the home page marquee.
+   * Enters image URL or uploads a photo file to the Supabase `gallery` storage bucket.
+   * Fills in captions in Arabic, French, and English.
+   * Selects category: `event`, `project`, `program`, or `general`.
+   * Optionally links the photo to an existing Event, Project, or Program.
+   * Checks **Featured** if the image should appear in the home page auto-scrolling marquee.
 
-2. **Database Storage (`gallery_images` table)**:
-   ```sql
-   CREATE TABLE gallery_images (
-       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-       image_url TEXT NOT NULL,
-       caption JSONB DEFAULT '{"ar":"","fr":"","en":""}',
-       related_type TEXT DEFAULT 'general',
-       related_item_id UUID,
-       is_featured BOOLEAN DEFAULT false,
-       created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-       created_by UUID REFERENCES profiles(id)
-   );
-   ```
+2. **Database Schema (`gallery_images`)**:
+   * `id`: UUID Primary Key.
+   * `image_url`: Direct public HTTPS URL.
+   * `caption`: JSONB object `{"ar": "...", "fr": "...", "en": "..."}`.
+   * `related_type`: Category identifier string.
+   * `related_item_id`: Optional UUID foreign key to associated event/program.
+   * `is_featured`: Boolean flag for homepage marquee visibility.
+   * `created_at`: Timestamp with timezone.
 
-3. **Infinite Marquee Engine (`GalleryPreview.jsx`)**:
-   * Built with pure CSS `@keyframes marquee-scroll` (`translateX(0)` to `translateX(-50%)`).
-   * Direction-agnostic: The outer container explicitly sets `dir="ltr"`, ensuring the animation loops continuously without snapping or disappearing in Arabic RTL mode.
-   * Pauses animation on hover for user accessibility.
-
----
-
-<div align="center">
-
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+3. **Infinite Marquee Engine**:
+   * Powered by CSS keyframes (`translateX(0)` to `translateX(-50%)`).
+   * The outer container enforces `dir="ltr"` so the animation scroll direction is stable regardless of whether the site language is Arabic (RTL) or French/English (LTR).
+   * Hovering over any photo pauses the marquee for accessibility.

@@ -1,71 +1,36 @@
-# Complete Feature Specifications
+# Complete Application Features
 
-A detailed guide to all user-facing, authenticated, and administrative capabilities in the application.
+A full directory of all features across the public portal, volunteer dashboard, and administrative back-office.
 
 ---
 
-## 🌐 1. Public Features
+## 🌍 1. Public Portal (`https://a-a-b-v.netlify.app/`)
 
-* **Home Page Landing Sections**:
-  * **Hero**: Dynamic call-to-actions, donation buttons, volunteer onboarding links.
-  * **Mission & Vision**: Core pillars of the association.
-  * **Interactive Programs Preview**: Highlighted community initiatives with detail modals.
-  * **Impact Counters**: Animated statistics for volunteers, events, and beneficiaries.
-  * **Interactive Branches Map**: Leaflet map showing association branches across Moroccan cities.
-  * **Latest News**: Searchable, filterable news cards.
-  * **Team Showcase**: Interactive carousel displaying association leadership.
-  * **Partners Grid**: Partner and sponsor logo wall.
-  * **Testimonials**: Community reviews and feedback.
-  * **Gallery Marquee**: Auto-scrolling infinite photo preview.
-  * **Contact & Newsletter**: Direct inquiry form and newsletter subscription.
-
-* **Photo Gallery (`/gallery`)**:
-  * Filter by category (*All*, *Events*, *Projects*, *Programs*, *General*).
-  * Instant search bar filtering by caption in the user's active language.
-  * Responsive masonry grid.
-  * Full-screen lightbox with keyboard navigation.
-
-* **Multi-Channel Donation (`/donate`)**:
-  * Online Credit/Debit card checkout powered by Stripe.
-  * PayPal Smart Payment buttons (Sandbox & Live).
-  * Association Bank Account wire transfer details (RIB / IBAN).
+* **Hero Section**: Call-to-actions for donations, volunteering, and mission discovery.
+* **Mission & Values**: Overview of solidarity, youth empowerment, and humanitarian aid in Oujda.
+* **Programs & Projects**: Filterable project cards with progress bars and registration modals.
+* **Impact Metrics**: Real-time animated counters for volunteers, activities, and beneficiaries.
+* **Branches Map**: Leaflet interactive map with pins for association chapters across Morocco.
+* **News & Announcements**: Articles with search, category filtering, and pinned updates.
+* **Team Showcase**: Interactive carousel highlighting association leaders and coordinators.
+* **Partners & Sponsors**: Partner logo wall with external links.
+* **Testimonials**: Community feedback and beneficiary reviews with 1–5 star ratings.
+* **Photo Gallery**: Masonry photo grid, category filters, full-screen lightbox, and home page marquee.
+* **Multi-Gateway Donation (`/donate`)**: Stripe card payment, PayPal buttons, and direct bank wire details (RIB / IBAN).
+* **Contact & Social Community**: Direct inquiry form and links to Facebook, Instagram, Twitter, LinkedIn, and WhatsApp.
 
 ---
 
 ## 👤 2. Authenticated Member Features
 
-* **Profile Management (`/profile`)**:
-  * Edit Latin name, Arabic name (`full_name_ar`), phone number, and city.
-  * Upload custom profile avatar stored in Supabase Storage `avatars` bucket.
-  * Account deletion with safety confirmation modal.
-
-* **Volunteer Dashboard (`/dashboard/volunteer`)**:
-  * Personal impact metrics and logged volunteer hours.
-  * Membership status tracker (`pending`, `active`, `rejected`).
-  * Digital membership card and renewal workflows.
-
-* **Gamification Hub (`/gamification`)**:
-  * User score points and badges display.
-  * Real-time volunteer leaderboard.
+* **User Profile (`/profile`)**: Update Latin/Arabic names, avatar upload to Supabase Storage, view membership status, and delete account.
+* **Volunteer Dashboard (`/dashboard/volunteer`)**: Track registered activities, personal impact stats, and download digital membership cards.
+* **Gamification Hub (`/gamification`)**: Volunteer score points, activity badges, and community leaderboard.
+* **Membership Renewal (`/membership`)**: Digital commitment signing and online/offline renewal workflows.
 
 ---
 
-## 🛡️ 3. Administrative Back-Office (`/dashboard/admin`)
+## 🛡️ 3. Admin Dashboard (`/dashboard/admin`)
 
-* 12 Dedicated Management Tabs.
-* Granular permission checking before executing actions.
-* Real-time search and filter controls across all tabular data.
-
----
-
-<div align="center">
-
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+* 12 Dedicated control tabs for news, events, programs, projects, gallery, partners, users, memberships, donations, testimonials, branches, and admins.
+* Granular Role-Based Access Control enforcing strict permission checks before write operations.

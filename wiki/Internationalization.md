@@ -1,65 +1,47 @@
 # Internationalization & RTL Guidelines
 
-The application is built from the ground up to support three languages: **العربية (Arabic)**, **Français (French)**, and **English**.
+The application supports three official languages: **العربية (Arabic)**, **Français (French)**, and **English**.
 
 ---
 
-## 🌐 Supported Languages & Text Directions
+## 🌐 Supported Languages & Layouts
 
-| Language Code | Language | Text Direction | Default Font Stack |
+| Code | Language | Layout Direction | Font Family |
 |---|---|---|---|
-| `ar` | Arabic | **RTL** (`dir="rtl"`) | Tajawal, Cairo, system Arabic |
-| `fr` | French | **LTR** (`dir="ltr"`) | Inter, system sans-serif |
-| `en` | English | **LTR** (`dir="ltr"`) | Inter, system sans-serif |
+| `ar` | العربية (Arabic) | **RTL** (`dir="rtl"`) | Tajawal, Cairo, system-ui |
+| `fr` | Français (French) | **LTR** (`dir="ltr"`) | Inter, system-ui |
+| `en` | English | **LTR** (`dir="ltr"`) | Inter, system-ui |
 
 ---
 
-## 📖 Adding Translation Keys
+## 📖 Managing Translation Keys
 
-All UI translation strings reside in `src/translations.js`. When adding new strings, ensure keys are provided for all three languages:
+All static UI strings are defined in `src/translations.js`. Keys must be provided in all three language dictionaries:
 
 ```javascript
 export const translations = {
   ar: {
-    gallery_title: 'معرض الصور',
-    gallery_subtitle: 'استكشف أنشطتنا ومبادراتنا بالصور'
+    gallery: 'معرض الصور',
+    donate: 'تبرع الآن'
   },
   fr: {
-    gallery_title: 'Galerie Photos',
-    gallery_subtitle: 'Explorez nos activités et initiatives en images'
+    gallery: 'Galerie',
+    donate: 'Faire un don'
   },
   en: {
-    gallery_title: 'Photo Gallery',
-    gallery_subtitle: 'Explore our activities and initiatives in pictures'
+    gallery: 'Gallery',
+    donate: 'Donate Now'
   }
 };
 ```
 
 ---
 
-## 📐 RTL Component Design Rules
+## 📐 RTL Styling Rules
 
-1. **Direction Container**: The root HTML element direction is dynamically updated by `LanguageContext`:
-   ```javascript
-   document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-   document.documentElement.lang = language;
-   ```
-2. **Icons & Chevrons**: Directional arrows (e.g. `FaArrowRight`) must be rotated in RTL mode:
+1. **Direction State**: `LanguageContext` updates `document.documentElement.dir` and `document.documentElement.lang` on language change.
+2. **Icons**: Directional icons (arrows, chevrons) must include dynamic rotation:
    ```jsx
    <FaArrowRight className={language === 'ar' ? 'rotate-180' : ''} />
    ```
-3. **Marquee Exception**: The gallery marquee container MUST remain `dir="ltr"` so keyframe translations calculate from standard offsets.
-
----
-
-<div align="center">
-
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+3. **Marquee Exception**: The gallery marquee container MUST remain `dir="ltr"` to preserve continuous CSS translation offsets.

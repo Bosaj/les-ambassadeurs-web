@@ -1,51 +1,37 @@
 # Security Policy & Vulnerability Disclosure
 
-Security is a primary priority for the **Association des Ambassadeurs du Bien** platform.
+Security and data integrity are central to the **Association des Ambassadeurs du Bien** infrastructure.
 
 ---
 
-## 🛡️ Supported Versions
+## 🛡️ Supported Software Versions
 
-| Version | Supported |
+| Version | Status |
 |---|---|
-| `1.0.x` | ✅ Supported (Active) |
-| `< 1.0` | ❌ Discontinued |
+| `1.0.x` | ✅ Active Support |
+| `< 1.0` | ❌ End of Life |
 
 ---
 
 ## 🚨 Reporting a Vulnerability
 
-If you discover a security vulnerability within this project, please report it directly via email:
+Please report security issues directly via email:
 
-📧 **Security Contact**: `asosoufaraelkhir48@gmail.com`
+📧 **Security Contact:** `asosoufaraelkhir48@gmail.com`
 
-**Please do NOT open public GitHub issues for security vulnerabilities.**
+**Do NOT file public GitHub issues for security vulnerabilities.**
 
-When reporting, please include:
-1. Type of vulnerability (e.g. XSS, RLS bypass, CSRF, sensitive data exposure).
-2. Step-by-step instructions or proof-of-concept to reproduce the vulnerability.
-3. Affected components or API endpoints.
+Please include in your report:
+1. Vulnerability description and classification.
+2. Step-by-step reproduction instructions.
+3. Affected endpoints, tables, or client components.
 
-We will acknowledge receipt within **48 hours** and provide an estimated remediation timeline.
-
----
-
-## 🔒 Security Architecture & Measures
-
-1. **Row Level Security (RLS)**: Every PostgreSQL table in Supabase has RLS policies enforcing that users can only modify their own profile data and administrative operations require verified admin role claims.
-2. **Secrets Protection**: All payment secret keys (`STRIPE_SECRET_KEY`, `PAYPAL_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`) are restricted to serverless Netlify functions and are NEVER bundled into client JavaScript.
-3. **Automated Scanning**: GitHub Actions executes weekly automated secret detection (TruffleHog), dependency vulnerability checks (`npm audit`), and static code analysis (CodeQL).
+We acknowledge receipt within **48 hours** and provide remediation patches promptly.
 
 ---
 
-<div align="center">
+## 🔒 Security Architecture & Protections
 
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+1. **Row Level Security (RLS)**: Enforced across all Supabase PostgreSQL tables. Public reads are scoped to published content; user data is restricted to owner access; admin mutations require validated admin roles.
+2. **Serverless Secrets Isolation**: Sensitive keys (`STRIPE_SECRET_KEY`, `PAYPAL_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`) reside solely in Netlify function environments and are NEVER exposed to the client bundle.
+3. **Automated Auditing**: GitHub Actions executes weekly TruffleHog secret scanning, high-severity `npm audit` dependency checks, and CodeQL static security analysis.
