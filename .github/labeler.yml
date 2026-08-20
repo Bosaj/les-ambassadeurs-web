@@ -1,0 +1,24 @@
+﻿bug:
+  - src/**/*.jsx
+  - src/**/*.js
+enhancement:
+  - src/pages/**
+  - src/components/**
+documentation:
+  - '**/*.md'
+  - docs/**
+i18n:
+  - src/translations.js
+gallery:
+  - src/components/GalleryPreview.jsx
+  - src/pages/GalleryPage.jsx
+  - src/components/admin/GalleryManagement.jsx
+auth:
+  - src/context/AuthContext.jsx
+  - src/hooks/useAuth.js
+payments:
+  - src/pages/Donate.jsx
+  - netlify/functions/**
+performance:
+  - vite.config.js
+  - package.json

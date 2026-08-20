@@ -1,8 +1,11 @@
-# Database Schema
+Database Schema
 
-## Supabase Tables
-- profiles
-- gallery_images
+See Supabase project for full schema.
 
-## RLS Policies
-- Defined for admin vs volunteer roles.
+Key Tables:
+- profiles: user accounts with role/permissions
+- gallery_images: photos with JSONB multilingual captions
+- news/events/programs/projects: content with JSONB titles
+- donations: payment records (Stripe/PayPal/bank)
+- notifications: real-time user notifications
+- branches: association branches with map coordinates
