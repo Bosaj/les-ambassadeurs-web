@@ -1,70 +1,67 @@
-﻿# Architecture
+# System Architecture & Technical Design
 
-## Stack Overview
+The **Les Ambassadeurs du Bien** platform is engineered as a modern Single-Page Application (SPA) with serverless backend integrations and distributed cloud services.
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19 + React Router v7 |
-| Build | Vite 7 |
-| Styling | Tailwind CSS 4 + Framer Motion |
-| Backend | Supabase (PostgreSQL + Auth + Storage) |
-| Payments | Stripe + PayPal (Netlify Functions) |
-| Map | Leaflet + React-Leaflet |
-| Deployment | Netlify CDN + Serverless |
-| i18n | Custom translations.js (ar/fr/en) |
+---
 
-## Application Flow
+## 🏗️ Architecture Diagram
 
-`
-Browser
-  └── React SPA (Vite, lazy-loaded pages)
-        ├── AuthContext    — Supabase session, RBAC, profile
-        ├── DataContext    — all content CRUD (news, events, etc.)
-        ├── LanguageContext — language state, t() helper, localStorage
-        ├── ThemeContext   — dark/light mode, localStorage
-        └── React Router v7
-              ├── Public: /, /gallery, /news, /events, /programs, /donate, /volunteer
-              ├── Auth:   /login, /signup
-              └── Protected: /profile, /membership, /gamification, /dashboard/*
+```
+                     ┌────────────────────────────────────────┐
+                     │          Client Browser (SPA)          │
+                     │  React 19 + React Router v7 + Tailwind │
+                     └───────────────────┬────────────────────┘
+                                         │
+                 ┌───────────────────────┼───────────────────────┐
+                 │                       │                       │
+                 ▼                       ▼                       ▼
+     ┌──────────────────────┐  ┌───────────────────┐  ┌──────────────────────┐
+     │  Supabase Auth & DB  │  │ Netlify Functions │  │ Third-Party Gateways │
+     │  PostgreSQL with RLS │  │ Serverless Stripe │  │ Stripe Elements      │
+     │  Storage Buckets     │  │ PaymentIntents    │  │ PayPal Smart Buttons │
+     └──────────────────────┘  └───────────────────┘  └──────────────────────┘
+```
 
-Supabase
-  ├── PostgreSQL (RLS on all tables)
-  ├── Auth (email/password + Google OAuth)
-  └── Storage (avatars, gallery images)
+---
 
-Netlify
-  ├── Static CDN (React SPA dist/)
-  └── Functions (Stripe PaymentIntent, PayPal orders)
-`
+## 🧩 Global State & Context Layer
 
-## Key Contexts
+The application utilizes React Context for centralized global state management:
 
-- **AuthContext** (src/context/AuthContext.jsx): Session management, login/logout, hasPermission(perm) for RBAC
-- **DataContext** (src/context/DataContext.jsx): Centralized Supabase CRUD for all content types + gallery
-- **LanguageContext** (src/context/LanguageContext.jsx): Active language, 	 object, changeLanguage()
+1. **`AuthContext` (`src/context/AuthContext.jsx`)**:
+   * Manages user session state, Supabase authentication listeners, and profile synchronization.
+   * Uses direct REST API calls for profile fetching to eliminate client-side GoTrue mutex deadlocks.
+   * Exposes `login`, `logout`, `loginWithGoogle`, `refreshProfile`, `upgradeToMember`, and `hasPermission(permName)`.
 
-## RBAC Permissions
-Admin permissions stored as JSONB array in profiles.permissions:
-manage_news, manage_events, manage_programs, manage_projects, manage_testimonials, manage_partners, manage_users, manage_donations, manage_branches, super_admin
+2. **`DataContext` (`src/context/DataContext.jsx`)**:
+   * Centralizes CRUD operations for `news`, `events`, `programs`, `projects`, `testimonials`, `partners`, and `gallery_images`.
+   * Implements parallel data queries via `Promise.all` for fast public data hydration.
+   * Connects to Supabase RPC functions such as `get_public_supporters`.
 
-## Full Route Table
+3. **`LanguageContext` (`src/context/LanguageContext.jsx`)**:
+   * Controls active language (`ar`, `fr`, `en`) and persists choice to `localStorage`.
+   * Automatically updates `document.documentElement.dir` (`rtl` for Arabic, `ltr` for French/English).
+   * Provides the global translation dictionary `t`.
 
-| Path | Component | Access |
-|------|-----------|--------|
-| / | Home | Public |
-| /gallery | GalleryPage | Public |
-| /news | NewsPage | Public |
-| /events | EventsPage | Public |
-| /programs | ProgramsPage | Public |
-| /donate | Donate | Public |
-| /volunteer | Volunteer | Public |
-| /login | Login | Public |
-| /signup | Signup | Public |
-| /profile | Profile | Auth |
-| /membership | MembershipPage | Auth |
-| /gamification | GamificationHub | Auth |
-| /dashboard/admin | AdminDashboard | Admin |
-| /dashboard/volunteer | VolunteerDashboard | Volunteer+ |
+4. **`ThemeContext` (`src/context/ThemeContext.jsx`)**:
+   * Manages dark/light mode toggle and updates `class="dark"` on `document.documentElement`.
+
+---
+
+## 🗄️ Database Schema & Storage
+
+The database runs on Supabase (PostgreSQL 15) with Row Level Security (RLS) enabled on all tables:
+
+* `profiles`: Extended user profiles (`full_name`, `full_name_ar`, `avatar_url`, `role`, `permissions`, `points`, `membership_status`).
+* `gallery_images`: Photos with `caption` (JSONB: `{"ar": "...", "fr": "...", "en": "..."}`), `related_type`, `related_item_id`, `is_featured`.
+* `news`: Articles with multilingual JSONB `title` and `content`, `image`, `date`, `is_pinned`.
+* `events`: Events with multilingual `title`, `description`, `location`, `date`, `end_date`, `attendees` (UUID array).
+* `programs` & `projects`: Community programs and social projects with goals and attendee registries.
+* `donations`: Transaction records (`amount`, `currency`, `payment_method`, `status`, `user_id`).
+* `branches`: Association branch locations (`name`, `city`, `address`, `lat`, `lng`, `phone`).
+* `testimonials`: Approved community reviews with 1–5 star ratings.
+* `notifications`: Real-time user notifications.
+
 ---
 
 <div align="center">
@@ -75,6 +72,6 @@ manage_news, manage_events, manage_programs, manage_projects, manage_testimonial
 [Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
 [Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
 
-*Wiki last updated: 2026-08-20*
+*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
 
 </div>
