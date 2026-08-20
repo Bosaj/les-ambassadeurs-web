@@ -1,11 +1,42 @@
-name: Security Scan
+﻿name: Security Scan
+
 on:
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: "0 8 * * 1"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
-  scan:
+  dependency-audit:
+    name: NPM Dependency Audit
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Run Secret Scanning
-      run: echo 'Scanning for secrets...'
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
