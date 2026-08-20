@@ -1,27 +1,54 @@
-﻿# Internationalization
+# Internationalization & RTL Guidelines
 
-## Languages Supported
-| Code | Language | Direction |
-|------|----------|-----------|
-| ar   | Arabic   | RTL       |
-| fr   | French   | LTR       |
-| en   | English  | LTR       |
+The application is built from the ground up to support three languages: **العربية (Arabic)**, **Français (French)**, and **English**.
 
-## Adding Translation Keys
-In src/translations.js:
+---
+
+## 🌐 Supported Languages & Text Directions
+
+| Language Code | Language | Text Direction | Default Font Stack |
+|---|---|---|---|
+| `ar` | Arabic | **RTL** (`dir="rtl"`) | Tajawal, Cairo, system Arabic |
+| `fr` | French | **LTR** (`dir="ltr"`) | Inter, system sans-serif |
+| `en` | English | **LTR** (`dir="ltr"`) | Inter, system sans-serif |
+
+---
+
+## 📖 Adding Translation Keys
+
+All UI translation strings reside in `src/translations.js`. When adding new strings, ensure keys are provided for all three languages:
+
 ```javascript
-ar: { my_key: 'Arabic text' },
-fr: { my_key: 'French text' },
-en: { my_key: 'English text' },
-```Usage:
-```javascript
-const { t } = useLanguage();
-return <p>{t.my_key}</p>;
-```n
-## RTL Guidelines
-- Apply dir='rtl' to containers when language === 'ar'
-- Gallery marquee: ALWAYS dir='ltr' (prevents animation direction bugs)
-- Flip arrow icons in RTL: className={language === 'ar' ? 'rotate-180' : ''}
+export const translations = {
+  ar: {
+    gallery_title: 'معرض الصور',
+    gallery_subtitle: 'استكشف أنشطتنا ومبادراتنا بالصور'
+  },
+  fr: {
+    gallery_title: 'Galerie Photos',
+    gallery_subtitle: 'Explorez nos activités et initiatives en images'
+  },
+  en: {
+    gallery_title: 'Photo Gallery',
+    gallery_subtitle: 'Explore our activities and initiatives in pictures'
+  }
+};
+```
+
+---
+
+## 📐 RTL Component Design Rules
+
+1. **Direction Container**: The root HTML element direction is dynamically updated by `LanguageContext`:
+   ```javascript
+   document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+   document.documentElement.lang = language;
+   ```
+2. **Icons & Chevrons**: Directional arrows (e.g. `FaArrowRight`) must be rotated in RTL mode:
+   ```jsx
+   <FaArrowRight className={language === 'ar' ? 'rotate-180' : ''} />
+   ```
+3. **Marquee Exception**: The gallery marquee container MUST remain `dir="ltr"` so keyframe translations calculate from standard offsets.
 
 ---
 
@@ -33,6 +60,6 @@ return <p>{t.my_key}</p>;
 [Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
 [Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
 
-*Wiki last updated: 2026-08-20*
+*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
 
 </div>

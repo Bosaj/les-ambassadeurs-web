@@ -1,26 +1,46 @@
-﻿# Deployment
+# Deployment & CI/CD Guide
 
-## Platform: Netlify
-Auto-deploys from GitHub main branch on every push.
+The web application is hosted on **Netlify** with automated Continuous Integration and Continuous Deployment (CI/CD) via **GitHub Actions**.
 
-## Manual Deployment
-```bash
-npm run build
-netlify deploy --prod --dir=dist
-```n
-## Required Env Vars (set in Netlify dashboard)
-- VITE_SUPABASE_URL
-- VITE_SUPABASE_ANON_KEY
-- VITE_STRIPE_PUBLISHABLE_KEY
-- SUPABASE_SERVICE_ROLE_KEY
-- STRIPE_SECRET_KEY
-- PAYPAL_CLIENT_ID
-- PAYPAL_CLIENT_SECRET
+---
 
-## CI/CD (GitHub Actions)
-- ci.yml: lint + build + test on every push/PR
-- release.yml: Creates GitHub Release on version tags (v*.*.*)
-- security-scan.yml: Weekly dependency audit and secret scan
+## 🌐 Hosting Configuration
+
+* **Production URL:** [https://a-a-b-v.netlify.app/](https://a-a-b-v.netlify.app/)
+* **Build Command:** `npm run build`
+* **Publish Directory:** `dist/`
+* **Functions Directory:** `netlify/functions/`
+
+### SPA Routing Configuration (`netlify.toml`)
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+---
+
+## 🔄 GitHub Actions Workflows
+
+1. **`ci.yml`**:
+   * Triggers on pushes and pull requests to `main` and `develop`.
+   * **Jobs**: ESLint (`npm run lint`), Unit Tests (`npm test -- --run`), and Production Build (`npm run build`).
+2. **`release.yml`**:
+   * Triggers on version tag pushes (`v*.*.*`).
+   * Compiles production build and publishes formal GitHub Release notes.
+3. **`security-scan.yml`**:
+   * Scheduled weekly every Monday at 08:00 UTC.
+   * Runs high-severity `npm audit`, TruffleHog secret scanning, and GitHub CodeQL static analysis.
+4. **`deploy-preview.yml`**:
+   * Deploys ephemeral Netlify previews on pull requests and comments the live preview URL on the PR.
+5. **`labeler.yml`**:
+   * Automatically assigns labels to PRs based on touched files (e.g., `i18n`, `gallery`, `auth`, `payments`).
 
 ---
 
@@ -32,6 +52,6 @@ netlify deploy --prod --dir=dist
 [Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
 [Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
 
-*Wiki last updated: 2026-08-20*
+*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
 
 </div>

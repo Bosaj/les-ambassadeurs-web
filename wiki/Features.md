@@ -1,27 +1,60 @@
-﻿# Features
+# Complete Feature Specifications
 
-## Public
-- Trilingual UI (Arabic RTL, French, English)
-- Dark/Light mode
-- Photo Gallery with filtering, search, lightbox
-- Auto-scrolling gallery home preview
-- News, Events, Programs, Projects browsing
-- Interactive Branches map (Leaflet)
-- Donation page (Stripe, PayPal, bank transfer)
-- Contact form and newsletter
+A detailed guide to all user-facing, authenticated, and administrative capabilities in the application.
 
-## Authenticated User
-- User profile with avatar upload
-- Membership management and renewal
-- Event registration and cancellation
-- Gamification: points, badges, leaderboard
+---
 
-## Admin
-- Full content CRUD
-- Gallery management
-- User and permission management
-- Donation tracking
-- Real-time notification system
+## 🌐 1. Public Features
+
+* **Home Page Landing Sections**:
+  * **Hero**: Dynamic call-to-actions, donation buttons, volunteer onboarding links.
+  * **Mission & Vision**: Core pillars of the association.
+  * **Interactive Programs Preview**: Highlighted community initiatives with detail modals.
+  * **Impact Counters**: Animated statistics for volunteers, events, and beneficiaries.
+  * **Interactive Branches Map**: Leaflet map showing association branches across Moroccan cities.
+  * **Latest News**: Searchable, filterable news cards.
+  * **Team Showcase**: Interactive carousel displaying association leadership.
+  * **Partners Grid**: Partner and sponsor logo wall.
+  * **Testimonials**: Community reviews and feedback.
+  * **Gallery Marquee**: Auto-scrolling infinite photo preview.
+  * **Contact & Newsletter**: Direct inquiry form and newsletter subscription.
+
+* **Photo Gallery (`/gallery`)**:
+  * Filter by category (*All*, *Events*, *Projects*, *Programs*, *General*).
+  * Instant search bar filtering by caption in the user's active language.
+  * Responsive masonry grid.
+  * Full-screen lightbox with keyboard navigation.
+
+* **Multi-Channel Donation (`/donate`)**:
+  * Online Credit/Debit card checkout powered by Stripe.
+  * PayPal Smart Payment buttons (Sandbox & Live).
+  * Association Bank Account wire transfer details (RIB / IBAN).
+
+---
+
+## 👤 2. Authenticated Member Features
+
+* **Profile Management (`/profile`)**:
+  * Edit Latin name, Arabic name (`full_name_ar`), phone number, and city.
+  * Upload custom profile avatar stored in Supabase Storage `avatars` bucket.
+  * Account deletion with safety confirmation modal.
+
+* **Volunteer Dashboard (`/dashboard/volunteer`)**:
+  * Personal impact metrics and logged volunteer hours.
+  * Membership status tracker (`pending`, `active`, `rejected`).
+  * Digital membership card and renewal workflows.
+
+* **Gamification Hub (`/gamification`)**:
+  * User score points and badges display.
+  * Real-time volunteer leaderboard.
+
+---
+
+## 🛡️ 3. Administrative Back-Office (`/dashboard/admin`)
+
+* 12 Dedicated Management Tabs.
+* Granular permission checking before executing actions.
+* Real-time search and filter controls across all tabular data.
 
 ---
 
@@ -33,6 +66,6 @@
 [Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
 [Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
 
-*Wiki last updated: 2026-08-20*
+*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
 
 </div>

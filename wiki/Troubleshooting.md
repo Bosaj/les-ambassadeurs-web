@@ -1,25 +1,37 @@
-﻿# Troubleshooting
+# Troubleshooting & Common Issues
 
-## Auth: Stuck on loading screen
-Check Supabase project SITE_URL setting and allowed redirect URLs.
+A guide for diagnosing and fixing common local development and production issues.
 
-## Auth: Logout on page refresh
-Fixed in v0.9.0. Ensure you are on latest version.
+---
 
-## Gallery: Images not loading
-Verify Supabase Storage bucket is set to public access.
+## 🔐 1. Authentication & Profile Fetching
 
-## Gallery: Marquee not looping in Arabic
-Fixed in v1.0.0. The overflow container must have dir='ltr'.
+### Issue: Application hangs on "Loading..." or user gets logged out on refresh
+* **Root Cause**: GoTrue client internal mutex lock deadlocked during React Strict Mode mounts or Supabase free-tier cold starts.
+* **Resolution**: The application uses direct native REST API fetch with the JWT bearer token for profile retrieval in `AuthContext.jsx`. Also, ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are defined in `.env`.
 
-## Build: Chunk size warnings
-Check vite.config.js manualChunks configuration.
+---
 
-## Payments: Stripe not loading
-Verify VITE_STRIPE_PUBLISHABLE_KEY starts with pk_live_ or pk_test_.
+## 🖼️ 2. Gallery & Media Storage
 
-## Admin: Data not saving
-Check Supabase RLS policies. The user's profiles.role must be 'admin'.
+### Issue: Uploaded images show broken image icons
+* **Root Cause**: The Supabase Storage bucket `gallery` or `avatars` is private.
+* **Resolution**: In the Supabase Dashboard > Storage > Buckets, ensure the `gallery` bucket has **Public Bucket** enabled with public `SELECT` policies.
+
+### Issue: Marquee stops scrolling in Arabic mode
+* **Root Cause**: RTL container direction causes CSS `translateX` offsets to reverse outside the viewport.
+* **Resolution**: `GalleryPreview.jsx` enforces `dir="ltr"` on the overflow wrapper while leaving card content localized.
+
+---
+
+## 📦 3. Build & Vite Optimization
+
+### Issue: `SyntaxError: Unexpected token '﻿'` during build
+* **Root Cause**: UTF-8 BOM (Byte Order Mark) inserted into `package.json` by certain Windows tools.
+* **Resolution**: Ensure files are saved in UTF-8 without BOM.
+
+### Issue: Vitest cannot find `setup.js`
+* **Resolution**: Verify `setupFiles` in `vite.config.js` points to `./src/tests/setup.js`.
 
 ---
 
@@ -31,6 +43,6 @@ Check Supabase RLS policies. The user's profiles.role must be 'admin'.
 [Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
 [Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
 
-*Wiki last updated: 2026-08-20*
+*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
 
 </div>
