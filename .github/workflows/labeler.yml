@@ -9,10 +9,11 @@ permissions:
   pull-requests: write
 
 jobs:
-  labeler:
+  label:
+    name: Auto-label PR
     runs-on: ubuntu-latest
     steps:
       - uses: actions/labeler@v5
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
