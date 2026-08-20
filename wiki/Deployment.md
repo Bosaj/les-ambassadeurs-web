@@ -1,17 +1,17 @@
-# Deployment & CI/CD Guide
+# Deployment & CI/CD Pipeline
 
-The web application is hosted on **Netlify** with automated Continuous Integration and Continuous Deployment (CI/CD) via **GitHub Actions**.
+The application is deployed on **Netlify** with continuous integration and security pipelines powered by **GitHub Actions**.
 
 ---
 
-## 🌐 Hosting Configuration
+## 🌐 Netlify Production Configuration
 
 * **Production URL:** [https://a-a-b-v.netlify.app/](https://a-a-b-v.netlify.app/)
 * **Build Command:** `npm run build`
 * **Publish Directory:** `dist/`
 * **Functions Directory:** `netlify/functions/`
 
-### SPA Routing Configuration (`netlify.toml`)
+### SPA Routing Rule (`netlify.toml`)
 ```toml
 [build]
   command = "npm run build"
@@ -29,29 +29,15 @@ The web application is hosted on **Netlify** with automated Continuous Integrati
 ## 🔄 GitHub Actions Workflows
 
 1. **`ci.yml`**:
-   * Triggers on pushes and pull requests to `main` and `develop`.
-   * **Jobs**: ESLint (`npm run lint`), Unit Tests (`npm test -- --run`), and Production Build (`npm run build`).
+   * Runs on every push and PR to `main` and `develop`.
+   * **Jobs**: ESLint check (`npm run lint`), Vitest test suite (`npm test -- --run`), and Vite production build (`npm run build`).
 2. **`release.yml`**:
-   * Triggers on version tag pushes (`v*.*.*`).
-   * Compiles production build and publishes formal GitHub Release notes.
+   * Triggers on version tags (`v*.*.*`).
+   * Automatically packages build artifacts and creates GitHub Release notes.
 3. **`security-scan.yml`**:
-   * Scheduled weekly every Monday at 08:00 UTC.
+   * Executes weekly every Monday at 08:00 UTC.
    * Runs high-severity `npm audit`, TruffleHog secret scanning, and GitHub CodeQL static analysis.
 4. **`deploy-preview.yml`**:
-   * Deploys ephemeral Netlify previews on pull requests and comments the live preview URL on the PR.
+   * Deploys preview branches to Netlify on pull requests and posts preview URLs as PR comments.
 5. **`labeler.yml`**:
-   * Automatically assigns labels to PRs based on touched files (e.g., `i18n`, `gallery`, `auth`, `payments`).
-
----
-
-<div align="center">
-
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+   * Automatically categorizes pull requests based on touched file paths.

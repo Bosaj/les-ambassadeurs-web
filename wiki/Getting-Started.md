@@ -1,19 +1,19 @@
 # Getting Started & Development Setup
 
-This guide provides everything needed to clone, install, configure, and run the **Les Ambassadeurs du Bien** web application locally.
+This document walks you through setting up and running the **Les Ambassadeurs du Bien** web application locally.
 
 ---
 
-## 📋 Prerequisites
+## 📋 System Prerequisites
 
-* **Node.js**: `v20.x` or higher (LTS recommended)
-* **npm**: `v10.x` or higher
-* **Git**: `v2.x` or higher
-* **Supabase Project**: A valid Supabase instance with database migrations applied.
+* **Node.js**: `>= 20.x` (LTS recommended)
+* **npm**: `>= 10.x`
+* **Git**: `>= 2.x`
+* **Supabase Project**: Active project with database schema and RLS policies configured.
 
 ---
 
-## ⚙️ Installation & Setup
+## 🛠️ Step-by-Step Local Setup
 
 1. **Clone the repository:**
    ```bash
@@ -22,18 +22,18 @@ This guide provides everything needed to clone, install, configure, and run the 
    ```
 
 2. **Configure Environment Variables:**
-   Copy the provided `.env.example` template:
+   Copy `.env.example` to create your local `.env` file:
    ```bash
    cp .env.example .env
    ```
-   Open `.env` and fill in the required keys:
+   Provide your specific keys:
    ```ini
-   # Public Client Variables (VITE_ prefix exposes to browser bundle)
-   VITE_SUPABASE_URL=https://your-project.supabase.co
+   # Public client-side variables (bundled into browser)
+   VITE_SUPABASE_URL=https://mimfwguttesvrmejlibq.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
    VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 
-   # Server-side Secrets (Used in Netlify Functions, NEVER client-exposed)
+   # Serverless & Administrative Secrets (NEVER committed to git)
    SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
    STRIPE_SECRET_KEY=sk_test_...
    PAYPAL_CLIENT_ID=your_paypal_client_id
@@ -45,33 +45,21 @@ This guide provides everything needed to clone, install, configure, and run the 
    npm install
    ```
 
-4. **Start the Local Development Server:**
+4. **Start Development Server:**
    ```bash
    npm run dev
    ```
-   The development server will launch at `http://localhost:5173`.
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## 📜 Available NPM Scripts
+## 📜 Available NPM Commands
 
-* `npm run dev`: Launches Vite dev server with Hot Module Replacement (HMR).
-* `npm run build`: Executes production build and emits optimized assets to `dist/`.
-* `npm run lint`: Runs ESLint check across all JSX and JS files.
-* `npm test`: Runs Vitest in watch mode.
-* `npm test -- --run`: Executes all unit tests once and outputs results.
-* `npm run preview`: Previews the built `dist/` directory on a local web server.
-
----
-
-<div align="center">
-
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Launches local Vite development server with Hot Module Replacement. |
+| `npm run build` | Compiles optimized production bundle into `dist/`. |
+| `npm run lint` | Checks JavaScript and JSX code quality with ESLint. |
+| `npm test` | Runs unit test suites with Vitest in watch mode. |
+| `npm test -- --run` | Executes all test suites once for CI validation. |
+| `npm run preview` | Serves the local `dist/` production build. |

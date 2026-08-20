@@ -1,77 +1,40 @@
-# System Architecture & Technical Design
+# Technical Architecture & System Design
 
-The **Les Ambassadeurs du Bien** platform is engineered as a modern Single-Page Application (SPA) with serverless backend integrations and distributed cloud services.
-
----
-
-## 🏗️ Architecture Diagram
-
-```
-                     ┌────────────────────────────────────────┐
-                     │          Client Browser (SPA)          │
-                     │  React 19 + React Router v7 + Tailwind │
-                     └───────────────────┬────────────────────┘
-                                         │
-                 ┌───────────────────────┼───────────────────────┐
-                 │                       │                       │
-                 ▼                       ▼                       ▼
-     ┌──────────────────────┐  ┌───────────────────┐  ┌──────────────────────┐
-     │  Supabase Auth & DB  │  │ Netlify Functions │  │ Third-Party Gateways │
-     │  PostgreSQL with RLS │  │ Serverless Stripe │  │ Stripe Elements      │
-     │  Storage Buckets     │  │ PaymentIntents    │  │ PayPal Smart Buttons │
-     └──────────────────────┘  └───────────────────┘  └──────────────────────┘
-```
+The **Les Ambassadeurs du Bien** platform is architected as a high-performance Single-Page Application (SPA) backed by serverless cloud services.
 
 ---
 
-## 🧩 Global State & Context Layer
+## 🏗️ Architecture Stack Overview
 
-The application utilizes React Context for centralized global state management:
+| Layer | Technology | Responsibilities |
+|---|---|---|
+| **Frontend Core** | React 19, React Router v7 | Component rendering, client-side routing, and DOM reconciliation. |
+| **Build & Tooling** | Vite 7 | Fast ESM bundling, code splitting via `manualChunks`, and HMR. |
+| **Styling & Motion** | Tailwind CSS 4, Framer Motion | Responsive layouts, RTL mirroring, dark mode, and fluid animations. |
+| **Backend as a Service** | Supabase (PostgreSQL 15) | Relational database, Row Level Security (RLS), Auth, Storage buckets. |
+| **Serverless Functions** | Netlify Functions (Node.js) | Server-side Stripe PaymentIntent creation at `/.netlify/functions/create-payment-intent`. |
+| **Third-Party Gateways**| Stripe Elements, PayPal SDK | Secure PCI-compliant online donation processing. |
+| **Geographic Mapping** | Leaflet, React-Leaflet | Dynamic branch mapping across Moroccan cities. |
+
+---
+
+## 🧩 Global React State Architecture
+
+State is shared across components using modular React Context providers:
 
 1. **`AuthContext` (`src/context/AuthContext.jsx`)**:
-   * Manages user session state, Supabase authentication listeners, and profile synchronization.
-   * Uses direct REST API calls for profile fetching to eliminate client-side GoTrue mutex deadlocks.
-   * Exposes `login`, `logout`, `loginWithGoogle`, `refreshProfile`, `upgradeToMember`, and `hasPermission(permName)`.
+   * Synchronizes user authentication state via Supabase Auth events (`SIGNED_IN`, `SIGNED_OUT`, `TOKEN_REFRESHED`).
+   * Fetches user profile directly via native REST API using the session JWT to avoid client mutex deadlocks.
+   * Exposes helper methods: `login()`, `logout()`, `loginWithGoogle()`, `refreshProfile()`, and `hasPermission(permName)`.
 
 2. **`DataContext` (`src/context/DataContext.jsx`)**:
-   * Centralizes CRUD operations for `news`, `events`, `programs`, `projects`, `testimonials`, `partners`, and `gallery_images`.
-   * Implements parallel data queries via `Promise.all` for fast public data hydration.
-   * Connects to Supabase RPC functions such as `get_public_supporters`.
+   * Centralizes all content retrieval (`news`, `events`, `programs`, `projects`, `testimonials`, `partners`, `gallery_images`).
+   * Uses `Promise.all` for parallel non-blocking public data fetches.
+   * Manages admin mutation actions (`addPost`, `updatePost`, `deletePost`, `togglePin`, `verifyMember`).
 
 3. **`LanguageContext` (`src/context/LanguageContext.jsx`)**:
-   * Controls active language (`ar`, `fr`, `en`) and persists choice to `localStorage`.
-   * Automatically updates `document.documentElement.dir` (`rtl` for Arabic, `ltr` for French/English).
-   * Provides the global translation dictionary `t`.
+   * Manages the selected language (`ar`, `fr`, `en`) and stores user preference in `localStorage`.
+   * Dynamically alters `document.documentElement.dir` to `rtl` for Arabic and `ltr` for French/English.
 
 4. **`ThemeContext` (`src/context/ThemeContext.jsx`)**:
-   * Manages dark/light mode toggle and updates `class="dark"` on `document.documentElement`.
-
----
-
-## 🗄️ Database Schema & Storage
-
-The database runs on Supabase (PostgreSQL 15) with Row Level Security (RLS) enabled on all tables:
-
-* `profiles`: Extended user profiles (`full_name`, `full_name_ar`, `avatar_url`, `role`, `permissions`, `points`, `membership_status`).
-* `gallery_images`: Photos with `caption` (JSONB: `{"ar": "...", "fr": "...", "en": "..."}`), `related_type`, `related_item_id`, `is_featured`.
-* `news`: Articles with multilingual JSONB `title` and `content`, `image`, `date`, `is_pinned`.
-* `events`: Events with multilingual `title`, `description`, `location`, `date`, `end_date`, `attendees` (UUID array).
-* `programs` & `projects`: Community programs and social projects with goals and attendee registries.
-* `donations`: Transaction records (`amount`, `currency`, `payment_method`, `status`, `user_id`).
-* `branches`: Association branch locations (`name`, `city`, `address`, `lat`, `lng`, `phone`).
-* `testimonials`: Approved community reviews with 1–5 star ratings.
-* `notifications`: Real-time user notifications.
-
----
-
-<div align="center">
-
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+   * Controls dark/light theme toggle and applies the `dark` class to `document.documentElement`.

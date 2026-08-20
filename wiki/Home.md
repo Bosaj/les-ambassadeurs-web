@@ -1,44 +1,39 @@
-# Les Ambassadeurs du Bien — Official Project Wiki
+# Welcome to the Official Technical Wiki
 
-Welcome to the comprehensive technical and operational wiki for the **Association des Ambassadeurs du Bien (جمعية سفراء الخير - فرع وجدة)** web application.
+The **Association des Ambassadeurs du Bien (جمعية سفراء الخير - فرع وجدة)** web platform is a modern, full-featured web application designed for a non-profit humanitarian organization based in Oujda, Morocco.
+
+* **Live Production Platform:** [https://a-a-b-v.netlify.app/](https://a-a-b-v.netlify.app/)
+* **Official Repository:** [https://github.com/Bosaj/les-ambassadeurs-web](https://github.com/Bosaj/les-ambassadeurs-web)
+* **Lead Maintainer:** Oussama ELHADJI ([LinkedIn](https://www.linkedin.com/in/oussama-elhadji))
 
 ---
 
-## 🧭 Navigation & Documentation Index
+## 🧭 Documentation Sitemap
 
-| Section | Description |
+| Document | Key Information |
 |---|---|
-| 🚀 **[Getting Started](Getting-Started)** | Local installation, environment variable requirements, and scripts. |
-| 🏗️ **[Architecture](Architecture)** | Complete system design, React 19 component hierarchy, state flow, and providers. |
-| ✨ **[Features](Features)** | Detailed breakdown of all public, authenticated, and administrative capabilities. |
-| 🛡️ **[Admin Guide](Admin-Guide)** | Back-office documentation, tab overviews, content moderation, and RBAC matrix. |
-| 🖼️ **[Gallery Management](Gallery-Management)** | Photo gallery upload pipeline, multilingual JSONB captions, and marquee engine. |
-| 💳 **[Payments](Payments)** | Stripe CardElement, PayPal Smart Buttons, bank wire ledger, and Netlify functions. |
-| 🌐 **[Internationalization](Internationalization)** | Arabic RTL layout guidelines, translation structure, and i18n conventions. |
-| 🚀 **[Deployment](Deployment)** | Netlify CDN deployment, environment variables, SPA routing, and CI/CD pipelines. |
-| 🔧 **[Troubleshooting](Troubleshooting)** | Solutions for authentication cold starts, storage bucket permissions, and build tuning. |
-| 📜 **[Changelog](Changelog)** | Complete version history from `v0.1.0` initial migration through `v1.0.0`. |
-| 🔒 **[Security](Security)** | Vulnerability disclosure, Row Level Security (RLS) policies, and secrets management. |
+| 🚀 **[Getting Started](Getting-Started)** | Node.js 20+ prerequisites, environment variables setup (`.env.example`), and development server scripts. |
+| 🏗️ **[Architecture](Architecture)** | React 19 SPA design, Vite 7, Context providers (`AuthContext`, `DataContext`, `LanguageContext`), Supabase PostgreSQL, and Netlify Functions. |
+| ✨ **[Features](Features)** | Public landing sections, Photo Gallery with masonry grid, multi-channel donations, member profiles, and gamification leaderboard. |
+| 🛡️ **[Admin Guide](Admin-Guide)** | Back-office management across 12 tabs with granular Role-Based Access Control (RBAC) permission flags. |
+| 🖼️ **[Gallery Management](Gallery-Management)** | Photo upload to Supabase Storage, trilingual JSONB captions, and infinite CSS marquee engine. |
+| 💳 **[Payments](Payments)** | Stripe CardElement checkout, serverless PaymentIntent creation, PayPal Smart Buttons, and bank wire transfer instructions. |
+| 🌐 **[Internationalization](Internationalization)** | Arabic RTL layout support, French/English LTR layout, and `src/translations.js` key dictionary. |
+| 🚀 **[Deployment](Deployment)** | Netlify hosting configuration (`netlify.toml`), environment variables, and GitHub Actions CI/CD workflows. |
+| 🔧 **[Troubleshooting](Troubleshooting)** | Diagnostic steps for Supabase authentication, storage bucket access, UTF-8 BOM sanitization, and test runners. |
+| 📜 **[Changelog](Changelog)** | Full timeline from initial migration (`v0.1.0`) to complete production release (`v1.0.0`). |
+| 🔒 **[Security](Security)** | Security policy, vulnerability reporting (`asosoufaraelkhir48@gmail.com`), and Row Level Security (RLS) protections. |
 
 ---
 
-## 🌍 About The Platform
+## 🏛️ Association Identity & Contacts
 
-* **Production URL:** [https://a-a-b-v.netlify.app/](https://a-a-b-v.netlify.app/)
-* **Repository:** [https://github.com/Bosaj/les-ambassadeurs-web](https://github.com/Bosaj/les-ambassadeurs-web)
-* **Organization:** Association des Ambassadeurs du Bien — Branch Oujda, Morocco.
-* **Tech Stack:** React 19, Vite 7, Tailwind CSS 4, Supabase (PostgreSQL), Stripe, PayPal, Netlify.
-
----
-
-<div align="center">
-
-**[Les Ambassadeurs du Bien](https://a-a-b-v.netlify.app/)** |
-[Repository](https://github.com/Bosaj/les-ambassadeurs-web) |
-[Issues](https://github.com/Bosaj/les-ambassadeurs-web/issues) |
-[Changelog](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/CHANGELOG.md) |
-[Security](https://github.com/Bosaj/les-ambassadeurs-web/blob/main/SECURITY.md)
-
-*Official Documentation for Association des Ambassadeurs du Bien — Oujda*
-
-</div>
+* **Association Name:** Association des Ambassadeurs du Bien — Oujda
+* **Arabic Name:** جمعية سفراء الخير - فرع وجدة
+* **Official Email:** `asosoufaraelkhir48@gmail.com`
+* **Social Community:**
+  * Facebook: [jamiyat.safarat.khair.oujda](https://www.facebook.com/jamiyat.safarat.khair.oujda)
+  * Instagram: [@goodness_ambassadors_oujda](https://www.instagram.com/goodness_ambassadors_oujda)
+  * Twitter / X: [@associationabv](https://x.com/associationabv)
+  * LinkedIn: [jamiyat-safarat-khair-oujda](https://www.linkedin.com/company/jamiyat-safarat-khair-oujda/)
+  * WhatsApp Community: [Join WhatsApp Group](https://chat.whatsapp.com/Lmy97p5Q64H8USGhyTT0TN?mode=gi_t)
