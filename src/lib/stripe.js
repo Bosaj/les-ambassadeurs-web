@@ -21,7 +21,9 @@ export const getStripe = () => {
         console.error = (...args) => {
             const errorStr = args.join(' ');
             // Only suppress Stripe-related ad blocker errors
-            if (!errorStr.includes('stripe.com') && !errorStr.includes('ERR_BLOCKED_BY_CLIENT')) {
+            const isStripeNetworkError = errorStr.includes('ERR_BLOCKED_BY_CLIENT') ||
+                                         /\bstripe\b/i.test(errorStr);
+            if (!isStripeNetworkError) {
                 originalError(...args);
             }
         };
@@ -29,7 +31,8 @@ export const getStripe = () => {
         console.warn = (...args) => {
             const warnStr = args.join(' ');
             // Suppress Stripe HTTP warnings in development
-            if (!warnStr.includes('Stripe.js') && !warnStr.includes('HTTPS')) {
+            const isStripeDevWarning = /\bstripe\b/i.test(warnStr) || warnStr.includes('HTTPS');
+            if (!isStripeDevWarning) {
                 originalWarn(...args);
             }
         };
