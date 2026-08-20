@@ -4,8 +4,6 @@ import { supabase } from '../lib/supabase';
 import LogoutAnimation from '../components/LogoutAnimation';
 import { AuthContext } from './contexts';
 
-let globalProfilePromise = null;
-let globalProfileUserId = null;
 // Flag that is ONLY set to true when the user explicitly clicks the Logout button.
 // This lets us distinguish a real logout from a false SIGNED_OUT caused by
 // a failed token refresh (e.g., ERR_NAME_NOT_RESOLVED on page refresh).
@@ -26,8 +24,8 @@ export const AuthProvider = ({ children }) => {
     const { user, loading } = authState;
 
     const fetchProfile = async (session) => {
+        const authUser = session.user;
         try {
-            const authUser = session.user;
             if (import.meta.env.DEV) console.log('[Auth v4] Fetching profile via NATIVE API for UID:', authUser.id);
             
             // CRITICAL FIX: We bypass 'supabase.from()' completely and use a raw native fetch.
@@ -101,8 +99,6 @@ export const AuthProvider = ({ children }) => {
             }
             if (import.meta.env.DEV) console.log('[AuthContext] 🔒 Intentional logout confirmed — clearing auth state.');
             intentionalLogout = false;
-            globalProfilePromise = null;
-            globalProfileUserId = null;
             if (isMounted) setAuthState({ user: null, loading: false });
         };
 
@@ -136,7 +132,7 @@ export const AuthProvider = ({ children }) => {
                                         localStorage.removeItem(key);
                                     }
                                 });
-                            } catch (e) {
+                            } catch {
                                 // Silently catch DOMException if localStorage is restricted
                             }
                             
@@ -174,8 +170,6 @@ export const AuthProvider = ({ children }) => {
             // Let the 2-second progress bar animation play fully
             await new Promise(resolve => setTimeout(resolve, 1800));
 
-            globalProfilePromise = null;
-            globalProfileUserId = null;
             intentionalLogout = true;
 
             try {
@@ -224,7 +218,6 @@ export const AuthProvider = ({ children }) => {
         const refreshProfile = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
-                globalProfilePromise = null; // Force fresh fetch
                 const activeUser = await fetchProfile(session.user);
                 setAuthState(prev => ({ ...prev, user: activeUser }));
             }

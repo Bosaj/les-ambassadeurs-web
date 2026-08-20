@@ -128,7 +128,7 @@ const GalleryManagement = () => {
         try {
             await deleteGalleryImage(id);
             toast.success(t.item_deleted || 'Image deleted');
-        } catch (err) {
+        } catch {
             toast.error(t.error_deleting || 'Error deleting');
         }
     };

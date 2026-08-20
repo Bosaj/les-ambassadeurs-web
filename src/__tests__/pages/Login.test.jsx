@@ -3,21 +3,16 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import Login from '../../pages/Login';
-import { AuthProvider } from '../../context/AuthContext';
-// LanguageProvider import removed as it is now in a separate file and unused here
 
-// Mock context providers if complex
-vi.mock('../../context/AuthContext', async () => {
-    const actual = await vi.importActual('../../context/AuthContext');
-    return {
-        ...actual,
-        useAuth: () => ({
-            login: vi.fn(),
-            user: null
-        }),
-        AuthProvider: ({ children }) => <div>{children}</div>
-    };
-});
+// Mock hooks and context providers
+vi.mock('../../hooks/useAuth', () => ({
+    useAuth: () => ({
+        login: vi.fn(),
+        loginWithGoogle: vi.fn(),
+        user: null,
+        loading: false
+    })
+}));
 
 vi.mock('../../context/LanguageContext', () => ({
     useLanguage: () => ({
