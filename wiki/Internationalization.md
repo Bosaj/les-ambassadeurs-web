@@ -1,0 +1,3 @@
+# Internationalization
+
+Translation system guide.
