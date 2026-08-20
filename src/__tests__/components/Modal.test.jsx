@@ -2,6 +2,14 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Modal from '../../components/Modal';
 
+vi.mock('../../context/LanguageContext', () => ({
+    useLanguage: () => ({
+        language: 'en',
+        t: {},
+        changeLanguage: vi.fn()
+    })
+}));
+
 describe('Modal Component', () => {
     it('does not render when isOpen is false', () => {
         render(<Modal isOpen={false} title="Test Modal" onClose={() => { }}><p>Content</p></Modal>);

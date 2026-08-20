@@ -44,9 +44,8 @@ async function runTest() {
         location: undefined // Like if they didn't touch location input
     };
     
-    const type = 'news';
-    
-    // mimic useData logic for news
+    const _type = 'news'; // reserved for future type-switching logic
+
     // Test updating an event
     const updateData = {
         title: postData.title,
@@ -59,7 +58,7 @@ async function runTest() {
 
     console.log("Update Payload ->", JSON.stringify(updateData, null, 2));
 
-    const { data: updatedData, error: updateError } = await supabase
+    const { data, error } = await supabase
         .from('events')
         .update(updateData)
         .eq('id', 'some-id')
@@ -67,10 +66,10 @@ async function runTest() {
         .single();
 
     if (error) {
-        console.error("INSERT FAILED:");
+        console.error("UPDATE FAILED:");
         console.error(error);
     } else {
-        console.log("INSERT SUCCEEDED:");
+        console.log("UPDATE SUCCEEDED:");
         console.log(data);
         
         // Clean up
