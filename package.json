@@ -1,53 +1,70 @@
 {
-    "name":  "association-des-ambassadeurs-du-bien",
-    "private":  true,
-    "version":  "1.0.0",
-    "type":  "module",
-    "scripts":  {
-                    "dev":  "vite",
-                    "build":  "vite build",
-                    "lint":  "eslint .",
-                    "preview":  "vite preview",
-                    "test":  "vitest"
-                },
-    "dependencies":  {
-                         "@paypal/checkout-server-sdk":  "^1.0.3",
-                         "@paypal/react-paypal-js":  "^8.9.2",
-                         "@stripe/react-stripe-js":  "^5.6.0",
-                         "@stripe/stripe-js":  "^8.7.0",
-                         "@supabase/supabase-js":  "^2.93.3",
-                         "date-fns":  "^4.1.0",
-                         "framer-motion":  "^12.23.25",
-                         "leaflet":  "^1.9.4",
-                         "react":  "^19.2.0",
-                         "react-dom":  "^19.2.0",
-                         "react-dropzone":  "^14.4.0",
-                         "react-hot-toast":  "^2.6.0",
-                         "react-icons":  "^5.5.0",
-                         "react-leaflet":  "^5.0.0",
-                         "react-router-dom":  "^7.10.0",
-                         "react-router-hash-link":  "^2.4.3",
-                         "stripe":  "^20.3.1",
-                         "swiper":  "^12.0.3"
-                     },
-    "devDependencies":  {
-                            "@eslint/js":  "^9.39.1",
-                            "@tailwindcss/vite":  "^4.1.17",
-                            "@testing-library/dom":  "^10.4.1",
-                            "@testing-library/jest-dom":  "^6.9.1",
-                            "@testing-library/react":  "^16.3.2",
-                            "@types/react":  "^19.2.5",
-                            "@types/react-dom":  "^19.2.3",
-                            "@vitejs/plugin-react":  "^5.1.1",
-                            "autoprefixer":  "^10.4.22",
-                            "eslint":  "^9.39.1",
-                            "eslint-plugin-react-hooks":  "^7.0.1",
-                            "eslint-plugin-react-refresh":  "^0.4.24",
-                            "globals":  "^16.5.0",
-                            "jsdom":  "^27.4.0",
-                            "postcss":  "^8.5.6",
-                            "tailwindcss":  "^4.1.17",
-                            "vite":  "^7.2.4",
-                            "vitest":  "^4.0.18"
-                        }
+  "name": "@bosaj/les-ambassadeurs-web",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
+    "@paypal/react-paypal-js": "^8.9.2",
+    "@stripe/react-stripe-js": "^5.6.0",
+    "@stripe/stripe-js": "^8.7.0",
+    "@supabase/supabase-js": "^2.93.3",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.25",
+    "leaflet": "^1.9.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-dropzone": "^14.4.0",
+    "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.10.0",
+    "react-router-hash-link": "^2.4.3",
+    "stripe": "^20.3.1",
+    "swiper": "^12.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@tailwindcss/vite": "^4.1.17",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.22",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "jsdom": "^27.4.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
+    "vite": "^7.2.4",
+    "vitest": "^4.0.18"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bosaj/les-ambassadeurs-web.git"
+  },
+  "homepage": "https://a-a-b-v.netlify.app/",
+  "bugs": {
+    "url": "https://github.com/Bosaj/les-ambassadeurs-web/issues"
+  },
+  "files": [
+    "dist",
+    "src",
+    "public",
+    "netlify",
+    "README.md"
+  ]
 }
