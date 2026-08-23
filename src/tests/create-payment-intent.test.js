@@ -10,7 +10,7 @@ vi.mock('stripe', () => ({
     },
 }));
 
-import { handler } from './create-payment-intent';
+import { handler } from '../../netlify/functions/create-payment-intent';
 
 const request = (body, overrides = {}) => ({
     httpMethod: 'POST',

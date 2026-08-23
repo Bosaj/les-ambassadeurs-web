@@ -38,6 +38,12 @@ export default [
     },
   },
   {
+    files: ['src/tests/**/*.{js,jsx,mjs}'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
     files: ['netlify/functions/**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
