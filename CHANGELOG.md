@@ -5,6 +5,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Deploy & Environment Status workflow** (`deploy.yml`): Netlify production deploy with deployment status reporting and a Supabase backend health check on every push to `main`
+- **Publish Package workflow** (`package.yml`): builds and publishes the app to GitHub Packages on release/push to `main`
+
+### Changed
+- Modernized `README.md` with live badge, architecture overview, and updated feature list
+- Added global wiki `_Footer.md`, `_Sidebar.md`, `_Header.md` pages and corrected association details across the wiki
+
+### Fixed
+- Sanitized image URLs in `Profile.jsx` to prevent unsafe/malformed avatar URLs from rendering
+- Improved Stripe error URL pattern matching in `src/lib/stripe.js`
+- Enabled Sigstore build attestations (`actions/attest-build-provenance`) in the CI build job for verifiable build provenance
+
+---
+
 ## [1.0.0] - 2026-08-20
 
 ### Added
@@ -148,6 +165,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 ### Added
 - Initial commit: Complete website migration and enhancements from previous version
 
+[Unreleased]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v0.7.0...v0.8.0

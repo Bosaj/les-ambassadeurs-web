@@ -97,7 +97,16 @@
    ```bash
    cp .env.example .env
    ```
-   Fill in your Supabase, Stripe, and PayPal credentials.
+   Fill in real values for the variables below (never commit `.env`):
+
+   | Variable | Used for |
+   |---|---|
+   | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Supabase client (public, bundled into the browser build) |
+   | `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe Checkout (client-side, public) |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Netlify functions only — server-side, never exposed to the browser |
+   | `STRIPE_SECRET_KEY` | Netlify function `create-payment-intent` (server-side) |
+   | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENVIRONMENT` | PayPal Smart Buttons checkout |
+   | `SUPABASE_ACCESS_TOKEN`, `NETLIFY_PERSONAL_ACCESS_TOKEN`, `GITHUB_PERSONAL_ACCESS_TOKEN` | Local tooling/CI only — never read by the app |
 
 3. **Install Dependencies:**
    ```bash
@@ -122,6 +131,25 @@
 | `npm test` | Runs Vitest unit test suites. |
 | `npm test -- --run` | Executes all unit tests once and outputs results. |
 | `npm run preview` | Previews the local production build on an HTTP server. |
+
+---
+
+## 🧪 Testing & CI
+
+The `ci.yml` workflow runs on every push/PR to `main` and `develop`:
+
+| Job | What it checks |
+|---|---|
+| **Lint** | ESLint across all JS/JSX source files |
+| **Test** | Vitest unit test suite (`@testing-library/react`, jsdom) |
+| **Build & Attest** | Production Vite build, uploaded as a build artifact, with a Sigstore build-provenance attestation |
+
+Additional automation:
+* **`security-scan.yml`** — weekly `npm audit`, TruffleHog secret scanning, and CodeQL static analysis
+* **`deploy.yml`** — deploys `main` to Netlify production and runs a Supabase backend health check
+* **`package.yml`** — publishes the package to GitHub Packages on release
+* **`release.yml`** — automates tagged GitHub releases
+* **`deploy-preview.yml`** / **`labeler.yml`** — PR preview deployments and automatic PR labeling
 
 ---
 
@@ -157,7 +185,20 @@ les-ambassadeurs-web/
 
 ---
 
-## 📄 License & Attribution
+## 📝 Changelog
 
-This project is developed and maintained for the **Association des Ambassadeurs du Bien**.  
-All rights reserved © 2026.
+See [CHANGELOG.md](CHANGELOG.md) for the full version history (Keep a Changelog format, SemVer).
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+
+Built and maintained on behalf of the **Association des Ambassadeurs du Bien** (Oujda branch).
+
+---
+
+## 👤 Author
+
+**Oussama EL HADJI** — [github.com/Bosaj](https://github.com/Bosaj)
