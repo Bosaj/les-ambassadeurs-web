@@ -19,7 +19,7 @@ const EventsPage = () => {
 
     const handleJoinClick = (event) => {
         if (user) {
-            if (event.attendees.some(a => a.email === user.email && a.status !== 'rejected')) {
+            if (event.is_registered_by_current_user) {
                 toast.error(t.you_are_registered);
                 return;
             }
@@ -38,7 +38,7 @@ const EventsPage = () => {
         const { event } = confirmModal;
         const toastId = toast.loading(t.cancelling || "Cancelling...");
         try {
-            await cancelRegistration('events', event.id, user.email);
+            await cancelRegistration('events', event.id, user.id);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
         } catch (error) {
             console.error(error);
@@ -63,7 +63,7 @@ const EventsPage = () => {
 
                 <div className="space-y-8">
                     {events.length > 0 ? events.map((event) => {
-                        const isJoined = user && event.attendees.some(a => a.email === user.email && a.status !== 'rejected');
+                        const isJoined = user && event.is_registered_by_current_user;
                         const expired = isExpired(event.end_date || event.date);
                         return (
                             <div key={event.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row hover:shadow-xl transition-all duration-300 ${expired ? 'opacity-75 grayscale' : ''}`}>

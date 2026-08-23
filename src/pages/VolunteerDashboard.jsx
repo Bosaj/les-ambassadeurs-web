@@ -58,27 +58,27 @@ const VolunteerDashboard = () => {
     }, [user, fetchMembershipHistory]);
 
     const loadUserData = useCallback(async () => {
-        if (!user?.email) return; // Guard: auth not yet confirmed
+        if (!user?.id) return; // Guard: auth not yet confirmed
         if (activeTab === 'activities' || activeTab === 'overview') {
-            const activities = await fetchUserActivities(user.email);
+            const activities = await fetchUserActivities(user.id);
             setUserActivities(activities);
         }
         if (activeTab === 'impact' || activeTab === 'overview') {
-            const donations = await fetchUserDonations(user.email, user.id);
+            const donations = await fetchUserDonations(user.id);
             setUserDonations(donations);
         }
         if (activeTab === 'membership' || activeTab === 'overview') {
             loadMembershipHistory();
         }
-    }, [activeTab, user.email, user.id, fetchUserActivities, fetchUserDonations, loadMembershipHistory]);
+    }, [activeTab, user?.id, fetchUserActivities, fetchUserDonations, loadMembershipHistory]);
 
 
 
     useEffect(() => {
-        if (user?.email) {
+        if (user?.id) {
             loadUserData();
         }
-    }, [user?.email, activeTab, loadUserData]);
+    }, [user?.id, activeTab, loadUserData]);
 
     // Combine events and programs for the dashboard list
 
@@ -102,7 +102,7 @@ const VolunteerDashboard = () => {
         if (!user) return;
 
         // Check if already joined (client-side check for immediate feedback)
-        const isJoined = event.attendees?.some(a => a.email === user.email);
+        const isJoined = event.is_registered_by_current_user;
         if (isJoined) {
             toast.error(t.already_joined || "You have already joined this event.");
             return;
@@ -139,7 +139,7 @@ const VolunteerDashboard = () => {
         const isRejected = activity.status === 'rejected';
         const toastId = toast.loading(isRejected ? (t.processing || "Processing...") : (t.cancelling || "Cancelling registration..."));
         try {
-            await cancelRegistration(activity.events?.category || 'event', activity.events?.id, user.email);
+            await cancelRegistration(activity.events?.category || 'event', activity.events?.id, user.id);
             toast.success(isRejected ? (t.item_deleted || "Activity removed") : (t.registration_cancelled || "Registration cancelled successfully"), { id: toastId });
             loadUserData(); // Reload activities
         } catch (error) {
@@ -303,7 +303,7 @@ const VolunteerDashboard = () => {
                                             <p className="text-gray-500 dark:text-gray-400">{t.no_events || "No upcoming events."}</p>
                                         ) : (
                                             allOpportunities.map(event => {
-                                                const isJoined = event.attendees?.some(a => a.email === user?.email);
+                                                const isJoined = event.is_registered_by_current_user;
                                                 const categoryLabel = event.category === 'program'
                                                     ? (t.program || "Program")
                                                     : (event.category === 'project' ? (t.project || "Project") : (t.event || "Event"));

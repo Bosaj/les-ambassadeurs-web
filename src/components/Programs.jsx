@@ -41,7 +41,7 @@ const Programs = () => {
         const { eventId, type } = confirmModal.data;
         const toastId = toast.loading(t.cancelling || "Cancelling...");
         try {
-            await cancelRegistration(type, eventId, user?.email);
+            await cancelRegistration(type, eventId, user?.id);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
             // Don't close modal, let it update via global state
         } catch (error) {
@@ -256,7 +256,7 @@ const Programs = () => {
                                     </div>
                                 </div>
                             ) : (
-                                (activeItem?.attendees?.some(a => a.email === user.email && a.status !== 'rejected')) ? (
+                                (activeItem?.is_registered_by_current_user) ? (
                                     <div className="p-4 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-lg flex flex-col items-center gap-3 font-semibold">
                                         <div className="flex items-center gap-2">
                                             <FaCheckCircle className="text-xl" />

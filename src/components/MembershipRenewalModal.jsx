@@ -7,7 +7,12 @@ import StripeCheckout from './StripeCheckout';
 import toast from 'react-hot-toast';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { FaCreditCard, FaUniversity, FaMoneyBillWave, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaSpinner, FaPaypal } from 'react-icons/fa';
-import { getStripe } from '../lib/stripe';
+import { getStripe, isStripeConfigured } from '../lib/stripe';
+
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+const ONLINE_PAYMENTS_ENABLED = false;
+const PAYPAL_PAYMENTS_ENABLED = false;
+const MAX_PROOF_SIZE = 10 * 1024 * 1024;
 
 const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const { t } = useLanguage();
@@ -17,6 +22,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const [clientSecret, setClientSecret] = useState(null);
     const [proofFile, setProofFile] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [paymentError, setPaymentError] = useState(null);
 
     if (!isOpen) return null;
 
@@ -24,6 +30,16 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const MEMBERSHIP_FEE = 50; // MAD
 
     const handleMethodSelect = async (method) => {
+        if (method === 'online' && (!ONLINE_PAYMENTS_ENABLED || !isStripeConfigured)) {
+            setPaymentError(t.payment_unavailable || 'Online payment is temporarily unavailable while payment verification is being completed.');
+            return;
+        }
+
+        if (method === 'paypal' && (!PAYPAL_PAYMENTS_ENABLED || !PAYPAL_CLIENT_ID)) {
+            setPaymentError(t.payment_unavailable || 'PayPal is temporarily unavailable while payment verification is being completed.');
+            return;
+        }
+
         setPaymentMethod(method);
         if (method === 'online') {
             await initializeStripePayment();
@@ -32,32 +48,37 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
 
     const initializeStripePayment = async () => {
         setLoading(true);
+        setPaymentError(null);
+        setClientSecret(null);
+
         try {
             const response = await fetch('/.netlify/functions/create-payment-intent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ amount: MEMBERSHIP_FEE, currency: 'mad' }),
             });
-            const data = await response.json();
-            if (data.clientSecret) {
-                setClientSecret(data.clientSecret);
-            } else {
-                toast.error("Failed to initialize payment");
+            const data = await response.json().catch(() => null);
+
+            if (!response.ok || typeof data?.clientSecret !== 'string') {
+                throw new Error(data?.error || 'Unable to initialize online payment.');
             }
+
+            setClientSecret(data.clientSecret);
         } catch (error) {
-            console.error("Stripe init error:", error);
-            toast.error("Network error initializing payment");
+            if (import.meta.env.DEV) console.error('Stripe init error:', error);
+            setPaymentError(t.payment_unavailable || 'Online payment is currently unavailable.');
+            toast.error(t.payment_unavailable || 'Online payment is currently unavailable.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleStripeSuccess = async (paymentIntent) => {
-        await recordMembershipPayment('online', paymentIntent.id, 'paid');
+        await recordMembershipPayment('online', paymentIntent.id, 'pending');
     };
 
     const handlePayPalSuccess = async (details) => {
-        await recordMembershipPayment('paypal', details.id, 'paid');
+        await recordMembershipPayment('paypal', details.id, 'pending');
     };
 
     const recordMembershipPayment = async (method, transactionId, status) => {
@@ -74,11 +95,11 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                 });
 
             if (error) throw error;
-            toast.success(t.renewal_success);
+            toast.success(status === 'paid' ? t.renewal_success : (t.renewal_pending_msg || 'Your payment was received and is pending verification.'));
             onRenewalComplete();
             onClose();
         } catch (error) {
-            console.error("Renewal error:", error);
+            if (import.meta.env.DEV) console.error('Renewal error:', error);
             toast.error("Failed to record membership. Please contact support.");
         }
     };
@@ -86,7 +107,21 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        // Store locally - upload only on submit
+
+        const isSupportedType = file.type === 'application/pdf' || file.type.startsWith('image/');
+        if (!isSupportedType) {
+            toast.error(t.invalid_file_type || 'Please upload an image or PDF file.');
+            e.target.value = '';
+            return;
+        }
+
+        if (file.size > MAX_PROOF_SIZE) {
+            toast.error(t.file_too_large || 'The proof file must be 10 MB or smaller.');
+            e.target.value = '';
+            return;
+        }
+
+        // Store locally; upload only on submit.
         setProofFile(file);
     };
 
@@ -98,8 +133,8 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
             // Upload file on submit (if provided)
             if (paymentMethod === 'bank' && proofFile) {
                 setUploading(true);
-                const fileExt = proofFile.name.split('.').pop();
-                const fileName = `membership_${user.id}_${currentYear}_${Date.now()}.${fileExt}`;
+                const fileExt = proofFile.type === 'application/pdf' ? 'pdf' : 'jpg';
+                const fileName = `${crypto.randomUUID()}.${fileExt}`;
                 const filePath = `membership-proofs/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
@@ -108,8 +143,8 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
 
                 if (uploadError) throw uploadError;
 
-                const { data } = supabase.storage.from('receipts').getPublicUrl(filePath);
-                proofUrl = data.publicUrl;
+                // Keep receipt buckets private; administrators should use short-lived signed URLs.
+                proofUrl = filePath;
                 setUploading(false);
             }
 
@@ -129,7 +164,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
             onRenewalComplete();
             onClose();
         } catch (error) {
-            console.error("Renewal error:", error);
+            if (import.meta.env.DEV) console.error('Renewal error:', error);
             toast.error("Failed to submit renewal request.");
             setUploading(false);
         } finally {
@@ -175,23 +210,23 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                                     </div>
                                 </button>
 
-                                <button onClick={() => handleMethodSelect('online')} className="w-full flex items-center p-4 border dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition group text-left">
+                                <button onClick={() => handleMethodSelect('online')} disabled={!ONLINE_PAYMENTS_ENABLED || !isStripeConfigured} className="w-full flex items-center p-4 border dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition group text-left disabled:cursor-not-allowed disabled:opacity-50">
                                     <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition">
                                         <FaCreditCard />
                                     </div>
                                     <div className="ml-4 rtl:mr-4">
                                         <h4 className="font-bold text-gray-800 dark:text-white">{t.pay_online || "Online Payment"}</h4>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{t.online_desc || "Secure Card Payment"}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{ONLINE_PAYMENTS_ENABLED && isStripeConfigured ? (t.online_desc || 'Secure Card Payment') : (t.payment_unavailable || 'Temporarily unavailable')}</p>
                                     </div>
                                 </button>
 
-                                <button onClick={() => handleMethodSelect('paypal')} className="w-full flex items-center p-4 border dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition group text-left">
+                                <button onClick={() => handleMethodSelect('paypal')} disabled={!PAYPAL_PAYMENTS_ENABLED || !PAYPAL_CLIENT_ID} className="w-full flex items-center p-4 border dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition group text-left disabled:cursor-not-allowed disabled:opacity-50">
                                     <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl group-hover:scale-110 transition">
                                         <FaPaypal />
                                     </div>
                                     <div className="ml-4 rtl:mr-4">
                                         <h4 className="font-bold text-gray-800 dark:text-white">PayPal</h4>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{t.paypal_desc || "Pay via PayPal"}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{PAYPAL_PAYMENTS_ENABLED && PAYPAL_CLIENT_ID ? (t.paypal_desc || 'Pay via PayPal') : (t.payment_unavailable || 'Temporarily unavailable')}</p>
                                     </div>
                                 </button>
                             </div>
@@ -268,12 +303,14 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
 
                             {paymentMethod === 'online' && (
                                 <div>
-                                    {clientSecret ? (
+                                    {paymentError ? (
+                                        <p className="text-center text-red-500 p-8">{paymentError}</p>
+                                    ) : clientSecret ? (
                                         <Elements stripe={getStripe()} options={{ clientSecret }}>
                                             <StripeCheckout
                                                 amount={MEMBERSHIP_FEE}
                                                 onSuccess={handleStripeSuccess}
-                                                onError={(err) => console.error(err)}
+                                                onError={() => toast.error(t.payment_unavailable || 'Online payment is currently unavailable.')}
                                             />
                                         </Elements>
                                     ) : (
@@ -287,7 +324,7 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                             {paymentMethod === 'paypal' && (
                                 <div className="mt-4">
                                     <PayPalScriptProvider options={{
-                                        "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test",
+                                        "client-id": PAYPAL_CLIENT_ID,
                                         currency: "MAD",
                                         intent: "capture" // Add intent
                                     }}>
@@ -306,8 +343,8 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                                                 handlePayPalSuccess(details);
                                             }}
                                             onError={(err) => {
-                                                console.error("PayPal Error:", err);
-                                                toast.error("PayPal Error: " + err.message);
+                                                if (import.meta.env.DEV) console.error('PayPal error:', err);
+                                                toast.error(t.paypal_error || 'PayPal payment failed. Please try again.');
                                             }}
                                         />
                                     </PayPalScriptProvider>

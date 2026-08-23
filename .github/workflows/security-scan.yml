@@ -5,6 +5,8 @@ on:
     - cron: '0 8 * * 1'
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -24,7 +26,6 @@ jobs:
       - run: npm ci
       - name: Audit (high+critical only)
         run: npm audit --audit-level=high
-        continue-on-error: true
       - name: Generate JSON report
         run: npm audit --json > audit-report.json || true
       - uses: actions/upload-artifact@v4
@@ -47,7 +48,6 @@ jobs:
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
           extra_args: --only-verified
-        continue-on-error: true
 
   codeql:
     name: CodeQL Analysis

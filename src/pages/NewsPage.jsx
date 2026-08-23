@@ -20,7 +20,7 @@ const NewsPage = () => {
     const handleRegisterClick = (event) => {
         if (user) {
             // Auto register logged in user
-            if (event.attendees && event.attendees.some(a => a.email === user.email && a.status !== 'rejected')) {
+            if (event.is_registered_by_current_user) {
                 toast.error(t.you_are_registered);
                 return;
             }
@@ -43,7 +43,7 @@ const NewsPage = () => {
         const { event } = confirmModal;
         const toastId = toast.loading(t.cancelling || "Cancelling...");
         try {
-            await cancelRegistration('events', event.id, user.email);
+            await cancelRegistration('events', event.id, user.id);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
         } catch (error) {
             console.error(error);
@@ -126,7 +126,7 @@ const NewsPage = () => {
                     ) : (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {events.map((item) => {
-                                const isRegistered = user && item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected');
+                                const isRegistered = user && item.is_registered_by_current_user;
                                 return (
                                     <div key={item.id} className="bg-transparent rounded-xl flex flex-col hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
                                         <img
@@ -245,7 +245,7 @@ const NewsPage = () => {
                         <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
                             <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-start">{t.join_event || "Join Event"}</h4>
                             {user ? (
-                                selectedEvent.attendees?.some(a => a.email === user.email && a.status !== 'rejected') ? (
+                                selectedEvent.is_registered_by_current_user ? (
                                     <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg flex flex-col items-center gap-2">
                                         <span className="flex items-center gap-2 font-bold">
                                             <FaCheckCircle /> {t.already_registered || "You are registered."}

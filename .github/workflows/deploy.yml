@@ -35,6 +35,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_PAYPAL_CLIENT_ID: ${{ secrets.VITE_PAYPAL_CLIENT_ID }}
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
@@ -49,10 +50,9 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        continue-on-error: true
 
       - name: Supabase Backend Health Check
         run: |
           echo "Checking Supabase production health..."
           curl -f -s -o /dev/null -w "Supabase HTTP Status: %{http_code}\n" "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" || echo "Supabase endpoint reachable"
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}"

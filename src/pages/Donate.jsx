@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
@@ -10,10 +10,8 @@ import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 import { compressImage } from '../utils/imageUtils';
 
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { Elements } from '@stripe/react-stripe-js';
-import StripeCheckout from '../components/StripeCheckout';
-import { getStripe } from '../lib/stripe';
+
+const MAX_PROOF_SIZE = 10 * 1024 * 1024;
 
 const Donate = () => {
     const { t, language } = useLanguage();
@@ -36,9 +34,6 @@ const Donate = () => {
         related_item_title: null
     });
 
-    const [clientSecret, setClientSecret] = useState("");
-    const [stripeError, setStripeError] = useState(null);
-
     const handleDonateClick = (method) => {
         if (user) {
             openDonationModal(method);
@@ -57,8 +52,6 @@ const Donate = () => {
             phone: !prev.isAnonymous ? (user?.user_metadata?.phone || prev.phone) : ''
         }));
         setShowModal(true);
-        setClientSecret(""); // Reset stripe secret when opening modal
-        setStripeError(null);
     };
 
     const handleGuestContinue = () => {
@@ -71,104 +64,27 @@ const Donate = () => {
     };
 
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-
-    // Check for Stripe redirect status
-    useEffect(() => {
-        const clientSecret = searchParams.get('payment_intent_client_secret');
-        const redirectStatus = searchParams.get('redirect_status');
-
-        if (clientSecret && redirectStatus === 'succeeded') {
-            toast.success(t.donation_success || "Donation successful! Thank you.");
-        } else if (redirectStatus === 'failed') {
-            toast.error("Payment failed. Please try again.");
-        }
-    }, [searchParams, t]);
-
-    // Effect to fetch payment intent when amount changes and method is 'online'
-    useEffect(() => {
-        const fetchPaymentIntent = async () => {
-            if (donationForm.method === 'online' && donationForm.amount >= 10) {
-                try {
-                    const response = await fetch('/.netlify/functions/create-payment-intent', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            amount: donationForm.amount,
-                            currency: 'mad'
-                        }),
-                    });
-
-                    if (!response.ok) {
-                        const text = await response.text();
-                        let errorMsg = "Failed to initialize payment";
-                        try {
-                            const errorData = JSON.parse(text);
-                            errorMsg = errorData.error || errorMsg;
-                        } catch {
-                            console.error("Failed to parse error response:", text);
-                            errorMsg += ` (Status: ${response.status})`;
-                        }
-                        throw new Error(errorMsg);
-                    }
-
-                    const data = await response.json();
-                    setClientSecret(data.clientSecret);
-                    setStripeError(null);
-                } catch (error) {
-                    console.error("Error creating payment intent:", error);
-                    // Critical error - redirect to error page
-                    navigate('/error', { state: { error: error.message } });
-                }
-            } else {
-                setClientSecret("");
-                if (donationForm.amount > 0 && donationForm.amount < 10 && donationForm.method === 'online') {
-                    setStripeError("Minimum donation is 10 DH");
-                }
-            }
-        };
-
-        // Debounce fetching to avoid too many requests while typing
-        const timeoutId = setTimeout(() => {
-            if (showModal && donationForm.method === 'online') {
-                fetchPaymentIntent();
-            }
-        }, 500);
-
-        return () => clearTimeout(timeoutId);
-    }, [donationForm.amount, donationForm.method, showModal, navigate]);
-
-    const handleSuccess = async (details, methodOverride = null) => {
-        try {
-            const donationData = {
-                ...donationForm,
-                method: methodOverride || donationForm.method,
-                status: 'verified', // Or 'processing'
-                transaction_id: details.id
-            };
-
-            await addDonation(donationData);
-            toast.success(t.donation_success);
-            setShowModal(false);
-            setDonationForm({ name: '', amount: '', method: 'online' });
-            setClientSecret("");
-        } catch (error) {
-            console.error(error);
-            toast.error(t.donation_error);
-        }
-    };
-
-    const handlePayPalSuccess = async (details) => {
-        handleSuccess(details, 'paypal');
-    };
-
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        // Just store the file locally — don't upload yet
+
+        const isSupportedType = file.type === 'application/pdf' || file.type.startsWith('image/');
+        if (!isSupportedType) {
+            toast.error(t.invalid_file_type || 'Please upload an image or PDF file.');
+            e.target.value = '';
+            return;
+        }
+
+        if (file.size > MAX_PROOF_SIZE) {
+            toast.error(t.file_too_large || 'The proof file must be 10 MB or smaller.');
+            e.target.value = '';
+            return;
+        }
+
+        // Store locally; upload only after the user submits the transfer form.
         setSelectedFile(file);
     };
 
@@ -192,20 +108,22 @@ const Donate = () => {
         try {
             // Upload file now (on submit) if one was selected
             if (selectedFile) {
-                const compressed = await compressImage(selectedFile);
-                const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+                const isImage = selectedFile.type.startsWith('image/');
+                const uploadFile = isImage ? await compressImage(selectedFile) : selectedFile;
+                const extension = isImage ? 'jpg' : 'pdf';
+                const fileName = `${crypto.randomUUID()}.${extension}`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('donations')
-                    .upload(fileName, compressed);
+                    .upload(fileName, uploadFile, {
+                        contentType: isImage ? 'image/jpeg' : 'application/pdf',
+                        upsert: false
+                    });
 
                 if (uploadError) throw uploadError;
 
-                const { data: publicUrlData } = supabase.storage
-                    .from('donations')
-                    .getPublicUrl(fileName);
-
-                proofUrl = publicUrlData.publicUrl;
+                // Keep the bucket private; administrators should create short-lived signed URLs.
+                proofUrl = fileName;
             }
 
             await addDonation({ ...donationForm, proof_url: proofUrl });
@@ -214,7 +132,7 @@ const Donate = () => {
             setSelectedFile(null);
             setDonationForm({ name: '', amount: '', method: 'transfer', proof_url: null });
         } catch (error) {
-            console.error('Transfer submit error:', error);
+            if (import.meta.env.DEV) console.error('Transfer submit error:', error);
             toast.error(t.donation_error || "Failed to submit. Please try again.");
         } finally {
             setUploading(false);
@@ -494,61 +412,6 @@ const Donate = () => {
                     </div>
 
                     <div className="min-h-[150px]">
-                        {donationForm.method === 'paypal' && (
-                            <div className="mt-4">
-                                {donationForm.amount > 0 ? (
-                                    <PayPalScriptProvider options={{
-                                        "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test",
-                                        currency: "MAD",
-                                        intent: "capture"
-                                    }}>
-                                        <PayPalButtons
-                                            style={{ layout: "vertical", shape: "rect", label: "donate" }}
-                                            createOrder={(data, actions) => {
-                                                return actions.order.create({
-                                                    purchase_units: [{
-                                                        amount: { value: donationForm.amount },
-                                                        description: t.donation_to,
-                                                    }],
-                                                });
-                                            }}
-                                            onApprove={async (data, actions) => {
-                                                const details = await actions.order.capture();
-                                                handlePayPalSuccess(details);
-                                            }}
-                                            onError={(err) => toast.error((t.paypal_error) + err.message)}
-                                        />
-                                    </PayPalScriptProvider>
-                                ) : (
-                                    <div className="text-center text-gray-500 py-4">
-                                        {t.enter_amount_paypal}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {donationForm.method === 'online' && (
-                            <div className="mt-4">
-                                {clientSecret && donationForm.amount > 0 ? (
-                                    <Elements stripe={getStripe()} options={{ clientSecret }}>
-                                        <StripeCheckout
-                                            amount={donationForm.amount}
-                                            onSuccess={(details) => handleSuccess(details, 'stripe')}
-                                            onError={(err) => console.error(err)}
-                                        />
-                                    </Elements>
-                                ) : (
-                                    <div className="text-center text-gray-500 py-4">
-                                        {stripeError ? (
-                                            <span className="text-red-500">{stripeError}</span>
-                                        ) : (
-                                            t.enter_amount_stripe
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
                         {donationForm.method === 'transfer' && (
                             <div className="mt-4 space-y-4">
                                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">

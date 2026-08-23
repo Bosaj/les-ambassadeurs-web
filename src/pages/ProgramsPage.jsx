@@ -50,7 +50,7 @@ const ProgramsPage = () => {
     const handleJoinClick = (item, type) => {
         if (user) {
             // Check if user is already registered AND not rejected
-            if (item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected')) {
+            if (item.is_registered_by_current_user) {
                 toast.error(type === 'projects' ? t.already_supporting : t.already_registered);
                 return;
             }
@@ -74,7 +74,7 @@ const ProgramsPage = () => {
         const { item, type } = confirmModal.data;
         const toastId = toast.loading(t.cancelling || "Cancelling...");
         try {
-            await cancelRegistration(type, item.id, user.email);
+            await cancelRegistration(type, item.id, user.id);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
             // Don't close modal, let it update
         } catch (error) {
@@ -88,7 +88,7 @@ const ProgramsPage = () => {
 
 
     const renderCard = (item, type) => {
-        const isJoined = user && item.attendees && item.attendees.some(a => a.email === user.email && a.status !== 'rejected');
+        const isJoined = user && item.is_registered_by_current_user;
         const isProject = type === 'projects';
 
         const expired = isExpired(item.end_date || item.date);
@@ -293,7 +293,7 @@ const ProgramsPage = () => {
                             </div>
                         ) : (
                             <div className="text-center space-y-6 pt-4 border-t dark:border-gray-700">
-                                {(selectedItem.attendees && selectedItem.attendees.some(a => a.email === user.email && a.status !== 'rejected')) ? (
+                                {selectedItem.is_registered_by_current_user ? (
                                     <div className="p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl flex flex-col items-center gap-3">
                                         <FaCheckCircle className="text-5xl" />
                                         <span className="text-lg font-bold">

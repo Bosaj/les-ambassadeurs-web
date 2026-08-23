@@ -1,13 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { supabase } from '../lib/supabase';
 import LogoutAnimation from '../components/LogoutAnimation';
 import { AuthContext } from './contexts';
-
-// Flag that is ONLY set to true when the user explicitly clicks the Logout button.
-// This lets us distinguish a real logout from a false SIGNED_OUT caused by
-// a failed token refresh (e.g., ERR_NAME_NOT_RESOLVED on page refresh).
-let intentionalLogout = false;
 
 const syncProfileEmail = async (profile, authUser) => {
     if (profile && !profile.email && authUser.email) {
@@ -23,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState({ user: null, loading: true });
     const { user, loading } = authState;
 
-    const fetchProfile = async (session) => {
+    const fetchProfile = useCallback(async (session) => {
         const authUser = session.user;
         try {
             if (import.meta.env.DEV) console.log('[Auth v4] Fetching profile via NATIVE API for UID:', authUser.id);
@@ -32,7 +27,7 @@ export const AuthProvider = ({ children }) => {
             // This is because supabase-js v2 implicitly calls getSession() before every query,
             // which acquires an internal Mutex lock. If React Strict Mode interrupts the browser,
             // that lock becomes permanently deadlocked and all queries freeze locally.
-            const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${authUser.id}`;
+            const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(authUser.id)}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -69,7 +64,7 @@ export const AuthProvider = ({ children }) => {
             const fallbackUser = { role: 'volunteer', ...authUser };
             return fallbackUser;
         }
-    };
+    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -93,12 +88,7 @@ export const AuthProvider = ({ children }) => {
         };
 
         const handleSignOutEvent = () => {
-            if (!intentionalLogout) {
-                if (import.meta.env.DEV) console.warn('[AuthContext] 🚫 Ignoring unexpected SIGNED_OUT (token refresh network failure). User stays logged in.');
-                return;
-            }
-            if (import.meta.env.DEV) console.log('[AuthContext] 🔒 Intentional logout confirmed — clearing auth state.');
-            intentionalLogout = false;
+            if (import.meta.env.DEV) console.log('[AuthContext] Auth sign-out confirmed — clearing auth state.');
             if (isMounted) setAuthState({ user: null, loading: false });
         };
 
@@ -149,28 +139,30 @@ export const AuthProvider = ({ children }) => {
                 clearTimeout(timeout);
                 subscription.unsubscribe();
             };
-        }, []);
+        }, [fetchProfile]);
 
-        const login = async (email, password) => {
+        const login = useCallback(async (email, password) => {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
             });
             if (error) throw error;
+            if (!data.session) {
+                setAuthState(prev => ({ ...prev, loading: false }));
+                return null;
+            }
             const activeUser = await fetchProfile(data.session);
             setAuthState({ user: activeUser, loading: false });
             return activeUser;
-        };
+        }, [fetchProfile]);
 
         const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-        const logout = async () => {
+        const logout = useCallback(async () => {
             setIsLoggingOut(true);
 
             // Let the 2-second progress bar animation play fully
             await new Promise(resolve => setTimeout(resolve, 1800));
-
-            intentionalLogout = true;
 
             try {
                 // ✅ BYPASS supabase.auth.signOut() — it uses an internal async mutex that
@@ -196,34 +188,29 @@ export const AuthProvider = ({ children }) => {
             }, 100);
 
             globalThis.location.href = '/';
-        };
+        }, []);
 
-        const getURL = () => {
-            let url = globalThis.location.origin;
-            // Ensures the URL is correct for both local and production environments
-            return url;
-        };
-
-
-        const loginWithGoogle = async () => {
+        const loginWithGoogle = useCallback(async () => {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: getURL()
+                    redirectTo: globalThis.location.origin
                 }
             });
             if (error) throw error;
-        };
+        }, []);
 
-        const refreshProfile = async () => {
+        const refreshProfile = useCallback(async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
-                const activeUser = await fetchProfile(session.user);
+                const activeUser = await fetchProfile(session);
                 setAuthState(prev => ({ ...prev, user: activeUser }));
             }
-        };
+        }, [fetchProfile]);
 
-        const upgradeToMember = async (userId) => {
+        const upgradeToMember = useCallback(async (userId) => {
+            if (!user?.id || userId !== user.id) return { success: false, error: new Error('Not authorized') };
+
             try {
                 const { error } = await supabase
                     .from('profiles')
@@ -239,18 +226,15 @@ export const AuthProvider = ({ children }) => {
                 await refreshProfile();
                 return { success: true };
             } catch (error) {
-                console.error("Error upgrading to member:", error);
+                if (import.meta.env.DEV) console.error('Error upgrading to member:', error);
                 return { success: false, error };
             }
-        };
+        }, [refreshProfile, user]);
 
-        const hasPermission = (permission) => {
-            if (!user) return false;
-            // Super Admin Override
-            if (user.email === 'oussousselhadji@gmail.com') return true;
-            // Check permissions array
-            return user.permissions?.includes(permission);
-        };
+        const hasPermission = useCallback((permission) => {
+            if (!user || !permission) return false;
+            return user.permissions?.includes(permission) || false;
+        }, [user]);
 
         const contextValue = useMemo(() => ({
             user, login, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember, hasPermission, isLoggingOut, setIsLoggingOut

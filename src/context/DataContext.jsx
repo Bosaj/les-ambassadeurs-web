@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { getLocalizedContent } from '../utils/languageUtils';
@@ -7,8 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 
 export const DataProvider = ({ children }) => {
     const { user, loading: authLoading } = useAuth();
-    const hasFetchedPublicData = useRef(false);
-
+    const isAdmin = user?.role === 'admin';
     const [news, setNews] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [events, setEvents] = useState([]);
@@ -19,7 +18,12 @@ export const DataProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState([]); // Added to store user data
 
-    const fetchUsers = async () => {
+    const fetchUsers = React.useCallback(async () => {
+        if (!isAdmin) {
+            setUsers([]);
+            return;
+        }
+
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -31,9 +35,11 @@ export const DataProvider = ({ children }) => {
         } catch (error) {
             if (import.meta.env.DEV) console.error("Error fetching users:", error);
         }
-    };
+    }, [isAdmin]);
 
     const verifyMember = async (userId, action) => {
+        if (!isAdmin) return { success: false, error: new Error('Not authorized') };
+
         try {
             const updates = action === 'approve'
                 ? { membership_status: 'active', role: 'member', payment_status: 'paid' }
@@ -53,7 +59,7 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const fetchData = async () => {
+    const fetchData = React.useCallback(async () => {
         try {
             // Public data — news, events, programs, testimonials, partners are visible to everyone.
             // Do NOT guard with a session check here: these tables have public RLS policies,
@@ -68,7 +74,8 @@ export const DataProvider = ({ children }) => {
                 eventsResult,
                 { data: testimonialsData, error: testimonialsError },
                 { data: partnersData, error: partnersError },
-                { data: supportersData, error: supportersError }
+                { data: supportersData, error: supportersError },
+                attendanceResult
             ] = await Promise.all([
                 // 1. News
                 supabase
@@ -80,7 +87,7 @@ export const DataProvider = ({ children }) => {
                 // 2. Events (try with attendees join, fall back if it fails)
                 supabase
                     .from('events')
-                    .select('*, attendees:event_attendees(id, name, email, status, user_id)')
+                    .select('*, attendees:event_attendees(id, name, status)')
                     .order('is_pinned', { ascending: false })
                     .order('date', { ascending: false })
                     .then(result => {
@@ -109,7 +116,15 @@ export const DataProvider = ({ children }) => {
                     .order('created_at', { ascending: false }),
 
                 // 5. Public Supporters
-                supabase.rpc('get_public_supporters')
+                supabase.rpc('get_public_supporters'),
+
+                // 6. The current user's registrations only. Never expose attendee email/user IDs publicly.
+                user?.id
+                    ? supabase
+                        .from('event_attendees')
+                        .select('event_id, status')
+                        .eq('user_id', user.id)
+                    : Promise.resolve({ data: [], error: null })
             ]);
 
             // --- Process results ---
@@ -120,6 +135,16 @@ export const DataProvider = ({ children }) => {
             const { data: allEventsData, error: eventsError } = eventsResult;
             if (eventsError) throw eventsError;
 
+            const { data: ownAttendanceData, error: ownAttendanceError } = attendanceResult;
+            if (ownAttendanceError && import.meta.env.DEV) {
+                console.warn('Unable to load current-user registrations:', ownAttendanceError.message);
+            }
+            const ownAttendanceIds = new Set(
+                (ownAttendanceData || [])
+                    .filter(attendee => attendee.status !== 'rejected')
+                    .map(attendee => attendee.event_id)
+            );
+
             if (supportersError && import.meta.env.DEV) {
                 console.error("Error fetching supporters:", supportersError);
             }
@@ -129,6 +154,7 @@ export const DataProvider = ({ children }) => {
             (allEventsData || []).forEach(item => {
                 if (!item.attendees) item.attendees = [];
                 item.supporters = supportersList.filter(s => s.related_item_id === item.id);
+                item.is_registered_by_current_user = ownAttendanceIds.has(item.id);
 
                 const cat = item.category || 'program';
                 if (cat === 'program') p.push(item);
@@ -153,29 +179,28 @@ export const DataProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?.id]);
 
     useEffect(() => {
-        if (!authLoading && !hasFetchedPublicData.current) {
-            if (import.meta.env.DEV) console.log('[DataContext] 🔓 Auth initialization settled. Fetching public data securely...');
-            hasFetchedPublicData.current = true;
+        if (!authLoading) {
+            if (import.meta.env.DEV) console.log('[DataContext] Auth initialization settled. Fetching public data securely...');
             fetchData().catch(err => {
-                if (import.meta.env.DEV) console.error('[DataContext] ❌ Initial fetchData error:', err);
+                if (import.meta.env.DEV) console.error('[DataContext] Initial fetchData error:', err);
             });
         }
-    }, [authLoading]);
+    }, [authLoading, fetchData]);
 
     useEffect(() => {
         if (!authLoading) {
             if (user) {
-                if (import.meta.env.DEV) console.log('[DataContext] ✅ User identified — syncing private user data...');
+                if (import.meta.env.DEV) console.log('[DataContext] User identified — syncing private user data...');
                 fetchUsers();
             } else {
-                if (import.meta.env.DEV) console.log('[DataContext] 🔒 User is logged out — clearing private user data only.');
+                if (import.meta.env.DEV) console.log('[DataContext] User is logged out — clearing private user data only.');
                 setUsers([]);
             }
         }
-    }, [user, authLoading]);
+    }, [user, authLoading, fetchUsers]);
 
     // Helper to get localized string is now imported from utils
 
@@ -188,8 +213,10 @@ export const DataProvider = ({ children }) => {
     };
 
     const addPost = async (type, postData) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
-            console.log(`[DataContext] Starting addPost for type: ${type}`, postData);
+            if (import.meta.env.DEV) console.debug(`[DataContext] Starting addPost for type: ${type}`, postData);
             let table = '';
             let insertData = {};
 
@@ -234,7 +261,7 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            console.log(`[DataContext] table configured: ${table}, insertData payload:`, insertData);
+            if (import.meta.env.DEV) console.debug(`[DataContext] table configured: ${table}, insertData payload:`, insertData);
 
             // Adding a 15-second timeout in case Supabase fetch is completely frozen
             const fetchPromise = supabase.from(table).insert([insertData]).select().single();
@@ -242,10 +269,10 @@ export const DataProvider = ({ children }) => {
             
             const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
-            console.log(`[DataContext] DB insert returned – data:`, data, `, error:`, error);
+            if (import.meta.env.DEV) console.debug(`[DataContext] DB insert returned – data:`, data, `, error:`, error);
             if (error) throw error;
 
-            console.log(`[DataContext] Optimistically updating local state for ${type}`);
+            if (import.meta.env.DEV) console.debug(`[DataContext] Optimistically updating local state for ${type}`);
             // Optimistic update — prepend new item to local state instantly (no full refetch)
             const newItem = { ...data, attendees: [] };
             if (type === 'news') setNews(prev => [newItem, ...prev]);
@@ -257,14 +284,16 @@ export const DataProvider = ({ children }) => {
 
             return data;
         } catch (error) {
-            console.error(`[Production Trace] Error adding ${type}:`, error);
+            if (import.meta.env.DEV) console.error(`Error adding ${type}:`, error);
             throw error;
         }
     };
 
     const updatePost = async (type, id, postData) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
-            console.log(`[DataContext] Starting updatePost for type: ${type}, id: ${id}`, postData);
+            if (import.meta.env.DEV) console.debug(`[DataContext] Starting updatePost for type: ${type}, id: ${id}`, postData);
             let table = '';
             let updateData = {};
 
@@ -306,7 +335,7 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            console.log(`[DataContext] table configured: ${table}, updateData payload:`, updateData);
+            if (import.meta.env.DEV) console.debug(`[DataContext] table configured: ${table}, updateData payload:`, updateData);
 
             // Adding a 15-second timeout in case Supabase fetch is completely frozen
             const fetchPromise = supabase.from(table).update(updateData).eq('id', id).select().single();
@@ -314,10 +343,10 @@ export const DataProvider = ({ children }) => {
             
             const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
-            console.log(`[DataContext] DB update returned – data:`, data, `, error:`, error);
+            if (import.meta.env.DEV) console.debug(`[DataContext] DB update returned – data:`, data, `, error:`, error);
             if (error) throw error;
 
-            console.log(`[DataContext] Optimistically updating local state for ${type}`);
+            if (import.meta.env.DEV) console.debug(`[DataContext] Optimistically updating local state for ${type}`);
             // Optimistic update
             const updateState = (setter) => setter(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
             
@@ -330,13 +359,15 @@ export const DataProvider = ({ children }) => {
 
             return data;
         } catch (error) {
-            console.error(`[Production Trace] Error updating ${type}:`, error);
+            if (import.meta.env.DEV) console.error(`Error updating ${type}:`, error);
             throw error;
         }
     };
 
 
     const deletePost = async (type, id) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
             let table = '';
             if (type === 'news') table = 'news';
@@ -367,6 +398,8 @@ export const DataProvider = ({ children }) => {
     };
 
     const togglePin = async (type, id, currentStatus) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
             let table = '';
             if (type === 'news') table = 'news';
@@ -393,19 +426,23 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const registerForEvent = async (type, eventId, userDetails) => {
+    const registerForEvent = async (type, eventId, userDetails = {}) => {
         try {
+            const authenticatedUserId = user?.id || null;
+            const attendeeEmail = authenticatedUserId ? user.email : userDetails.email;
+            if (!attendeeEmail) throw new Error('An email address is required to register');
 
-
-            // 1. Database Insert/Upsert
-            const safeName = userDetails.name || userDetails.email || 'Anonymous';
+            // 1. Database Insert/Upsert. Never trust a submitted user ID for an authenticated session.
+            const safeName = authenticatedUserId
+                ? (user.full_name || user.user_metadata?.full_name || attendeeEmail)
+                : (userDetails.name || attendeeEmail || 'Anonymous');
             const { error, data } = await supabase
                 .from('event_attendees')
                 .upsert([{
                     event_id: eventId,
                     name: safeName,
-                    email: userDetails.email,
-                    user_id: userDetails.id || null, // Save user_id if available
+                    email: attendeeEmail,
+                    user_id: authenticatedUserId,
                     status: 'pending' // Reset status to pending on re-registration
                 }], { onConflict: 'event_id, email' })
                 .select();
@@ -422,7 +459,8 @@ export const DataProvider = ({ children }) => {
                         const newAttendee = {
                             id: data?.[0]?.id || Date.now(),
                             name: safeName,
-                            email: userDetails.email,
+                            email: authenticatedUserId ? undefined : attendeeEmail,
+                            user_id: authenticatedUserId,
                             status: 'pending'
                         };
                         const updatedItem = {
@@ -447,15 +485,15 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const cancelRegistration = async (type, eventId, email) => {
+    const cancelRegistration = async (type, eventId, userId) => {
+        if (!userId || userId !== user?.id) throw new Error('Not authorized');
+
         try {
-
-
-            // 1. Database Delete
+            // 1. Database Delete. RLS must also enforce ownership server-side.
             const { error } = await supabase
                 .from('event_attendees')
                 .delete()
-                .match({ event_id: eventId, email: email });
+                .match({ event_id: eventId, user_id: userId });
 
             if (error) throw error;
 
@@ -465,7 +503,8 @@ export const DataProvider = ({ children }) => {
                     if (item.id === eventId) {
                         const updatedItem = {
                             ...item,
-                            attendees: (item.attendees || []).filter(a => a.email !== email)
+                            is_registered_by_current_user: false,
+                            attendees: (item.attendees || []).filter(a => !a.user_id || a.user_id !== userId)
                         };
                         return updatedItem;
                     }
@@ -485,6 +524,8 @@ export const DataProvider = ({ children }) => {
     };
 
     const updateAttendanceStatus = async (attendeeId, status) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
             const { data, error } = await supabase
                 .from('event_attendees')
@@ -519,6 +560,8 @@ export const DataProvider = ({ children }) => {
     };
 
     const addDonation = async (donationData) => {
+        if (!donationData?.name || !donationData?.method) throw new Error('Donation details are incomplete');
+
         try {
             const { error } = await supabase
                 .from('donations')
@@ -527,6 +570,7 @@ export const DataProvider = ({ children }) => {
                     amount: donationData.amount,
                     method: donationData.method,
                     email: donationData.email,
+                    user_id: user?.id || null,
                     proof_url: donationData.proof_url,
                     status: 'pending',
                     donation_type: donationData.donation_type || 'general',
@@ -544,8 +588,8 @@ export const DataProvider = ({ children }) => {
 
     // --- New Dashboard Features ---
 
-    const fetchUserActivities = React.useCallback(async (email) => {
-        if (!email) return [];
+    const fetchUserActivities = React.useCallback(async (userId) => {
+        if (!userId || (userId !== user?.id && !isAdmin)) return [];
         try {
             const { data, error } = await supabase
                 .from('event_attendees')
@@ -555,7 +599,7 @@ export const DataProvider = ({ children }) => {
                     created_at,
                     events ( id, title, date, image_url, category )
                 `)
-                .eq('email', email)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -564,24 +608,16 @@ export const DataProvider = ({ children }) => {
             if (import.meta.env.DEV) console.error("Error fetching activities:", err);
             return [];
         }
-    }, []);
+    }, [user?.id, isAdmin]);
 
-    const fetchUserDonations = React.useCallback(async (email, userId = null) => {
-        if (!email && !userId) return [];
+    const fetchUserDonations = React.useCallback(async (userId) => {
+        if (!userId || (userId !== user?.id && !isAdmin)) return [];
         try {
-            let query = supabase
+            const { data, error } = await supabase
                 .from('donations')
                 .select('*')
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false });
-
-            if (userId) {
-                // Fetch by ID OR email to be comprehensive
-                query = query.or(`email.eq.${email},user_id.eq.${userId}`);
-            } else {
-                query = query.eq('email', email);
-            }
-
-            const { data, error } = await query;
 
             if (error) throw error;
             return data || [];
@@ -589,9 +625,11 @@ export const DataProvider = ({ children }) => {
             if (import.meta.env.DEV) console.error("Error fetching donations:", err);
             return [];
         }
-    }, []);
+    }, [user?.id, isAdmin]);
 
     const fetchAllDonations = React.useCallback(async () => {
+        if (!isAdmin) return [];
+
         try {
             const { data, error } = await supabase
                 .from('donations')
@@ -604,9 +642,11 @@ export const DataProvider = ({ children }) => {
             if (import.meta.env.DEV) console.error("Error fetching all donations:", err);
             return [];
         }
-    }, []);
+    }, [isAdmin]);
 
     const updateDonationStatus = React.useCallback(async (id, status) => {
+        if (!isAdmin) return false;
+
         try {
             const { data, error } = await supabase
                 .from('donations')
@@ -625,9 +665,11 @@ export const DataProvider = ({ children }) => {
             if (import.meta.env.DEV) console.error("Error updating donation status:", err);
             return false;
         }
-    }, []);
+    }, [isAdmin]);
 
     const deleteDonation = React.useCallback(async (id) => {
+        if (!isAdmin) return false;
+
         try {
             const { error } = await supabase
                 .from('donations')
@@ -640,14 +682,16 @@ export const DataProvider = ({ children }) => {
             if (import.meta.env.DEV) console.error("Error deleting donation:", err);
             return false;
         }
-    }, []);
+    }, [isAdmin]);
 
 
     const submitSuggestion = async (suggestionData) => {
+        if (!user?.id) return { data: null, error: new Error('Authentication required') };
+
         try {
             const { data, error } = await supabase
                 .from('event_suggestions')
-                .insert([suggestionData])
+                .insert([{ ...suggestionData, user_id: user.id }])
                 .select();
 
             if (error) throw error;
@@ -659,7 +703,7 @@ export const DataProvider = ({ children }) => {
     };
 
     const fetchUserSuggestions = async (userId) => {
-        if (!userId) return [];
+        if (!userId || (userId !== user?.id && !isAdmin)) return [];
         try {
             const { data, error } = await supabase
                 .from('event_suggestions')
@@ -676,7 +720,7 @@ export const DataProvider = ({ children }) => {
     };
 
     const fetchMembershipHistory = async (userId) => {
-        if (!userId) return [];
+        if (!userId || (userId !== user?.id && !isAdmin)) return [];
         try {
             const { data, error } = await supabase
                 .from('annual_memberships')
@@ -710,6 +754,8 @@ export const DataProvider = ({ children }) => {
     }, []);
 
     const addGalleryImage = async (imageData) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
             const { data, error } = await supabase
                 .from('gallery_images')
@@ -732,6 +778,8 @@ export const DataProvider = ({ children }) => {
     };
 
     const updateGalleryImage = async (id, imageData) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
             const { data, error } = await supabase
                 .from('gallery_images')
@@ -755,6 +803,8 @@ export const DataProvider = ({ children }) => {
     };
 
     const deleteGalleryImage = async (id) => {
+        if (!isAdmin) throw new Error('Not authorized');
+
         try {
             const { error } = await supabase
                 .from('gallery_images')
@@ -772,7 +822,7 @@ export const DataProvider = ({ children }) => {
     return (
         <DataContext.Provider value={{
             news, programs, events, projects, testimonials, users, partners, galleryImages,
-            addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin,
+            addPost, updatePost, deletePost, registerForEvent, addDonation, togglePin, fetchData,
             getLocalizedContent, loading,
             fetchUserActivities, fetchUserDonations, submitSuggestion, fetchUserSuggestions,
             verifyMember, updateAttendanceStatus, cancelRegistration, fetchAllDonations, updateDonationStatus, deleteDonation, fetchMembershipHistory,

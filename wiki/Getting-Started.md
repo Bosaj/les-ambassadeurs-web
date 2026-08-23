@@ -29,13 +29,14 @@ This document walks you through setting up and running the **Les Ambassadeurs du
    Provide your specific keys:
    ```ini
    # Public client-side variables (bundled into browser)
-   VITE_SUPABASE_URL=https://mimfwguttesvrmejlibq.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
-   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+   VITE_PAYPAL_CLIENT_ID=your_paypal_client_id
 
    # Serverless & Administrative Secrets (NEVER committed to git)
-   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
-   STRIPE_SECRET_KEY=sk_test_...
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
    PAYPAL_CLIENT_ID=your_paypal_client_id
    PAYPAL_CLIENT_SECRET=your_paypal_secret
    ```
@@ -60,6 +61,6 @@ This document walks you through setting up and running the **Les Ambassadeurs du
 | `npm run dev` | Launches local Vite development server with Hot Module Replacement. |
 | `npm run build` | Compiles optimized production bundle into `dist/`. |
 | `npm run lint` | Checks JavaScript and JSX code quality with ESLint. |
-| `npm test` | Runs unit test suites with Vitest in watch mode. |
-| `npm test -- --run` | Executes all test suites once for CI validation. |
+| `npm test` | Executes all Vitest suites once. |
+| `npm run test:watch` | Runs Vitest in watch mode during local development. |
 | `npm run preview` | Serves the local `dist/` production build. |

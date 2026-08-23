@@ -3,8 +3,6 @@ name: Publish Package
 on:
   release:
     types: [published]
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -40,4 +38,3 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true

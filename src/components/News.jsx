@@ -39,7 +39,7 @@ const News = () => {
         const eventId = confirmModal.id;
         const toastId = toast.loading(t.cancelling || "Cancelling...");
         try {
-            await cancelRegistration('event', eventId, user?.email);
+            await cancelRegistration('event', eventId, user?.id);
             toast.success(t.registration_cancelled || "Cancelled successfully", { id: toastId });
             // Don't close modal, it will update automatically
         } catch (error) {
@@ -213,7 +213,7 @@ const News = () => {
                                 {t.join_event || "Join Event"}
                             </h4>
 
-                            {(user && currentNewsItem.attendees && currentNewsItem.attendees.some(a => a.email === user.email)) ? (
+                            {(user && currentNewsItem.is_registered_by_current_user) ? (
                                 <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg flex flex-col items-center gap-2">
                                     <span className="flex items-center gap-2 font-bold">
                                         <FaArrowRight className={`${language === 'ar' ? 'ml-1 rotate-180' : 'mr-1'}`} /> {t.already_registered || "You are registered."}

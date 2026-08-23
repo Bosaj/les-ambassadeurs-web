@@ -1,11 +1,30 @@
-# Secrets scanning configuration
-# VITE_ prefixed environment variables are PUBLIC and meant to be bundled into the client
-# They should NOT be treated as secrets (they're exposed to browsers by design)
+# VITE_ prefixed environment variables are public and bundled into the client.
+# They must never contain server-side secrets.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
 [build.environment]
-  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY,VITE_STRIPE_PUBLISHABLE_KEY"
+  NODE_VERSION = "20"
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY,VITE_STRIPE_PUBLISHABLE_KEY,VITE_PAYPAL_CLIENT_ID"
   SECRETS_SCAN_OMIT_PATHS = ".env.example"
 
+# Vite/React is a client-side SPA; preserve deep links on Netlify.
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Baseline response hardening that does not block Stripe, PayPal, Supabase,
+# OpenStreetMap, or externally hosted image assets. Add a tested CSP only after
+# inventorying all runtime origins used by the deployed application.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"

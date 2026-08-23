@@ -16,28 +16,28 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     // Auth resolved: no user → redirect to login
     if (!user) {
-        console.warn(`[ProtectedRoute] No user found! Redirecting to /login...`);
+        if (import.meta.env.DEV) console.debug('[ProtectedRoute] No user found; redirecting to login.');
         return <Navigate to="/login" replace />;
     }
 
     // Role check
     if (requiredRole && user.role !== requiredRole) {
-        console.warn(`[ProtectedRoute] Role mismatch! Req: ${requiredRole}, User role: ${user.role}`);
+        if (import.meta.env.DEV) console.debug(`[ProtectedRoute] Role mismatch; required: ${requiredRole}, actual: ${user.role}`);
         // Admin can access volunteer routes
         if (user.role === 'admin' && requiredRole === 'volunteer') {
             return children;
         }
         // Redirect to their correct dashboard
         if (user.role === 'admin') {
-            console.warn(`[ProtectedRoute] Sending admin back to dashboard/admin`);
+            if (import.meta.env.DEV) console.debug('[ProtectedRoute] Sending admin back to dashboard/admin.');
             return <Navigate to="/dashboard/admin" replace />;
         }
         if (user.role === 'volunteer') {
-            console.warn(`[ProtectedRoute] Sending volunteer back to dashboard/volunteer`);
+            if (import.meta.env.DEV) console.debug('[ProtectedRoute] Sending volunteer back to dashboard/volunteer.');
             return <Navigate to="/dashboard/volunteer" replace />;
         }
 
-        console.warn(`[ProtectedRoute] Sending unknown role back to root /`);
+        if (import.meta.env.DEV) console.debug('[ProtectedRoute] Sending unknown role back to root.');
         return <Navigate to="/" replace />;
     }
 

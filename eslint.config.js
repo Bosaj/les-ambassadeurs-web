@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist', '.netlify', 'netlify/functions', 'check_events.js'] },
+  { ignores: ['dist', '.netlify', 'netlify/functions/**/*.test.js', 'check_events.js'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -35,6 +35,18 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+    },
+  },
+  {
+    files: ['netlify/functions/**/*.{js,jsx}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: globals.node,
+      sourceType: 'module',
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      'no-console': 'off',
     },
   },
 ]

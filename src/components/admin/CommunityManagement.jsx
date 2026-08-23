@@ -16,7 +16,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
     const [selectedUserForHistory, setSelectedUserForHistory] = useState(null);
     const [loading, setLoading] = useState(true);
     const { language } = useLanguage();
-    const { updateAttendanceStatus, fetchData: refreshGlobalData, cancelRegistration } = useData();
+    const { updateAttendanceStatus, fetchData: refreshGlobalData } = useData();
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, data: null });
     const [awardModal, setAwardModal] = useState({ isOpen: false, user: null });
 
@@ -119,7 +119,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
                 toast.success(t.rejected || "Rejected", { id: toastId });
             } else if (type === 'delete') {
                 // Use data.event_id directly from the attendee record
-                await cancelRegistration(data.events?.category || 'events', data.event_id, data.email);
+                await supabase.from('event_attendees').delete().eq('id', data.id);
                 setAttendees(prev => prev.filter(attendee => attendee.id !== data.id));
                 toast.success(t.deleted_success || "Record deleted successfully", { id: toastId });
             }

@@ -50,7 +50,7 @@ const AdminManagement = () => {
             .from('profiles')
             .select('*')
             .eq('role', 'admin');
-        console.log("Fetched admins:", data);
+        if (import.meta.env.DEV) console.debug('Fetched admins:', data?.length || 0);
         if (data) setAdmins(data);
     };
 
@@ -69,9 +69,9 @@ const AdminManagement = () => {
 
     const handleApprove = async (id) => {
         try {
-            console.log("Approving request for ID:", id);
+            if (import.meta.env.DEV) console.debug('Approving admin request:', id);
             const { error, data } = await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id).select();
-            console.log("Update result:", { error, data });
+            if (import.meta.env.DEV) console.debug('Admin request update completed:', { ok: !error, hasData: !!data });
 
             if (error) throw error;
 
@@ -85,7 +85,7 @@ const AdminManagement = () => {
             });
 
             toast.success(t.request_approved);
-            console.log("Refreshing data...");
+            if (import.meta.env.DEV) console.debug('Refreshing admin data...');
             await fetchRequests();
             await fetchAdmins();
         } catch (error) {
@@ -118,23 +118,8 @@ const AdminManagement = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            // Mock invite for now as RPC might not be set up
-            // await supabase.rpc('make_admin_by_email', { target_email: inviteEmail });
-
-            // Try to find user to send notification
-            const { data: user } = await supabase.from('profiles').select('id').eq('email', inviteEmail).single();
-            if (user) {
-                await supabase.from('notifications').insert({
-                    user_id: user.id,
-                    type: 'info',
-                    title: t.admin_invitation || "Admin Invitation",
-                    message: t.admin_invitation_msg || "You have been invited to become an admin.",
-                    is_read: false
-                });
-            }
-
-            toast.success("Invitation sent (Mock)");
-            setInviteEmail('');
+            toast.error(t.admin_invitation_unavailable || 'Admin invitations are not configured.');
+            return;
         } catch (error) {
             console.error(error);
             toast.error("Failed to invite");
@@ -211,12 +196,7 @@ const AdminManagement = () => {
 
     const openPermissionModal = (admin) => {
         setSelectedAdmin(admin);
-        // Super Admin acts as having all permissions
-        if (admin.email === 'oussousselhadji@gmail.com') {
-            setPermissions(allPermissions.map(p => p.id));
-        } else {
-            setPermissions(admin.permissions || []);
-        }
+        setPermissions(admin.permissions || []);
         setAdminTitle(admin.admin_title || '');
     };
 
@@ -451,8 +431,8 @@ const AdminDashboard = () => {
         setUserDetailsLoading(true);
         try {
             const [activities, donations, suggestions] = await Promise.all([
-                fetchUserActivities(userProfile.email),
-                fetchUserDonations(userProfile.email, userProfile.id),
+                fetchUserActivities(userProfile.id),
+                fetchUserDonations(userProfile.id),
                 fetchUserSuggestions(userProfile.id)
             ]);
             setUserDetails({ activities, donations, suggestions });
@@ -593,21 +573,21 @@ const AdminDashboard = () => {
         const toastId = toast.loading(t.processing || "Processing...");
 
         try {
-            console.log(`[AdminDashboard] Awaiting action for ${targetType}...`);
+            if (import.meta.env.DEV) console.debug(`[AdminDashboard] Awaiting action for ${targetType}...`);
             if (editingId) {
                 await updatePost(targetType, editingId, formData);
             } else {
                 await addPost(targetType, formData);
             }
-            console.log(`[AdminDashboard] Action resolved successfully for ${targetType}!`);
+            if (import.meta.env.DEV) console.debug(`[AdminDashboard] Action resolved successfully for ${targetType}!`);
             
             // Adding aggressive fallbacks to prevent undefined strings from crashing toast
             toast.success(editingId ? (t.item_updated_success || "Item updated successfully!") : (t.item_added_success || "Item added successfully!"), { id: toastId });
             
-            console.log(`[AdminDashboard] Closing modal and resetting form...`);
+            if (import.meta.env.DEV) console.debug('[AdminDashboard] Closing modal and resetting form...');
             handleCancelEdit(); // Reset form & close modal
         } catch (error) {
-            console.error("[AdminDashboard] Error in handleFormSubmit:", error);
+            if (import.meta.env.DEV) console.error('[AdminDashboard] Error in handleFormSubmit:', error);
             toast.error(t.error_adding_item || "Error saving item. Check console.", { id: toastId });
         }
     };

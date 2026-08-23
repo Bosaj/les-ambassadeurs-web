@@ -3,7 +3,7 @@ Testing Guide
 Stack: Vitest + @testing-library/react + jsdom
 
 Run: npm test
-Watch: npm test -- --watch
+Watch: npm run test:watch
 Verbose: npm test -- --reporter=verbose
 
 Location: src/__tests__/ and src/tests/

@@ -1,11 +1,6 @@
 import React from 'react';
-import { useData } from '../hooks/useData';
-import { useLanguage } from '../context/LanguageContext';
 
 const AttendeesList = ({ attendees, max = 3, size = "w-8 h-8", showName = false }) => {
-    const { users = [] } = useData() || {};
-    const { language } = useLanguage();
-
     if (!attendees || attendees.length === 0) return null;
 
     // Filter out rejected attendees
@@ -16,22 +11,10 @@ const AttendeesList = ({ attendees, max = 3, size = "w-8 h-8", showName = false 
     const displayedAttendees = validAttendees.slice(0, max);
     // const remainingCount = validAttendees.length - max; // Optional: if we want to show +X in the avatar stack itself
 
-    const getAttendeeDetails = (attendee) => {
-        const user = users.find(u => u.id === attendee.user_id || u.email === attendee.email);
-
-        let displayName = attendee.name || (attendee.email ? attendee.email.split('@')[0] : 'Guest');
-        let avatar = user?.avatar_url || null;
-
-        if (user) {
-            if (language === 'ar' && user.full_name_ar) {
-                displayName = user.full_name_ar;
-            } else if (user.full_name) {
-                displayName = user.full_name;
-            }
-        }
-
-        return { displayName, avatar };
-    };
+    const getAttendeeDetails = (attendee) => ({
+        displayName: attendee.name || 'Participant',
+        avatar: attendee.avatar_url || null
+    });
 
     return (
         <div className="flex items-center -space-x-2">
