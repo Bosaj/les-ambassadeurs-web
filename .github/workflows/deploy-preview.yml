@@ -40,8 +40,8 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          npm install -g netlify-cli
-          OUTPUT=$(netlify deploy --dir=dist --json 2>/dev/null)
+          npm install -g netlify-cli@18.1.0 --no-fund --no-audit
+          OUTPUT=$(netlify deploy --dir=dist --json)
           PREVIEW_URL=$(echo $OUTPUT | python3 -c "import sys,json; print(json.load(sys.stdin).get('deploy_url',''))")
           echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
 

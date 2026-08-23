@@ -1,24 +1,40 @@
 ﻿bug:
-  - src/**/*.jsx
-  - src/**/*.js
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/**/*.jsx'
+          - 'src/**/*.js'
 enhancement:
-  - src/pages/**
-  - src/components/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/pages/**'
+          - 'src/components/**'
 documentation:
-  - '**/*.md'
-  - docs/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
 i18n:
-  - src/translations.js
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/translations.js'
 gallery:
-  - src/components/GalleryPreview.jsx
-  - src/pages/GalleryPage.jsx
-  - src/components/admin/GalleryManagement.jsx
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/components/GalleryPreview.jsx'
+          - 'src/pages/GalleryPage.jsx'
+          - 'src/components/admin/GalleryManagement.jsx'
 auth:
-  - src/context/AuthContext.jsx
-  - src/hooks/useAuth.js
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/context/AuthContext.jsx'
+          - 'src/hooks/useAuth.js'
 payments:
-  - src/pages/Donate.jsx
-  - netlify/functions/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/pages/Donate.jsx'
+          - 'netlify/functions/**'
 performance:
-  - vite.config.js
-  - package.json
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'vite.config.js'
+          - 'package.json'
