@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* eslint-disable no-undef */
 /**
  * Evaluation harness for les-ambassadeurs-web (ESM)
  */

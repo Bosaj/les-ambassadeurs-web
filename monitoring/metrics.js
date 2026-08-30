@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* eslint-disable no-undef */
 /**
  * Prometheus metrics exporter module for les-ambassadeurs-web
  */

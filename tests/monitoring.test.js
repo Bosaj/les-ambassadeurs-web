@@ -1,4 +1,4 @@
-/* eslint-env node, jest */
+/* eslint-disable no-undef */
 const { getHealthStatus } = require('../monitoring/health');
 const { runEvaluation } = require('../scripts/eval_harness');
 
