@@ -1,7 +1,7 @@
 /**
  * Health check controller for les-ambassadeurs-web
  */
-function getHealthStatus() {
+export function getHealthStatus() {
   return {
     service: 'les-ambassadeurs-web',
     status: 'UP',
@@ -10,4 +10,10 @@ function getHealthStatus() {
   };
 }
 
-module.exports = { getHealthStatus };
+export function checkLiveness() {
+  return true;
+}
+
+export function checkReadiness() {
+  return true;
+}

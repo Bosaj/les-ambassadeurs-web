@@ -1,10 +1,10 @@
 /**
- * Evaluation harness for ESM Node.js environment
+ * Evaluation harness for les-ambassadeurs-web (ESM)
  */
 import { getHealthStatus } from '../monitoring/health.js';
 
 function runEvaluation() {
-  console.log("Running Node.js ESM evaluation harness...");
+  console.log("Running Node.js ESM evaluation harness for les-ambassadeurs-web...");
   let isHealthy = true;
   try {
     const health = getHealthStatus();
