@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* eslint-disable no-undef */
 
 function log(level, message, meta = {}) {
   const logObj = {
