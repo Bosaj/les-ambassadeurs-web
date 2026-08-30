@@ -1,3 +1,5 @@
+/* eslint-env node, jest */
+/* global process, require, module, describe, test, expect */
 /**
  * Health check controller for les-ambassadeurs-web
  */

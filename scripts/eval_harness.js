@@ -1,3 +1,5 @@
+/* eslint-env node, jest */
+/* global process, require, module, describe, test, expect */
 /**
  * Evaluation harness for les-ambassadeurs-web (ESM)
  */

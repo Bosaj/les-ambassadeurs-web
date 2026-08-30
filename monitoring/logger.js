@@ -1,4 +1,5 @@
-const fs = require('fs');
+/* eslint-env node, jest */
+/* global process, require, module, describe, test, expect */
 
 function log(level, message, meta = {}) {
   const logObj = {
