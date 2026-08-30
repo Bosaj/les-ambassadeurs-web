@@ -1,5 +1,4 @@
-/* eslint-env node, jest */
-/* global process, require, module, describe, test, expect */
+/* eslint-env node */
 /**
  * Evaluation harness for les-ambassadeurs-web (ESM)
  */
@@ -11,7 +10,7 @@ function runEvaluation() {
   try {
     const health = getHealthStatus();
     isHealthy = health.status === "UP";
-  } catch (e) {}
+  } catch (e) { /* ignore */ }
 
   const results = {
     project: "les-ambassadeurs-web",
