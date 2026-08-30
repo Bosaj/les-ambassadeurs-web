@@ -1,5 +1,4 @@
 /* eslint-env node, jest */
-/* global process, require, module, describe, test, expect */
 const { getHealthStatus } = require('../monitoring/health');
 const { runEvaluation } = require('../scripts/eval_harness');
 
