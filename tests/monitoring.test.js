@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
-const { getHealthStatus } = require('../monitoring/health');
-const { runEvaluation } = require('../scripts/eval_harness');
+import { getHealthStatus } from '../monitoring/health.js';
+import { runEvaluation } from '../scripts/eval_harness.js';
 
 describe('les-ambassadeurs-web Observability & QA', () => {
   test('health status returns UP', () => {
