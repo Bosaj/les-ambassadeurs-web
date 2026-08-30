@@ -1,3 +1,5 @@
+/* eslint-env node, jest */
+/* global process, require, module, describe, test, expect */
 /**
  * Prometheus metrics exporter module for les-ambassadeurs-web
  */
