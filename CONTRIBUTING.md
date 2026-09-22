@@ -1,35 +1,31 @@
-﻿# Contributing to Les Ambassadeurs du Bien
+# Contributing Guidelines
 
-Thank you for your interest in contributing! Please read [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
+Thank you for your interest in contributing to this project!
 
-## Quick Start
+## Code of Conduct
 
-1. Fork the repository
-2. Clone your fork: git clone https://github.com/YOUR_USERNAME/les-ambassadeurs-web.git
-3. Create a branch: git checkout -b feat/your-feature-name
-4. Copy .env.example to .env and fill in the values
-5. Install dependencies: 
-pm install
-6. Start development server: 
-pm run dev
-7. Make your changes
-8. Run lint and tests: 
-pm run lint && npm test
-9. Commit using conventional commits: git commit -m "feat: add new feature"
-10. Push and open a Pull Request
+By participating in this project, you agree to abide by the terms of our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Branch Naming
-- eat/feature-name — new features
-- ix/bug-description — bug fixes
-- docs/what-changed — documentation
-- chore/task-name — maintenance
+## Getting Started
 
-## Commit Convention
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-- eat: — new feature
-- ix: — bug fix
-- docs: — documentation
-- perf: — performance
-- chore: — maintenance
-- efactor: — code refactoring
-- 	est: — tests
+1. **Fork the Repository** on GitHub.
+2. **Clone your fork** locally:
+   ```bash
+   git clone https://github.com/Bosaj/<repo-name>.git
+   ```
+3. **Create a Feature Branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+## Development Workflow
+
+- Follow clean code practices, PEP 8 / ESLint formatting guidelines, and include relevant documentation for new features.
+- Ensure all automated tests pass before submitting changes.
+- Write clear, conventional commit messages (`feat: ...`, `fix: ...`, `docs: ...`).
+
+## Pull Request Process
+
+1. Push your changes to your fork.
+2. Open a Pull Request targeting the `main` branch.
+3. Provide a clear description of the problem solved, architectural choices made, and screenshots/logs if applicable.
