@@ -13,8 +13,6 @@
 
 ![Project Banner](public/images/new_ABV.jpg)
 
-[![CI Status](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/ci.yml/badge.svg)](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/ci.yml)
-[![Security Scan](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/security-scan.yml/badge.svg)](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/security-scan.yml)
 [![Latest Release](https://img.shields.io/github/v/release/Bosaj/les-ambassadeurs-web?color=blue&label=version)](https://github.com/Bosaj/les-ambassadeurs-web/releases)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/ee33b656-05db-4629-b6ec-55ed881b3d90/deploy-status)](https://a-a-b-v.netlify.app/)
