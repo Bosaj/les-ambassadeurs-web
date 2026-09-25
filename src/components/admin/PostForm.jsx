@@ -25,7 +25,7 @@ const PostForm = ({
             const compressed = await compressImage(file);
             const fileExt = 'jpg';
             const fileName = `${type}/${Math.random()}.${fileExt}`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
                 .from('images')
                 .upload(fileName, compressed, {
                     cacheControl: '3600',

@@ -11,6 +11,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 - **Deploy & Environment Status workflow** (`deploy.yml`): Netlify production deploy with deployment status reporting and a Supabase backend health check on every push to `main`
 - **Publish Package workflow** (`package.yml`): builds and publishes the app to GitHub Packages on release/push to `main`
 
+- **Web CI** (`web_ci.yml`): lint, unit tests, production dependency audit, and build on every push/PR to `main` (#129)
+- **Real gallery**: 44 photos from four association events (Nov 2024 meeting, Feb 2025 youth trip, Feb 2025 volunteer training, Mar 2025 children's celebration), resized to 1920px with EXIF/GPS stripped, with AR/EN/FR captions (#129)
+- **Tests**: admin invite, ProtectedRoute, membership fee, translations and image compression (12 → 26 tests) (#129)
+
 ### Changed
 - **Branding**: replaced the site logo (header, favicon, 404 page, README banner) with the new official A.A.B.V emblem (`public/images/logo.jpg`) (#126)
 - **Membership fee**: annual inscription fee raised from 50 DH to **100 DH**; the fee now lives in a single constant (`src/lib/membership.js`) shared by the renewal modal and admin history, and admin history shows each year's recorded amount (#126)
@@ -18,6 +22,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 - Added global wiki `_Footer.md`, `_Sidebar.md`, `_Header.md` pages and corrected association details across the wiki
 
 ### Fixed
+- **Gallery upload** no longer fails with `new row violates row-level security policy`: removed `upsert` (it needs SELECT/UPDATE storage policies) and camera photos are compressed client-side instead of being rejected over 5 MB (#129)
+- **Membership proof upload** pointed at a non-existent `receipts` bucket; it now uses the `donations` bucket (#129)
+- **Admin invite** was a mock; it now promotes existing accounts through `make_admin_by_email`, which checks server-side that the caller holds `manage_admins` (#129)
+
 - Sanitized image URLs in `Profile.jsx` to prevent unsafe/malformed avatar URLs from rendering
 - Improved Stripe error URL pattern matching in `src/lib/stripe.js`
 - Enabled Sigstore build attestations (`actions/attest-build-provenance`) in the CI build job for verifiable build provenance

@@ -39,3 +39,7 @@ Permissions are stored as a JSONB array in `profiles.permissions`. The app evalu
 10. **Testimonials**: Community review moderation.
 11. **Branches**: Branch chapter manager with Leaflet GPS coordinates.
 12. **Admins**: RBAC permission management for administrative team members.
+
+## Inviting an admin
+
+Admins with the `manage_admins` permission can promote an **existing account** from **Admin Dashboard > Admins > Invite new admin**. The person must sign up first; the database function `make_admin_by_email` rejects callers without `manage_admins` and returns "not found" for unknown emails. The promoted user receives an in-app notification.
