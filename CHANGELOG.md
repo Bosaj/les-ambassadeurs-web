@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 ## [Unreleased]
 
 ### Added
+- **Fair gamification** (#131): points are awarded automatically and only once for admin-verified activity (confirmed event participation +20, verified donation +10, paid annual membership +50); manual recognition limited to 10–100 in steps of 10 with a reason and never to oneself; 8 real milestone badges earned automatically with a notification; levels at 0/50/100/200/500/1000; leaderboard (all-time / this month) excludes admins and shows privacy-safe names; hub shows how to earn, badge progress and point history. Existing members were credited for activity they already qualified for.
 - **Deploy & Environment Status workflow** (`deploy.yml`): Netlify production deploy with deployment status reporting and a Supabase backend health check on every push to `main`
 - **Publish Package workflow** (`package.yml`): builds and publishes the app to GitHub Packages on release/push to `main`
 
@@ -23,6 +24,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 - Added global wiki `_Footer.md`, `_Sidebar.md`, `_Header.md` pages and corrected association details across the wiki
 
 ### Fixed
+- **Security** (#131): members could change any column of their own profile (points, badges, role, permissions — i.e. make themselves admin) and mark their own membership as paid; guard triggers and an admin-only membership update policy now prevent it. Public donations and event registrations always start as pending.
+- **Leaderboard** only ever showed the viewer (profiles RLS); it now uses a privacy-safe RPC (#131)
 - **Gallery upload** no longer fails with `new row violates row-level security policy`: removed `upsert` (it needs SELECT/UPDATE storage policies) and camera photos are compressed client-side instead of being rejected over 5 MB (#129)
 - **Membership proof upload** pointed at a non-existent `receipts` bucket; it now uses the `donations` bucket (#129)
 - **Admin invite** was a mock; it now promotes existing accounts through `make_admin_by_email`, which checks server-side that the caller holds `manage_admins` (#129)

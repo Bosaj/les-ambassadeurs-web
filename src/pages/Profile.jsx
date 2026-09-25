@@ -88,48 +88,20 @@ const Profile = () => {
                 }
             };
 
-            const calculateBadges = async () => {
-                const newBadges = [];
-
-                // 1. Active Member
-                if (user.membership_status === 'active') {
-                    newBadges.push({ id: 'active_member', label: 'Active Member' });
-                }
-
-                // 2. Verified Admin
-                if (user.role === 'admin') {
-                    newBadges.push({ id: 'veteran', label: 'Admin' });
-                }
-
-                try {
-                    // 3. Donor Badge
-                    const { data: donations } = await supabase
-                        .from('donations')
-                        .select('amount')
-                        .eq('email', user.email);
-
-                    if (donations && donations.length > 0) {
-                        newBadges.push({ id: 'donor', label: 'Donor' });
-                    }
-
-                    // 4. Participant Badge
-                    const { count } = await supabase
-                        .from('event_attendees')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('user_id', user.id);
-
-                    if (count > 0) {
-                        newBadges.push({ id: 'participant', label: 'Participant' });
-                    }
-                } catch (err) {
-                    console.error("Error calculating badges", err);
-                }
-
-                setEarnedBadges(newBadges);
+            // Badges are earned server-side from verified activity; show the ones the member holds
+            const loadBadges = async () => {
+                const held = Array.isArray(user.badges) ? user.badges : [];
+                if (held.length === 0) { setEarnedBadges([]); return; }
+                const { data: defs, error } = await supabase
+                    .from('badge_definitions')
+                    .select('id, name, name_i18n, description_i18n, icon')
+                    .in('id', held.map(b => b.id));
+                if (error) { console.error('Error loading badges', error); return; }
+                setEarnedBadges(defs || []);
             };
 
             fetchMembershipHistory();
-            calculateBadges();
+            loadBadges();
         }
     }, [user, t]);
 

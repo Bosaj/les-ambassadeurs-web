@@ -34,3 +34,20 @@ A full directory of all features across the public portal, volunteer dashboard, 
 
 * 12 Dedicated control tabs for news, events, programs, projects, gallery, partners, users, memberships, donations, testimonials, branches, and admins.
 * Granular Role-Based Access Control enforcing strict permission checks before write operations.
+
+## 🏆 Gamification & Recognition (`/gamification`)
+
+Points are earned automatically, once per activity, and only after the team verifies it:
+
+| Activity | Points |
+| --- | --- |
+| Event participation confirmed by an admin | +20 |
+| Donation verified by an admin | +10 (flat, the amount does not buy rank) |
+| Annual membership paid | +50 per year |
+| Special recognition by an admin (with a reason, never to oneself) | 10–100 |
+
+**Levels:** Newcomer (0), Helper (50), Volunteer (100), Active Volunteer (200), Ambassador (500), Champion (1000).
+
+**Badges** (earned automatically, with a notification): First Step (1 event), Regular Volunteer (5), Community Pillar (20), Supporter (1 verified donation), Official Member (1 paid year), Loyal Member (3 years), Rising Star (200 pts), Ambassador of Good (1000 pts).
+
+The leaderboard (all-time and this month) lists volunteers and members only (admins are excluded) and shows names as "Firstname L.". Undoing a verification removes the points it granted.
