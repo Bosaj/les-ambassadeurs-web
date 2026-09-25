@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import { inviteAdmin } from '../lib/adminInvite';
 import Modal from '../components/Modal';
 import MembershipRequests from '../components/admin/MembershipRequests';
 import PartnerForm from '../components/admin/PartnerForm';
@@ -114,20 +115,14 @@ const AdminManagement = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { data: result, error } = await supabase.rpc('make_admin_by_email', { target_email: inviteEmail.trim() });
-            if (error) throw error;
-            if (!result?.success) {
+            const result = await inviteAdmin(supabase, inviteEmail, {
+                title: t.admin_invitation || "Admin Invitation",
+                message: t.admin_invitation_msg || "You have been invited to become an admin."
+            });
+            if (!result.ok) {
                 toast.error(t.user_not_found || "No account found with this email. Ask them to sign up first.");
                 return;
             }
-
-            await supabase.from('notifications').insert({
-                user_id: result.user_id,
-                type: 'info',
-                title: t.admin_invitation || "Admin Invitation",
-                message: t.admin_invitation_msg || "You have been invited to become an admin.",
-                is_read: false
-            });
 
             toast.success(t.admin_promoted || "User promoted to admin");
             await fetchAdmins();
