@@ -8,7 +8,7 @@ import {
     FaCrown, FaRocket, FaShieldAlt, FaUsers, FaCalendarCheck, FaIdCard, FaInfoCircle, FaHistory
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { POINT_RULES, LEVELS, getLevel, badgeProgress, localized } from '../lib/gamification';
+import { POINT_RULES, LEVELS, getLevel, badgeProgress, localized, describeHistory } from '../lib/gamification';
 
 // Curated map of icon names usable as badge icons.
 // Avoids `import * as FaIcons` which pulls in all 1000+ FA icons.
@@ -299,7 +299,7 @@ const GamificationHub = () => {
                             ) : progress.history.map((h, i) => (
                                 <div key={i} className="flex items-center justify-between p-3 gap-3">
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium truncate dark:text-white">{h.description || h.action_type}</p>
+                                        <p className="text-sm font-medium truncate dark:text-white">{describeHistory(h, t, language)}</p>
                                         <p className="text-xs text-gray-500">{dateFmt(h.created_at)}</p>
                                     </div>
                                     <span dir="ltr" className={`font-bold text-sm ${h.amount >= 0 ? 'text-green-600' : 'text-red-500'}`}>

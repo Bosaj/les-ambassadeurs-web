@@ -5,10 +5,16 @@ import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import NotificationItem from './NotificationItem';
 import toast from 'react-hot-toast';
+import { localizeNotification } from '../lib/gamification';
 
 const NotificationBell = () => {
     const { user } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    // The realtime subscription is created once; read the current language through a ref
+    const i18nRef = useRef({ t, language });
+    useEffect(() => {
+        i18nRef.current = { t, language };
+    }, [t, language]);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +50,8 @@ const NotificationBell = () => {
                     filter: `user_id=eq.${user.id}`
                 }, (payload) => {
                     const newNotif = payload.new;
+                    const shown = localizeNotification(newNotif, i18nRef.current.t, i18nRef.current.language);
+                    const closeLabel = i18nRef.current.t.close || 'Close';
                     setNotifications(prev => [newNotif, ...prev]);
                     setUnreadCount(prev => prev + 1);
 
@@ -59,10 +67,10 @@ const NotificationBell = () => {
                                     </div>
                                     <div className="ml-3 flex-1">
                                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                            {newNotif.title}
+                                            {shown.title}
                                         </p>
                                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                            {newNotif.message}
+                                            {shown.message}
                                         </p>
                                     </div>
                                 </div>
@@ -72,7 +80,7 @@ const NotificationBell = () => {
                                     onClick={() => toast.dismiss(t.id)}
                                     className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
-                                    Close
+                                    {closeLabel}
                                 </button>
                             </div>
                         </div>
