@@ -29,5 +29,3 @@ Implement a demonstration of WebAssembly principles using modern tooling.
 ---
 *Generated for educational purposes*
 
-Co-authored-by: Abdellah Ennajari <105159582+ennajari@users.noreply.github.com>
-Co-authored-by: ennajari <ennajari@users.noreply.github.com>
