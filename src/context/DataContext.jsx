@@ -189,7 +189,6 @@ export const DataProvider = ({ children }) => {
 
     const addPost = async (type, postData) => {
         try {
-            console.log(`[DataContext] Starting addPost for type: ${type}`, postData);
             let table = '';
             let insertData = {};
 
@@ -234,7 +233,6 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            console.log(`[DataContext] table configured: ${table}, insertData payload:`, insertData);
 
             // Adding a 15-second timeout in case Supabase fetch is completely frozen
             const fetchPromise = supabase.from(table).insert([insertData]).select().single();
@@ -242,10 +240,8 @@ export const DataProvider = ({ children }) => {
             
             const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
-            console.log(`[DataContext] DB insert returned – data:`, data, `, error:`, error);
             if (error) throw error;
 
-            console.log(`[DataContext] Optimistically updating local state for ${type}`);
             // Optimistic update — prepend new item to local state instantly (no full refetch)
             const newItem = { ...data, attendees: [] };
             if (type === 'news') setNews(prev => [newItem, ...prev]);
@@ -264,7 +260,6 @@ export const DataProvider = ({ children }) => {
 
     const updatePost = async (type, id, postData) => {
         try {
-            console.log(`[DataContext] Starting updatePost for type: ${type}, id: ${id}`, postData);
             let table = '';
             let updateData = {};
 
@@ -306,7 +301,6 @@ export const DataProvider = ({ children }) => {
                 };
             }
 
-            console.log(`[DataContext] table configured: ${table}, updateData payload:`, updateData);
 
             // Adding a 15-second timeout in case Supabase fetch is completely frozen
             const fetchPromise = supabase.from(table).update(updateData).eq('id', id).select().single();
@@ -314,10 +308,8 @@ export const DataProvider = ({ children }) => {
             
             const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
-            console.log(`[DataContext] DB update returned – data:`, data, `, error:`, error);
             if (error) throw error;
 
-            console.log(`[DataContext] Optimistically updating local state for ${type}`);
             // Optimistic update
             const updateState = (setter) => setter(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
             

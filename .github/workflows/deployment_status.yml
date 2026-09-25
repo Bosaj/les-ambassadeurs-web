@@ -1,0 +1,83 @@
+name: Production Deployment Status
+
+# Netlify builds and publishes every push to main on its own. This workflow
+# waits for the Netlify production deploy of the pushed commit and records it
+# in GitHub Deployments (environment "production") with its real outcome.
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: production-deployment-status
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      SHA: ${{ github.sha }}
+      REPO: ${{ github.repository }}
+      SITE_URL: https://a-a-b-v.netlify.app
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Create GitHub deployment
+        id: dep
+        run: |
+          id=$(jq -n --arg ref "$SHA" '{ref: $ref, environment: "production", production_environment: true,
+                auto_merge: false, required_contexts: [], description: "Netlify production deploy"}' \
+               | gh api "repos/$REPO/deployments" --input - -q .id)
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          gh api "repos/$REPO/deployments/$id/statuses" -f state=in_progress \
+            -f log_url="$RUN_URL" -f description="Waiting for Netlify build of ${SHA::7}" >/dev/null
+
+      - name: Wait for Netlify production deploy of this commit
+        id: netlify
+        run: |
+          for i in $(seq 1 90); do
+            deploy=$(curl -fsS -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+              "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys?per_page=20" \
+              | jq -c --arg sha "$SHA" '[.[] | select(.commit_ref == $sha and .context == "production")][0] // empty')
+            state=$(jq -r '.state // empty' <<< "$deploy")
+            echo "attempt $i: netlify state=${state:-not-found}"
+            if [ "$state" = "ready" ] || [ "$state" = "error" ] || [ "$state" = "rejected" ]; then
+              echo "state=$state" >> "$GITHUB_OUTPUT"
+              echo "admin_url=$(jq -r '.admin_url + "/deploys/" + .id' <<< "$deploy")" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "state=timeout" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test production
+        id: smoke
+        if: steps.netlify.outputs.state == 'ready'
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/")
+          echo "GET $SITE_URL -> HTTP $code"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Record deployment result
+        if: always() && steps.dep.outputs.id != ''
+        env:
+          NETLIFY_STATE: ${{ steps.netlify.outputs.state }}
+          HTTP_CODE: ${{ steps.smoke.outputs.code }}
+          LOG_URL: ${{ steps.netlify.outputs.admin_url }}
+        run: |
+          if [ "$NETLIFY_STATE" = "ready" ] && [ "$HTTP_CODE" = "200" ]; then state=success
+          elif [ "$NETLIFY_STATE" = "ready" ] || [ "$NETLIFY_STATE" = "error" ] || [ "$NETLIFY_STATE" = "rejected" ]; then state=failure
+          else state=error; fi
+          gh api "repos/$REPO/deployments/${{ steps.dep.outputs.id }}/statuses" \
+            -f state="$state" -f environment_url="$SITE_URL" -f log_url="${LOG_URL:-$RUN_URL}" \
+            -f description="Netlify: ${NETLIFY_STATE:-unknown}, site HTTP ${HTTP_CODE:-n/a}" -F auto_inactive=true >/dev/null
+          echo "Deployment ${{ steps.dep.outputs.id }} -> $state"
+          [ "$state" = "success" ]

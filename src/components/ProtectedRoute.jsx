@@ -22,7 +22,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     // Role check
     if (requiredRole && user.role !== requiredRole) {
-        console.warn(`[ProtectedRoute] Role mismatch! Req: ${requiredRole}, User role: ${user.role}`);
         // Admin can access volunteer routes
         if (user.role === 'admin' && requiredRole === 'volunteer') {
             return children;

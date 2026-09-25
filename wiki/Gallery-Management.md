@@ -9,7 +9,7 @@ The photo gallery system delivers both a dedicated visual explorer (`/gallery`) 
 1. **Upload Process**:
    * Admin navigates to **Admin Dashboard > Gallery**.
    * Clicks **Add Image**.
-   * Enters image URL or uploads a photo file to the Supabase `gallery` storage bucket.
+   * Enters an image URL or uploads a photo. Photos are resized in the browser (max 1920px, JPEG) and stored under `gallery/` in the public Supabase `images` bucket, so full-size camera photos can be uploaded directly.
    * Fills in captions in Arabic, French, and English.
    * Selects category: `event`, `project`, `program`, or `general`.
    * Optionally links the photo to an existing Event, Project, or Program.

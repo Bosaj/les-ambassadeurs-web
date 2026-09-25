@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../../hooks/useData';
 import { useLanguage } from '../../context/LanguageContext';
 import { supabase } from '../../lib/supabase';
+import { compressImage } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 import {
     FaPlus, FaEdit, FaTrash, FaTimes, FaImages, FaStar, FaSearch,
@@ -65,14 +66,14 @@ const GalleryManagement = () => {
 
     const handleImageUpload = async (file) => {
         if (!file) return;
-        const maxSize = 5 * 1024 * 1024;
-        if (file.size > maxSize) { toast.error('Image too large (max 5MB)'); return; }
+        if (!file.type.startsWith('image/')) { toast.error(t.invalid_image || 'Please choose an image file'); return; }
 
         setUploading(true);
         try {
-            const ext = file.name.split('.').pop();
-            const fileName = `gallery/${Date.now()}.${ext}`;
-            const { error } = await supabase.storage.from('images').upload(fileName, file, { upsert: true });
+            // Camera photos are 5-10 MB; resize to web size before upload
+            const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
+            const fileName = `gallery/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+            const { error } = await supabase.storage.from('images').upload(fileName, compressed, { contentType: compressed.type || 'image/jpeg', cacheControl: '31536000' });
             if (error) throw error;
             const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
             setFormData(prev => ({ ...prev, image_url: publicUrl }));

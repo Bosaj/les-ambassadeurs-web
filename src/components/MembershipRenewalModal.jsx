@@ -103,12 +103,12 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
                 const filePath = `membership-proofs/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
-                    .from('receipts')
+                    .from('donations')
                     .upload(filePath, proofFile);
 
                 if (uploadError) throw uploadError;
 
-                const { data } = supabase.storage.from('receipts').getPublicUrl(filePath);
+                const { data } = supabase.storage.from('donations').getPublicUrl(filePath);
                 proofUrl = data.publicUrl;
                 setUploading(false);
             }

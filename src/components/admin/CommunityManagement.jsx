@@ -34,9 +34,7 @@ const CommunityManagement = ({ t, onViewUser }) => {
                 throw profilesError;
             }
 
-            console.log("Fetched profiles count:", profiles?.length || 0);
             if (profiles) {
-                console.log("Profiles data structure (first item):", profiles[0]);
                 setUsers(profiles);
             }
 

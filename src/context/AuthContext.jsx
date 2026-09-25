@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { supabase } from '../lib/supabase';
 import LogoutAnimation from '../components/LogoutAnimation';
@@ -151,7 +151,7 @@ export const AuthProvider = ({ children }) => {
             };
         }, []);
 
-        const login = async (email, password) => {
+        const login = useCallback(async (email, password) => {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
@@ -160,11 +160,11 @@ export const AuthProvider = ({ children }) => {
             const activeUser = await fetchProfile(data.session);
             setAuthState({ user: activeUser, loading: false });
             return activeUser;
-        };
+        }, []);
 
         const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-        const logout = async () => {
+        const logout = useCallback(async () => {
             setIsLoggingOut(true);
 
             // Let the 2-second progress bar animation play fully
@@ -196,7 +196,7 @@ export const AuthProvider = ({ children }) => {
             }, 100);
 
             globalThis.location.href = '/';
-        };
+        }, []);
 
         const getURL = () => {
             let url = globalThis.location.origin;
@@ -205,7 +205,7 @@ export const AuthProvider = ({ children }) => {
         };
 
 
-        const loginWithGoogle = async () => {
+        const loginWithGoogle = useCallback(async () => {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
@@ -213,17 +213,17 @@ export const AuthProvider = ({ children }) => {
                 }
             });
             if (error) throw error;
-        };
+        }, []);
 
-        const refreshProfile = async () => {
+        const refreshProfile = useCallback(async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
                 const activeUser = await fetchProfile(session.user);
                 setAuthState(prev => ({ ...prev, user: activeUser }));
             }
-        };
+        }, []);
 
-        const upgradeToMember = async (userId) => {
+        const upgradeToMember = useCallback(async (userId) => {
             try {
                 const { error } = await supabase
                     .from('profiles')
@@ -242,15 +242,15 @@ export const AuthProvider = ({ children }) => {
                 console.error("Error upgrading to member:", error);
                 return { success: false, error };
             }
-        };
+        }, [refreshProfile]);
 
-        const hasPermission = (permission) => {
+        const hasPermission = useCallback((permission) => {
             if (!user) return false;
             // Super Admin Override
             if (user.email === 'oussousselhadji@gmail.com') return true;
             // Check permissions array
             return user.permissions?.includes(permission);
-        };
+        }, [user]);
 
         const contextValue = useMemo(() => ({
             user, login, logout, loginWithGoogle, loading, refreshProfile, upgradeToMember, hasPermission, isLoggingOut, setIsLoggingOut
