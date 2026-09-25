@@ -69,7 +69,7 @@ const AdminManagement = () => {
 
     const handleApprove = async (id) => {
         try {
-            const { error, data } = await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id).select();
+            const { error } = await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id).select();
 
             if (error) throw error;
 
