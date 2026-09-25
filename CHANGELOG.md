@@ -11,6 +11,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 - **Deploy & Environment Status workflow** (`deploy.yml`): Netlify production deploy with deployment status reporting and a Supabase backend health check on every push to `main`
 - **Publish Package workflow** (`package.yml`): builds and publishes the app to GitHub Packages on release/push to `main`
 
+- **Production deployment status** (`deployment_status.yml`): on every push to `main`, waits for the Netlify production deploy of that commit, smoke-tests the live site, and records the result in GitHub Deployments (#129)
 - **Web CI** (`web_ci.yml`): lint, unit tests, production dependency audit, and build on every push/PR to `main` (#129)
 - **Real gallery**: 44 photos from four association events (Nov 2024 meeting, Feb 2025 youth trip, Feb 2025 volunteer training, Mar 2025 children's celebration), resized to 1920px with EXIF/GPS stripped, with AR/EN/FR captions (#129)
 - **Tests**: admin invite, ProtectedRoute, membership fee, translations and image compression (12 → 26 tests) (#129)
