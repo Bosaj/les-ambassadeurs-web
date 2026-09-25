@@ -8,8 +8,9 @@ import { useLanguage } from '../../context/LanguageContext';
 const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
     const { language, t } = useLanguage();
     const [amount, setAmount] = useState(10);
+    const [mode, setMode] = useState('award'); // 'award' | 'deduct'
     const [reason, setReason] = useState('');
-    const [actionType, setActionType] = useState('bonus');
+    const [actionType, setActionType] = useState('recognition');
     const [loading, setLoading] = useState(false);
 
     if (!isOpen || !user) return null;
@@ -22,8 +23,8 @@ const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
         try {
             const { error } = await supabase.rpc('award_points', {
                 p_user_id: user.id,
-                p_amount: parseInt(amount),
-                p_description: reason,
+                p_amount: (mode === 'deduct' ? -1 : 1) * Number(amount),
+                p_description: reason.trim(),
                 p_action_type: actionType
             });
 
@@ -62,14 +63,28 @@ const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {t.points_amount || "Points Amount"}
                         </label>
-                        <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            min="1"
-                            required
-                        />
+                        <div className="flex gap-2">
+                            <select
+                                value={mode}
+                                onChange={(e) => setMode(e.target.value)}
+                                className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                aria-label={t.award_mode || "Award or deduct"}
+                            >
+                                <option value="award">+ {t.award_action || "Award"}</option>
+                                <option value="deduct">− {t.deduct_action || "Deduct"}</option>
+                            </select>
+                            <select
+                                value={amount}
+                                onChange={(e) => setAmount(Number(e.target.value))}
+                                className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                aria-label={t.points_amount || "Points Amount"}
+                            >
+                                {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => <option key={v} value={v}>{v}</option>)}
+                            </select>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {t.award_rules_hint || "Events, donations and memberships earn points automatically. Use this only for special recognition (10–100 points, never for yourself)."}
+                        </p>
                     </div>
 
                     <div>
@@ -81,11 +96,10 @@ const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
                             onChange={(e) => setActionType(e.target.value)}
                             className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
-                            <option value="bonus">{t.action_bonus || "Bonus / Recognition"}</option>
+                            <option value="recognition">{t.action_bonus || "Bonus / Recognition"}</option>
                             <option value="volunteer">{t.action_volunteering || "Volunteering"}</option>
-                            <option value="attendance">{t.action_attendance || "Event Attendance"}</option>
-                            <option value="donation">{t.action_donation || "Donation"}</option>
                             <option value="referral">{t.action_referral || "Referral"}</option>
+                            <option value="correction">{t.action_correction || "Correction"}</option>
                         </select>
                     </div>
 
@@ -98,6 +112,8 @@ const AwardPointsModal = ({ isOpen, onClose, user, onSuccess }) => {
                             onChange={(e) => setReason(e.target.value)}
                             className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             rows="3"
+                            required
+                            minLength={3}
                             placeholder={t.reason_placeholder || "e.g. Outstanding contribution..."}
                         ></textarea>
                     </div>
