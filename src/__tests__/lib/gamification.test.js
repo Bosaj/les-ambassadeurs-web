@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getLevel, badgeProgress, localized, POINT_RULES, LEVELS } from '../../lib/gamification';
+import { getLevel, badgeProgress, localized, describeHistory, localizeNotification, POINT_RULES, LEVELS } from '../../lib/gamification';
+import { translations } from '../../translations';
 
 describe('getLevel', () => {
     it('starts at Newcomer with progress toward Helper', () => {
@@ -74,5 +75,58 @@ describe('point rules match the database triggers', () => {
 
     it('manual recognition is capped at the advertised maximum', () => {
         expect(sql).toContain(`abs(p_amount) > ${rule('recognition')}`);
+    });
+});
+
+describe('describeHistory', () => {
+    const ar = translations.ar;
+    const fr = translations.fr;
+
+    it('translates automatic entries instead of showing the stored English text', () => {
+        const donation = { source_type: 'donation', description: 'Verified donation' };
+        expect(describeHistory(donation, ar, 'ar')).toBe('تبرع تم التحقق منه');
+        expect(describeHistory(donation, fr, 'fr')).toBe('Don vérifié');
+
+        const membership = { source_type: 'membership', source_id: '2025', description: 'Annual membership 2025' };
+        expect(describeHistory(membership, ar, 'ar')).toBe('واجب الانخراط السنوي 2025');
+        expect(describeHistory(membership, fr, 'fr')).toBe('Cotisation annuelle 2025');
+    });
+
+    it('uses the event title in the reader language', () => {
+        const ev = { source_type: 'event', event_title: { ar: 'قافلة الشتاء', en: 'Winter caravan', fr: "Caravane d'hiver" } };
+        expect(describeHistory(ev, ar, 'ar')).toBe('المشاركة في نشاط: قافلة الشتاء');
+        expect(describeHistory(ev, fr, 'fr')).toBe("Participation à un événement: Caravane d'hiver");
+    });
+
+    it('keeps admin-written reasons behind a translated label', () => {
+        expect(describeHistory({ source_type: null, action_type: 'bonus', description: 'Thank you' }, ar, 'ar')).toBe('تقدير خاص: Thank you');
+        expect(describeHistory({ source_type: 'manual', action_type: 'volunteer', description: 'ACTIF' }, fr, 'fr')).toBe('Bénévolat: ACTIF');
+        expect(describeHistory({ action_type: 'referral', description: '' }, fr, 'fr')).toBe('Parrainage');
+    });
+
+    it('has every history label in all three languages', () => {
+        for (const lang of ['ar', 'en', 'fr']) {
+            for (const k of ['event', 'donation', 'membership', 'recognition', 'volunteer', 'referral', 'correction']) {
+                expect(translations[lang][`gam_hist_${k}`], `${lang}.gam_hist_${k}`).toBeTruthy();
+            }
+            expect(translations[lang].gam_new_badge).toBeTruthy();
+        }
+    });
+});
+
+describe('localizeNotification', () => {
+    const badge = {
+        title: 'New badge: Supporter', message: 'Made a verified donation.',
+        meta: { kind: 'badge', badge_id: 'supporter', name: { ar: 'داعم', en: 'Supporter', fr: 'Soutien' }, description: { ar: 'قدّم تبرعاً تم التحقق منه.', fr: 'A fait un don vérifié.' } },
+    };
+
+    it('translates badge notifications', () => {
+        expect(localizeNotification(badge, translations.ar, 'ar')).toEqual({ title: 'شارة جديدة: داعم', message: 'قدّم تبرعاً تم التحقق منه.' });
+        expect(localizeNotification(badge, translations.fr, 'fr')).toEqual({ title: 'Nouveau badge: Soutien', message: 'A fait un don vérifié.' });
+    });
+
+    it('leaves other notifications untouched', () => {
+        const n = { title: 'Admin Invitation', message: 'Hello' };
+        expect(localizeNotification(n, translations.ar, 'ar')).toEqual({ title: 'Admin Invitation', message: 'Hello' });
     });
 });
