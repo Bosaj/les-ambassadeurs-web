@@ -38,3 +38,6 @@ temp_*
 
 # Environment & Security Exclusions
 .env.*.local
+
+# Python bytecode
+__pycache__/
