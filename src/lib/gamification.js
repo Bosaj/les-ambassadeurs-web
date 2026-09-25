@@ -58,3 +58,46 @@ export function localized(field, language, fallback = '') {
     if (typeof field === 'string') return field;
     return field[language] || field.en || field.fr || field.ar || fallback;
 }
+
+const HISTORY_FALLBACK = {
+    event: 'Event participation',
+    donation: 'Verified donation',
+    membership: 'Annual membership',
+    recognition: 'Special recognition',
+    volunteer: 'Volunteering',
+    referral: 'Referral',
+    correction: 'Correction',
+};
+
+// Point-history rows are stored with a source; build the sentence in the reader's language.
+// Admin-written reasons (manual awards) are kept verbatim after a translated label.
+export function describeHistory(entry, t = {}, language = 'en') {
+    const label = (k) => t[`gam_hist_${k}`] || HISTORY_FALLBACK[k];
+    switch (entry?.source_type) {
+        case 'event': {
+            const title = localized(entry.event_title, language, '');
+            return title ? `${label('event')}: ${title}` : label('event');
+        }
+        case 'donation':
+            return label('donation');
+        case 'membership':
+            return `${label('membership')} ${entry.source_id || ''}`.trim();
+        default: {
+            const kind = ['volunteer', 'referral', 'correction'].includes(entry?.action_type) ? entry.action_type : 'recognition';
+            const text = (entry?.description || '').trim();
+            return text ? `${label(kind)}: ${text}` : label(kind);
+        }
+    }
+}
+
+// Badge notifications carry the badge names in meta; other notifications are shown as written.
+export function localizeNotification(notification, t = {}, language = 'en') {
+    if (notification?.meta?.kind === 'badge') {
+        const name = localized(notification.meta.name, language, '');
+        return {
+            title: name ? `${t.gam_new_badge || 'New badge'}: ${name}` : notification.title,
+            message: localized(notification.meta.description, language, notification.message),
+        };
+    }
+    return { title: notification?.title, message: notification?.message };
+}

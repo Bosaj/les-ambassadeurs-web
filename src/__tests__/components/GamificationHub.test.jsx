@@ -22,7 +22,7 @@ vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() 
 const progress = {
     points: 120, events: 2, donations: 1, membership_years: 1, rank: 2,
     badges: [{ id: 'first_event', claimed_at: '2026-09-01T10:00:00Z' }],
-    history: [{ amount: 20, action_type: 'event', description: 'Event participation: Beach cleanup', created_at: '2026-09-01T10:00:00Z' }],
+    history: [{ amount: 20, action_type: 'event', description: 'Event participation', source_type: 'event', source_id: 'e1', event_title: { en: 'Beach cleanup', ar: 'تنظيف الشاطئ' }, created_at: '2026-09-01T10:00:00Z' }],
 };
 const allTime = [
     { rank: 1, user_id: 'a', display_name: 'Sara A.', points: 300, badge_count: 3, is_me: false },

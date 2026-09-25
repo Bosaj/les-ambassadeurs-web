@@ -4,9 +4,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { ar, fr, enUS } from 'date-fns/locale';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
+import { localizeNotification } from '../lib/gamification';
 
 const NotificationItem = ({ notification, onRead }) => {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
+    const { title, message } = localizeNotification(notification, t, language);
 
     // Select locale for date-fns
     const localeMap = {
@@ -42,14 +44,14 @@ const NotificationItem = ({ notification, onRead }) => {
             <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start gap-2">
                     <h4 className={`text-sm font-semibold truncate ${notification.is_read ? 'text-gray-700 dark:text-gray-300' : 'text-gray-900 dark:text-white'}`}>
-                        {notification.title}
+                        {title}
                     </h4>
                     {!notification.is_read && (
                         <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1.5" title="Unread"></span>
                     )}
                 </div>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2">
-                    {notification.message}
+                    {message}
                 </p>
                 <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5 block">
                     {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale })}
