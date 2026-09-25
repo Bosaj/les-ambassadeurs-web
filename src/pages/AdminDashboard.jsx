@@ -50,7 +50,6 @@ const AdminManagement = () => {
             .from('profiles')
             .select('*')
             .eq('role', 'admin');
-        console.log("Fetched admins:", data);
         if (data) setAdmins(data);
     };
 
@@ -69,9 +68,7 @@ const AdminManagement = () => {
 
     const handleApprove = async (id) => {
         try {
-            console.log("Approving request for ID:", id);
             const { error, data } = await supabase.from('profiles').update({ role: 'admin', request_status: 'approved' }).eq('id', id).select();
-            console.log("Update result:", { error, data });
 
             if (error) throw error;
 
@@ -85,7 +82,6 @@ const AdminManagement = () => {
             });
 
             toast.success(t.request_approved);
-            console.log("Refreshing data...");
             await fetchRequests();
             await fetchAdmins();
         } catch (error) {
@@ -118,26 +114,27 @@ const AdminManagement = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            // Mock invite for now as RPC might not be set up
-            // await supabase.rpc('make_admin_by_email', { target_email: inviteEmail });
-
-            // Try to find user to send notification
-            const { data: user } = await supabase.from('profiles').select('id').eq('email', inviteEmail).single();
-            if (user) {
-                await supabase.from('notifications').insert({
-                    user_id: user.id,
-                    type: 'info',
-                    title: t.admin_invitation || "Admin Invitation",
-                    message: t.admin_invitation_msg || "You have been invited to become an admin.",
-                    is_read: false
-                });
+            const { data: result, error } = await supabase.rpc('make_admin_by_email', { target_email: inviteEmail.trim() });
+            if (error) throw error;
+            if (!result?.success) {
+                toast.error(t.user_not_found || "No account found with this email. Ask them to sign up first.");
+                return;
             }
 
-            toast.success("Invitation sent (Mock)");
+            await supabase.from('notifications').insert({
+                user_id: result.user_id,
+                type: 'info',
+                title: t.admin_invitation || "Admin Invitation",
+                message: t.admin_invitation_msg || "You have been invited to become an admin.",
+                is_read: false
+            });
+
+            toast.success(t.admin_promoted || "User promoted to admin");
+            await fetchAdmins();
             setInviteEmail('');
         } catch (error) {
             console.error(error);
-            toast.error("Failed to invite");
+            toast.error(t.invite_failed || "Failed to invite");
         } finally {
             setLoading(false);
         }
@@ -593,18 +590,15 @@ const AdminDashboard = () => {
         const toastId = toast.loading(t.processing || "Processing...");
 
         try {
-            console.log(`[AdminDashboard] Awaiting action for ${targetType}...`);
             if (editingId) {
                 await updatePost(targetType, editingId, formData);
             } else {
                 await addPost(targetType, formData);
             }
-            console.log(`[AdminDashboard] Action resolved successfully for ${targetType}!`);
             
             // Adding aggressive fallbacks to prevent undefined strings from crashing toast
             toast.success(editingId ? (t.item_updated_success || "Item updated successfully!") : (t.item_added_success || "Item added successfully!"), { id: toastId });
             
-            console.log(`[AdminDashboard] Closing modal and resetting form...`);
             handleCancelEdit(); // Reset form & close modal
         } catch (error) {
             console.error("[AdminDashboard] Error in handleFormSubmit:", error);
