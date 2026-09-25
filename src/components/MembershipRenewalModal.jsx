@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { FaCreditCard, FaUniversity, FaMoneyBillWave, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaSpinner, FaPaypal } from 'react-icons/fa';
 import { getStripe } from '../lib/stripe';
+import { MEMBERSHIP_FEE } from '../lib/membership';
 
 const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     const { t } = useLanguage();
@@ -21,7 +22,6 @@ const MembershipRenewalModal = ({ isOpen, onClose, onRenewalComplete }) => {
     if (!isOpen) return null;
 
     const currentYear = new Date().getFullYear();
-    const MEMBERSHIP_FEE = 50; // MAD
 
     const handleMethodSelect = async (method) => {
         setPaymentMethod(method);

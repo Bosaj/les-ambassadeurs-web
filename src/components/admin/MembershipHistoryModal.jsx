@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { MEMBERSHIP_FEE } from '../../lib/membership';
 import toast from 'react-hot-toast';
 import { FaHistory, FaTimesCircle, FaCalendarAlt } from 'react-icons/fa';
 
@@ -50,7 +51,7 @@ const MembershipHistoryModal = ({ user, onClose, t }) => {
                     .insert({
                         user_id: user.id,
                         year: year,
-                        amount: 50,
+                        amount: MEMBERSHIP_FEE,
                         status: 'paid'
                     });
                 if (error) throw error;
@@ -95,7 +96,7 @@ const MembershipHistoryModal = ({ user, onClose, t }) => {
                                             </div>
                                             <div>
                                                 <div className="font-bold dark:text-white">{year}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: 50 {t.currency_mad || "DH"}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">{t.annual_fee || "Annual Fee"}: {record?.amount ?? MEMBERSHIP_FEE} {t.currency_mad || "DH"}</div>
                                             </div>
                                         </div>
 

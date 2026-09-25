@@ -31,3 +31,11 @@ The application provides a multi-channel donation processing system supporting c
 * Displays official Moroccan Bank Account details (RIB, IBAN, SWIFT, Beneficiary Name).
 * Donor enters transfer reference or email.
 * Administrator verifies incoming wire in the **Admin Dashboard > Donations** tab.
+
+---
+
+## 🪪 4. Annual Membership Fee
+
+* **Amount**: **100 DH** per year (previously 50 DH).
+* **Source of truth**: `MEMBERSHIP_FEE` in `src/lib/membership.js`, used by `MembershipRenewalModal` (Stripe, PayPal, bank transfer, cash) and the admin `MembershipHistoryModal`.
+* **History**: Each payment is stored in the `annual_memberships` table with its `amount`, so past 50 DH payments still display correctly.
