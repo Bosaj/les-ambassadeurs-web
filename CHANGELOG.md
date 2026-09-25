@@ -12,6 +12,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 - **Publish Package workflow** (`package.yml`): builds and publishes the app to GitHub Packages on release/push to `main`
 
 ### Changed
+- **Branding**: replaced the site logo (header, favicon, 404 page, README banner) with the new official A.A.B.V emblem (`public/images/logo.jpg`) (#126)
+- **Membership fee**: annual inscription fee raised from 50 DH to **100 DH**; the fee now lives in a single constant (`src/lib/membership.js`) shared by the renewal modal and admin history, and admin history shows each year's recorded amount (#126)
 - Modernized `README.md` with live badge, architecture overview, and updated feature list
 - Added global wiki `_Footer.md`, `_Sidebar.md`, `_Header.md` pages and corrected association details across the wiki
 
