@@ -108,7 +108,7 @@ const Header = () => {
             < header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50" >
                 <div className="container mx-auto px-4 py-3 flex justify-between items-center">
                     <Link to="/" className="flex items-center">
-                        <img src="/images/new_ABV.jpg" alt="Logo" className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover mr-2 md:mr-3 ml-2 md:ml-3" />
+                        <img src="/images/logo.jpg" alt="Logo" className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover mr-2 md:mr-3 ml-2 md:ml-3" />
                         <h1 className="text-sm md:text-xl font-bold text-blue-900 dark:text-white leading-tight">
                             {t.association_name}
                         </h1>

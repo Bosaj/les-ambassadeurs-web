@@ -11,7 +11,7 @@
 
 <div align="center">
 
-![Project Banner](public/images/new_ABV.jpg)
+![Project Banner](public/images/logo.jpg)
 
 [![Latest Release](https://img.shields.io/github/v/release/Bosaj/les-ambassadeurs-web?color=blue&label=version)](https://github.com/Bosaj/les-ambassadeurs-web/releases)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -54,7 +54,7 @@
 
 ### 5. 🏆 Gamification & Volunteer Hub
 * **Points & Badges**: Community score leaderboard, activity milestones, and badge unlocks.
-* **Volunteer Dashboard**: Track active participations, impact metrics, and membership renewals.
+* **Volunteer Dashboard**: Track active participations, impact metrics, and membership renewals (annual fee: **100 DH**, configured in `src/lib/membership.js`).
 * **Admin Tools**: Point awarding modal (`AwardPointsModal`) and membership verification.
 
 ### 6. 🗺️ Interactive Branches Map

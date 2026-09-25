@@ -33,7 +33,7 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
                 <div className="mb-6 flex justify-center relative z-10">
                     <div className="p-1 bg-white dark:bg-gray-700 rounded-full shadow-lg">
                         <img
-                            src="/images/new_ABV.jpg"
+                            src="/images/logo.jpg"
                             alt="Logo"
                             className="w-24 h-24 rounded-full object-cover"
                         />

@@ -26,7 +26,7 @@ A full directory of all features across the public portal, volunteer dashboard, 
 * **User Profile (`/profile`)**: Update Latin/Arabic names, avatar upload to Supabase Storage, view membership status, and delete account.
 * **Volunteer Dashboard (`/dashboard/volunteer`)**: Track registered activities, personal impact stats, and download digital membership cards.
 * **Gamification Hub (`/gamification`)**: Volunteer score points, activity badges, and community leaderboard.
-* **Membership Renewal (`/membership`)**: Digital commitment signing and online/offline renewal workflows.
+* **Membership Renewal (`/membership`)**: Digital commitment signing and online/offline renewal workflows. Annual membership fee: **100 DH** (defined in `src/lib/membership.js`).
 
 ---
 
