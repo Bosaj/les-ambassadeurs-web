@@ -7,48 +7,58 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 
 ## [Unreleased]
 
+_Nothing yet._
+
+---
+
+## [1.1.0] - 2026-09-26
+
+**Production readiness, fair gamification, admin overhaul and the 2026 brand identity.**
+Milestone: [v1.1.0](https://github.com/Bosaj/les-ambassadeurs-web/milestone/17?closed=1) · Issues #126, #129, #131, #133, #135, #138 · PRs #127, #128, #130, #132, #134, #136, #137, #139
+
 ### Added
-- **Brand identity on every page** (#138): shared `PageHeader` banner (grid paper, torn paper title, red dots) on Events, News, Programs and Donate; poster styling for Gallery, Volunteer sign-up, Membership, Profile, Volunteer dashboard, Login, Sign-up, legal pages, 404 and the footer
-- **Brand theme from the 2026 Instagram identity**: navy grid-paper and red halftone-dot backgrounds, torn white paper cards, taped polaroid photos, Lalezar poster display font for headings, offset-shadow buttons; new hero, header bar, team section, Gamification Hub header and admin sidebar
-- **Admin tables**: one consistent style everywhere (navy header with red rule, zebra rows, hover, rounded frame) and horizontal scrolling on phones/tablets; Community members table rebuilt with search, role filter with counts, avatar, membership status, points and level, contact and join date, and labelled action buttons
-
-- **Admin overview** (#135): real KPIs from a single admin-only RPC (`get_admin_overview`): members (+30 days), paid members and fees this year, verified donations, events and confirmed participations; a *Needs attention* list with counts that opens the right panel (attendance to confirm, membership requests/payments, donations, admin requests, testimonials, suggestions, reports); top-5 leaderboard
-- **Admin Inbox** (#135): new panel to triage problem reports (open → in progress → resolved/closed) and approve or reject event suggestions, notifying the author
-- **Volunteer progress card** (#135): level, progress to next level, points, rank, badges and the closest next badge on the volunteer dashboard
+- **Fair gamification** (#131, #132): points are granted automatically and only once for admin-verified activity (confirmed event participation +20, verified donation +10, paid annual membership +50/year) and revoked if the verification is undone; manual recognition limited to 10–100 in steps of 10, with a mandatory reason and never to oneself; 8 real milestone badges earned automatically with an in-app notification; levels at 0 / 50 / 100 / 200 / 500 / 1000; leaderboard (all-time / this month) with privacy-safe names; hub with how-to-earn rules, badge progress and point history; existing members credited retroactively
+- **Admin overview** (#135): live KPIs from an admin-only RPC (`get_admin_overview`), a *Needs attention* list that opens the right panel, and a top-5 leaderboard
+- **Admin Inbox** (#135): triage problem reports (open → in progress → resolved/closed) and approve or reject event suggestions, notifying the author
+- **Volunteer progress card** (#135): level, progress, points, rank, badges and the closest next badge on the volunteer dashboard
 - **Team 2026** (#135): the 9-member team introduced on Instagram, with a switch to the previous team
-- **Admins on the leaderboard** (#135): admins are ranked with an *Admin* tag (they still cannot award points to themselves)
-
-- **Fair gamification** (#131): points are awarded automatically and only once for admin-verified activity (confirmed event participation +20, verified donation +10, paid annual membership +50); manual recognition limited to 10–100 in steps of 10 with a reason and never to oneself; 8 real milestone badges earned automatically with a notification; levels at 0/50/100/200/500/1000; leaderboard (all-time / this month) excludes admins and shows privacy-safe names; hub shows how to earn, badge progress and point history. Existing members were credited for activity they already qualified for.
-- **Deploy & Environment Status workflow** (`deploy.yml`): Netlify production deploy with deployment status reporting and a Supabase backend health check on every push to `main`
-- **Publish Package workflow** (`package.yml`): builds and publishes the app to GitHub Packages on release/push to `main`
-
-- **Production deployment status** (`deployment_status.yml`): on every push to `main`, waits for the Netlify production deploy of that commit, smoke-tests the live site, and records the result in GitHub Deployments (#129)
-- **Web CI** (`web_ci.yml`): lint, unit tests, production dependency audit, and build on every push/PR to `main` (#129)
-- **Real gallery**: 44 photos from four association events (Nov 2024 meeting, Feb 2025 youth trip, Feb 2025 volunteer training, Mar 2025 children's celebration), resized to 1920px with EXIF/GPS stripped, with AR/EN/FR captions (#129)
-- **Tests**: admin invite, ProtectedRoute, membership fee, translations and image compression (12 → 26 tests) (#129)
+- **Admins on the leaderboard** (#135): ranked with an *Admin* tag
+- **2026 brand identity** (#137, #138, #139): navy grid paper, red halftone dots, torn white paper, taped polaroid photos, Lalezar poster font and offset-shadow buttons across the home page, every page banner (shared `PageHeader`), auth pages, dashboards and footer
+- **Real gallery** (#129, #130): 44 photos from four association events (resized, EXIF/GPS removed, AR/EN/FR captions)
+- **Web CI** (`web_ci.yml`, #130): lint, unit tests, production dependency audit and build on every push and pull request
+- **Production deployment status** (`deployment_status.yml`, #130): each push to `main` waits for the Netlify production deploy of that commit, smoke-tests the site and records the result in GitHub Deployments
+- **Tests**: 12 → 54 (admin invite, route protection, membership fee, translations, image compression, gamification rules, hub, admin overview, inbox, progress card, team)
 
 ### Changed
-- **Branding**: replaced the site logo (header, favicon, 404 page, README banner) with the new official A.A.B.V emblem (`public/images/logo.jpg`) (#126)
-- **Membership fee**: annual inscription fee raised from 50 DH to **100 DH**; the fee now lives in a single constant (`src/lib/membership.js`) shared by the renewal modal and admin history, and admin history shows each year's recorded amount (#126)
-- Modernized `README.md` with live badge, architecture overview, and updated feature list
-- Added global wiki `_Footer.md`, `_Sidebar.md`, `_Header.md` pages and corrected association details across the wiki
+- **Branding** (#126, #127): new official A.A.B.V logo in the header, favicon, 404 page and README
+- **Membership fee** (#126, #127): annual inscription fee raised from 50 DH to **100 DH**, defined once in `src/lib/membership.js`; admin history shows each year's recorded amount
+- **Admin tables** (#137): one consistent, responsive style for all 9 tables; Community members table rebuilt with search, role filter, avatar, membership status, points/level, contact and join date
+- **Data standards** (#135): CHECK constraints and defaults for roles, statuses, categories, ratings, amounts and points; email-only registrations linked to member accounts
+- **Dependencies**: security updates for `swiper` (critical), `react-router` and `ws`; production audit is clean
+- Hero image reduced from 1.7 MB to 160 KB
 
 ### Fixed
-- Footer overflowed horizontally on tablets (long e-mail in a 4-column grid); Community "Refresh" button reloaded global data instead of the table; hero image reduced from 1.7 MB to 160 KB
+- **Gallery upload** failed with a row-level-security error (`upsert` without SELECT/UPDATE policies); large camera photos are now compressed instead of rejected (#129)
+- **Membership receipts** were uploaded to a non-existent `receipts` bucket (#129)
+- **Admin invite** was a mock; it now promotes existing accounts through `make_admin_by_email`, guarded server-side by `manage_admins` (#129)
+- **Leaderboard** only ever showed the viewer (#131)
+- **Point history and badge notifications** were always shown in English (#133, #134)
+- **Testimonials**: admins could not see or delete pending testimonials, and members could post one already approved (#135)
+- **Event suggestions**: admins had no access at all (#135)
+- Footer overflowed horizontally on tablets; the Community *Refresh* button reloaded global data instead of the table (#137)
+- Sanitized image URLs in `Profile.jsx`; improved Stripe error URL pattern matching in `src/lib/stripe.js`
 
-- **Data standards** (#135): CHECK constraints and defaults for roles, statuses, categories, ratings, amounts and points; email-only event registrations linked to member accounts; membership payments without a method marked `manual`
-- **Testimonials** (#135): admins could not see or delete pending testimonials (only approved ones were readable) and members could submit a testimonial already approved
-- **Event suggestions** (#135): admins had no access at all; they can now review, approve, reject and delete them
+### Security
+- **Privilege escalation closed** (#131): members could change any column of their own profile (role, permissions, points, badges) and mark their own membership as paid; guard triggers and an admin-only membership update policy prevent it; public donations and event registrations always start as pending
+- Removed debug logs that printed full member profiles in the browser console (#129)
 
-- **Security** (#131): members could change any column of their own profile (points, badges, role, permissions — i.e. make themselves admin) and mark their own membership as paid; guard triggers and an admin-only membership update policy now prevent it. Public donations and event registrations always start as pending.
-- **Leaderboard** only ever showed the viewer (profiles RLS); it now uses a privacy-safe RPC (#131)
-- **Gallery upload** no longer fails with `new row violates row-level security policy`: removed `upsert` (it needs SELECT/UPDATE storage policies) and camera photos are compressed client-side instead of being rejected over 5 MB (#129)
-- **Membership proof upload** pointed at a non-existent `receipts` bucket; it now uses the `donations` bucket (#129)
-- **Admin invite** was a mock; it now promotes existing accounts through `make_admin_by_email`, which checks server-side that the caller holds `manage_admins` (#129)
+### Removed
+- The self-service `claim_badge` RPC (badges are awarded automatically) and the mocked admin invitation
+- Documentation of workflows that do not exist in the repository (`ci.yml`, `deploy.yml`, `package.yml`, `release.yml`, `security-scan.yml`)
 
-- Sanitized image URLs in `Profile.jsx` to prevent unsafe/malformed avatar URLs from rendering
-- Improved Stripe error URL pattern matching in `src/lib/stripe.js`
-- Enabled Sigstore build attestations (`actions/attest-build-provenance`) in the CI build job for verifiable build provenance
+### Documentation
+- README, CHANGELOG and wiki (Features, Payments, Admin Guide, Gallery Management) updated for every change above
+- Removed external co-author trailers from the web-module docs (#128)
 
 ---
 
@@ -195,7 +205,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 ### Added
 - Initial commit: Complete website migration and enhancements from previous version
 
-[Unreleased]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/Bosaj/les-ambassadeurs-web/compare/v0.7.0...v0.8.0

@@ -3,7 +3,9 @@
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Bosaj/les-ambassadeurs-web) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 
-![CI Pipeline](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/ci_qa_monitoring.yml/badge.svg)
+[![Web CI](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/web_ci.yml/badge.svg)](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/web_ci.yml)
+[![Production Deployment](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/deployment_status.yml/badge.svg)](https://github.com/Bosaj/les-ambassadeurs-web/deployments)
+[![QA & Monitoring](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/ci_qa_monitoring.yml/badge.svg)](https://github.com/Bosaj/les-ambassadeurs-web/actions/workflows/ci_qa_monitoring.yml)
 [![GitHub Wiki](https://img.shields.io/badge/Documentation-GitHub%20Wiki-blue.svg)](https://github.com/Bosaj/les-ambassadeurs-web/wiki)
 [![Quality Gate](https://img.shields.io/badge/Quality%20Gate-Passed-brightgreen.svg)](docs/MONITORING_AND_QA.md)
 
@@ -14,7 +16,7 @@
 ![Project Banner](public/images/logo.jpg)
 
 [![Latest Release](https://img.shields.io/github/v/release/Bosaj/les-ambassadeurs-web?color=blue&label=version)](https://github.com/Bosaj/les-ambassadeurs-web/releases)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red.svg)](LICENSE)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/ee33b656-05db-4629-b6ec-55ed881b3d90/deploy-status)](https://a-a-b-v.netlify.app/)
 
 **🌐 Production Website:** [https://a-a-b-v.netlify.app/](https://a-a-b-v.netlify.app/)  
@@ -52,10 +54,30 @@
 * **PayPal Smart Buttons**: Sandbox & live PayPal checkout integration.
 * **Direct Bank Transfer**: Structured bank transfer instructions with automated receipt logging.
 
-### 5. 🏆 Gamification & Volunteer Hub
-* **Points & Badges**: Community score leaderboard, activity milestones, and badge unlocks.
-* **Volunteer Dashboard**: Track active participations, impact metrics, and membership renewals (annual fee: **100 DH**, configured in `src/lib/membership.js`).
-* **Admin Tools**: Point awarding modal (`AwardPointsModal`) and membership verification.
+### 5. 🏆 Fair Gamification & Volunteer Hub
+* **Automatic, verified points** (granted once, revoked if the verification is undone):
+
+  | Activity (verified by the team) | Points |
+  |---|---|
+  | Event participation confirmed | +20 |
+  | Donation verified (flat — the amount doesn't buy rank) | +10 |
+  | Annual membership paid | +50 / year |
+  | Special recognition by an admin (reason required, never to oneself) | 10–100 |
+
+* **Levels** 0 / 50 / 100 / 200 / 500 / 1000 and **8 milestone badges** earned automatically with a notification.
+* **Leaderboard** (all-time and this month) with privacy-safe names; admins appear with an *Admin* tag.
+* **Volunteer Dashboard**: progress card (level, rank, next badge), participations, impact, and membership renewal (annual fee: **100 DH**, `src/lib/membership.js`).
+* Rules are enforced in the database (triggers + RPCs in `supabase/migrations/`), not in the browser.
+
+### 5b. 🗂️ Admin Back-office
+* **Overview**: live KPIs (`get_admin_overview`) and a *Needs attention* list that opens the right panel.
+* **Inbox**: problem reports and event suggestions with status workflow and author notifications.
+* **Community**: searchable members table with role filter, membership status, points/level, and awards.
+* Consistent, responsive tables on desktop, tablet, and phone.
+
+### 5c. 🎨 2026 Brand Identity & Team
+* Visual identity from the association's 2026 Instagram: navy grid paper, red halftone dots, torn paper, Lalezar poster type.
+* **Team 2026** section (9 members) with a switch to the previous team.
 
 ### 6. 🗺️ Interactive Branches Map
 * Built with **Leaflet** and **React-Leaflet**.
@@ -64,8 +86,8 @@
 
 ### 7. 🛡️ Comprehensive DevSecOps Pipeline
 * **GitHub Actions CI/CD**: Automated linting, Vitest unit testing, and Vite production bundle generation on every push and pull request.
-* **Weekly Security Auditing**: Automated npm audit, TruffleHog secret scanning, and CodeQL static analysis.
-* **Progressive Version Releases**: Documented SemVer releases (`v0.1.0` to `v1.0.0`) with automated GitHub release packaging.
+* **Security**: production dependency audit on every PR, row-level security on every table, and guard triggers for privileged columns.
+* **Versioned Releases**: SemVer tags and GitHub releases (`v0.3.0` → `v1.1.0`) tied to milestones and [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -143,20 +165,13 @@
 
 ## 🧪 Testing & CI
 
-The `ci.yml` workflow runs on every push/PR to `main` and `develop`:
+| Workflow | Trigger | What it does |
+|---|---|---|
+| [`web_ci.yml`](.github/workflows/web_ci.yml) | push / PR to `main` | ESLint, Vitest unit tests (54), `npm audit --omit=dev`, production build |
+| [`deployment_status.yml`](.github/workflows/deployment_status.yml) | push to `main` | Waits for the Netlify production deploy of the commit, smoke-tests the site, records it in [GitHub Deployments](https://github.com/Bosaj/les-ambassadeurs-web/deployments) |
+| [`ci_qa_monitoring.yml`](.github/workflows/ci_qa_monitoring.yml) | push / PR to `main` | Pytest QA suite, evaluation harness, Prometheus/Grafana spec validation |
 
-| Job | What it checks |
-|---|---|
-| **Lint** | ESLint across all JS/JSX source files |
-| **Test** | Vitest unit test suite (`@testing-library/react`, jsdom) |
-| **Build & Attest** | Production Vite build, uploaded as a build artifact, with a Sigstore build-provenance attestation |
-
-Additional automation:
-* **`security-scan.yml`** — weekly `npm audit`, TruffleHog secret scanning, and CodeQL static analysis
-* **`deploy.yml`** — deploys `main` to Netlify production and runs a Supabase backend health check
-* **`package.yml`** — publishes the package to GitHub Packages on release
-* **`release.yml`** — automates tagged GitHub releases
-* **`deploy-preview.yml`** / **`labeler.yml`** — PR preview deployments and automatic PR labeling
+Netlify builds and publishes `main` automatically; database changes live in [`supabase/migrations/`](supabase/migrations).
 
 ---
 
@@ -166,9 +181,11 @@ Additional automation:
 les-ambassadeurs-web/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/       # Bug report & feature request templates
-│   ├── workflows/            # CI, release, security-scan, labeler, deploy-preview
+│   ├── workflows/            # web_ci, deployment_status, ci_qa_monitoring
 │   └── PULL_REQUEST_TEMPLATE.md
 ├── docs/                     # Technical documentation (Architecture, Database, API, etc.)
+├── supabase/
+│   └── migrations/           # SQL migrations applied to production (security, gamification, data standards)
 ├── netlify/
 │   └── functions/            # Serverless payment handlers (Stripe PaymentIntent)
 ├── public/                   # Static assets, logo banner, icons
@@ -186,7 +203,7 @@ les-ambassadeurs-web/
 │   └── translations.js       # Trilingual translation dictionaries (AR, FR, EN)
 ├── wiki/                     # Markdown source files synchronized to GitHub Wiki
 ├── netlify.toml              # Netlify SPA routing & headers configuration
-├── package.json              # Project dependencies and metadata (v1.0.0)
+├── package.json              # Project dependencies and metadata (v1.1.0)
 └── vite.config.js            # Vite build, chunk splitting, and test configuration
 ```
 
@@ -200,7 +217,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history (Keep a Changelog 
 
 ## 📄 License
 
-This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+Copyright © 2026 Oussama EL HADJI. **All rights reserved** — see [LICENSE](LICENSE) for the terms.
 
 Built and maintained on behalf of the **Association des Ambassadeurs du Bien** (Oujda branch).
 
