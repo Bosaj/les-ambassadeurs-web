@@ -14,6 +14,7 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckout from '../components/StripeCheckout';
 import { getStripe } from '../lib/stripe';
+import PageHeader from '../components/PageHeader';
 
 const Donate = () => {
     const { t, language } = useLanguage();
@@ -226,15 +227,10 @@ const Donate = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300"
+            className="pb-12 md:pb-20 bg-brand-paper min-h-screen transition-colors duration-300"
         >
-            <div className="container mx-auto px-4">
-                <div className="text-center mb-16">
-                    <h1 className="font-display text-4xl md:text-5xl text-[var(--brand-navy)] dark:text-white mb-6">{t.donate_title}</h1>
-                    <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                        {t.donate_hero_desc}
-                    </p>
-                </div>
+            <PageHeader title={t.donate_title} subtitle={t.donate_hero_desc} />
+            <div className="container mx-auto px-4 pt-12">
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {/* Bank Transfer */}

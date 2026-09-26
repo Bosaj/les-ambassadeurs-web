@@ -23,11 +23,11 @@ const Footer = () => {
     };
 
     return (
-        <footer className="bg-gray-900 dark:bg-black text-white pt-12 pb-6 transition-colors duration-300">
+        <footer className="bg-[var(--brand-navy-dark)] dark:bg-black text-white pt-12 pb-6 transition-colors duration-300 border-t-8 border-[var(--brand-red)]">
             <div className="container mx-auto px-4">
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
                     <div>
-                        <h3 className="text-xl font-bold mb-4">
+                        <h3 className="font-display text-2xl mb-4">
                             {t.association_name}
                         </h3>
                         <p className="text-gray-400 mb-4">
@@ -55,7 +55,7 @@ const Footer = () => {
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-bold mb-4">
+                        <h3 className="font-display text-2xl mb-4">
                             {t.quick_links}
                         </h3>
                         <ul className="space-y-2">
@@ -69,7 +69,7 @@ const Footer = () => {
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-bold mb-4">
+                        <h3 className="font-display text-2xl mb-4">
                             {t.help_title}
                         </h3>
                         <ul className="space-y-2">
@@ -82,7 +82,7 @@ const Footer = () => {
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-bold mb-4">
+                        <h3 className="font-display text-2xl mb-4">
                             {t.contact_us}
                         </h3>
                         <ul className="space-y-4">

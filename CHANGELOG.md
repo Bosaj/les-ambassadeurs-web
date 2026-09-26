@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 ## [Unreleased]
 
 ### Added
+- **Brand identity on every page** (#138): shared `PageHeader` banner (grid paper, torn paper title, red dots) on Events, News, Programs and Donate; poster styling for Gallery, Volunteer sign-up, Membership, Profile, Volunteer dashboard, Login, Sign-up, legal pages, 404 and the footer
 - **Brand theme from the 2026 Instagram identity**: navy grid-paper and red halftone-dot backgrounds, torn white paper cards, taped polaroid photos, Lalezar poster display font for headings, offset-shadow buttons; new hero, header bar, team section, Gamification Hub header and admin sidebar
 - **Admin tables**: one consistent style everywhere (navy header with red rule, zebra rows, hover, rounded frame) and horizontal scrolling on phones/tablets; Community members table rebuilt with search, role filter with counts, avatar, membership status, points and level, contact and join date, and labelled action buttons
 
