@@ -47,8 +47,8 @@ const PostList = ({ type, data, onDelete, togglePin, onEdit, t, onAdd, searchTer
             </div>
 
             {/* List */}
-            <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-                <table className="w-full text-left min-w-[800px]">
+            <div className="admin-table-wrap">
+                <table className="admin-table min-w-[800px]">
                     <thead>
                         <tr className="border-b dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50">
                             <th className="p-4 whitespace-nowrap font-semibold">{t.table_image || "Image"}</th>

@@ -45,7 +45,7 @@ const Header = () => {
     return (
         <>
             {/* Top Bar */}
-            <div className="bg-blue-900 text-white text-sm py-2">
+            <div className="bg-[var(--brand-navy)] text-white text-sm py-2 border-b-4 border-[var(--brand-red)]">
                 <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
                     <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
                         {!user ? (

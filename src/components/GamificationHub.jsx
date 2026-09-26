@@ -99,10 +99,10 @@ const GamificationHub = () => {
     return (
         <div className="max-w-6xl mx-auto p-4 space-y-8">
             {/* Header: level, points, rank */}
-            <div className="bg-gradient-to-r from-blue-700 to-indigo-600 rounded-2xl p-6 md:p-8 text-white shadow-xl">
+            <div className="bg-brand-grid rounded-2xl p-6 md:p-8 text-white shadow-xl border-b-8 border-[var(--brand-red)]">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold mb-1">{t.gamification_hub || 'Gamification Hub'}</h1>
+                        <h1 className="font-display text-3xl md:text-4xl mb-1">{t.gamification_hub || 'Gamification Hub'}</h1>
                         <p className="opacity-90">{t.gam_subtitle || 'Earn points for real contributions and unlock badges.'}</p>
 
                         <div className="mt-5">

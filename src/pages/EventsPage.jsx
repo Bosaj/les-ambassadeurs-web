@@ -59,7 +59,7 @@ const EventsPage = () => {
     return (
         <div className="py-20 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
             <div className="container mx-auto px-4">
-                <h1 className="text-4xl font-bold text-center text-blue-900 dark:text-white mb-12">{t.events_page_title}</h1>
+                <h1 className="font-display text-4xl md:text-5xl text-center text-[var(--brand-navy)] dark:text-white mb-12">{t.events_page_title}</h1>
 
                 <div className="space-y-8">
                     {events.length > 0 ? events.map((event) => {
