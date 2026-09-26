@@ -8,10 +8,10 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useData } from '../../hooks/useData';
 import toast from 'react-hot-toast';
 
-const CommunityManagement = ({ t, onViewUser }) => {
+const CommunityManagement = ({ t, onViewUser, initialView = 'members' }) => {
     const [users, setUsers] = useState([]);
     const [attendees, setAttendees] = useState([]);
-    const [view, setView] = useState('members');
+    const [view, setView] = useState(initialView);
     const [attendanceFilter, setAttendanceFilter] = useState('all');
     const [selectedUserForHistory, setSelectedUserForHistory] = useState(null);
     const [loading, setLoading] = useState(true);

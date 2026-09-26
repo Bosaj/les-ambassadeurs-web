@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     FaCalendarPlus, FaNewspaper, FaMoneyBillWave, FaComments, FaSignOutAlt, FaTrash,
     FaUserShield, FaCheck, FaTimes, FaThumbtack, FaUsers, FaCalendarCheck,
-    FaPhone, FaHandHoldingHeart, FaChartPie, FaPlus, FaHandshake, FaEdit, FaPause, FaPlay, FaImages
+    FaPhone, FaHandHoldingHeart, FaChartPie, FaPlus, FaHandshake, FaEdit, FaPause, FaPlay, FaImages, FaInbox
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -16,7 +16,7 @@ import MembershipRequests from '../components/admin/MembershipRequests';
 import PartnerForm from '../components/admin/PartnerForm';
 import PostForm from '../components/admin/PostForm';
 import DashboardOverview from '../components/admin/DashboardOverview';
-import DashboardStats from '../components/admin/DashboardStats';
+import InboxManagement from '../components/admin/InboxManagement';
 import CommunityManagement from '../components/admin/CommunityManagement';
 import DonationsList from '../components/admin/DonationsList';
 import PostList from '../components/admin/PostList';
@@ -393,17 +393,20 @@ const AdminDashboard = () => {
     const { user, logout, hasPermission } = useAuth();
     const { t, language } = useLanguage();
 
-    const { news, programs, projects, events, testimonials, partners, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions, users } = useData();
+    const { news, programs, projects, events, testimonials, partners, addPost, updatePost, deletePost, togglePin, fetchUserActivities, fetchUserDonations, fetchUserSuggestions } = useData();
     const navigate = useNavigate();
 
     // Persist active tab in URL hash so page refresh returns to same panel
-    const validTabs = ['overview', 'news', 'programs', 'projects', 'events', 'partners', 'users', 'memberships', 'donations', 'testimonials', 'admins', 'gallery'];
+    const validTabs = ['overview', 'news', 'programs', 'projects', 'events', 'partners', 'users', 'memberships', 'donations', 'testimonials', 'admins', 'gallery', 'inbox'];
     const hashTab = window.location.hash.replace('#', '');
     const [activeTab, setActiveTabState] = useState(validTabs.includes(hashTab) ? hashTab : 'overview');
 
-    const setActiveTab = (tab) => {
+    const [communityView, setCommunityView] = useState('members');
+
+    const setActiveTab = (tab, view) => {
         window.location.hash = tab;
         setActiveTabState(tab);
+        if (tab === 'users') setCommunityView(view || 'members');
     };
 
     const [editingId, setEditingId] = useState(null);
@@ -632,6 +635,7 @@ const AdminDashboard = () => {
                         { id: 'donations', icon: FaMoneyBillWave, label: t.donations, show: hasPermission('manage_donations') },
                         { id: 'testimonials', icon: FaComments, label: t.manage_testimonials, show: hasPermission('manage_testimonials') },
                         { id: 'gallery', icon: FaImages, label: t.manage_gallery || 'Gallery', show: hasPermission('manage_gallery') || hasPermission('manage_all') },
+                        { id: 'inbox', icon: FaInbox, label: t.tab_inbox || 'Inbox', show: hasPermission('manage_community') || hasPermission('manage_events') },
                         { id: 'admins', icon: FaUserShield, label: t.manage_admins, show: hasPermission('manage_admins'), className: 'text-yellow-300' },
                     ].map(item => item.show && (
                         <button
@@ -685,17 +689,11 @@ const AdminDashboard = () => {
 
                     {activeTab === 'overview' && (
                         <div className="animate-fade-in">
-                            <DashboardStats
-                                data={{ news, programs, projects, events, users, donations: [] }}
-                                t={t}
-                            />
                             <DashboardOverview
                                 t={t}
                                 news={news}
                                 events={events}
                                 projects={projects}
-                                users={users}
-                                testimonials={testimonials}
                                 onNavigate={setActiveTab}
                                 onAdd={handleAdd}
                                 language={language}
@@ -823,7 +821,8 @@ const AdminDashboard = () => {
                             {activeTab === 'admins' && hasPermission('manage_admins') && (
                                 <AdminManagement />
                             )}
-                            {activeTab === 'users' && hasPermission('manage_community') && <CommunityManagement t={t} onViewUser={handleViewUser} />}
+                            {activeTab === 'users' && hasPermission('manage_community') && <CommunityManagement key={communityView} t={t} onViewUser={handleViewUser} initialView={communityView} />}
+                            {activeTab === 'inbox' && (hasPermission('manage_community') || hasPermission('manage_events')) && <InboxManagement t={t} language={language} />}
                             {activeTab === 'memberships' && hasPermission('manage_community') && <MembershipRequests />}
                         </div>
                     )}

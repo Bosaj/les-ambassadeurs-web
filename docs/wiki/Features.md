@@ -51,3 +51,9 @@ Points are earned automatically, once per activity, and only after the team veri
 **Badges** (earned automatically, with a notification): First Step (1 event), Regular Volunteer (5), Community Pillar (20), Supporter (1 verified donation), Official Member (1 paid year), Loyal Member (3 years), Rising Star (200 pts), Ambassador of Good (1000 pts).
 
 The leaderboard (all-time and this month) lists volunteers and members only (admins are excluded) and shows names as "Firstname L.". Undoing a verification removes the points it granted.
+
+## 👥 Team 2026
+
+The home page shows the 9-member 2026 team introduced on Instagram (@goodness_ambassadors_oujda): Marouane (President), Hanae (Social Media Manager), Israe (Visual Artist / Designer), Mohammed and Aymen (Multimedia), Oussama (AI / Web Engineer), Saadia (Regional Coordinator), Anas (Operations Coordinator), Abderrazzak (Logistics Manager). A switch shows the previous team.
+
+Admins also appear on the gamification leaderboard with an *Admin* tag, and the volunteer dashboard shows a progress card (level, points, rank, next badge).
