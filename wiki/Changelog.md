@@ -10,6 +10,7 @@ For the full commit log, see [CHANGELOG.md](https://github.com/Bosaj/les-ambassa
 
 | Release | Date | Milestone | Key Deliverables |
 |---|---|---|---|
+| **[`v1.1.0`](https://github.com/Bosaj/les-ambassadeurs-web/releases/tag/v1.1.0)** | 2026-09-26 | [Closed (#17)](https://github.com/Bosaj/les-ambassadeurs-web/milestone/17?closed=1) | New logo and 100 DH fee; fair automatic gamification and profile privilege-escalation fix; admin overview, inbox and data standards; volunteer progress card; Team 2026; 2026 Instagram brand identity on every page; responsive admin tables; Web CI and deployment tracking. |
 | **[`v1.0.0`](https://github.com/Bosaj/les-ambassadeurs-web/releases/tag/v1.0.0)** | 2026-03-28 | Closed (#13) | Photo Gallery page, infinite CSS marquee, admin gallery CRUD, DevSecOps suite. |
 | **[`v0.9.0`](https://github.com/Bosaj/les-ambassadeurs-web/releases/tag/v0.9.0)** | 2026-03-24 | Closed (#12) | AuthContext native fetch deadlock fix, logout resiliency, post creation fixes. |
 | **[`v0.8.0`](https://github.com/Bosaj/les-ambassadeurs-web/releases/tag/v0.8.0)** | 2026-03-07 | Closed (#11) | Expired items visual treatment, Volunteer Club onboarding, route guards. |
