@@ -226,10 +226,10 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 transition-colors duration-300">
+        <div className="min-h-screen bg-brand-paper pt-24 pb-12 transition-colors duration-300">
             <div className="container mx-auto px-4 max-w-2xl">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-                    <div className="bg-blue-900 dark:bg-gray-700 p-6 text-white text-center relative">
+                    <div className="bg-brand-grid p-6 text-white text-center relative border-b-8 border-[var(--brand-red)]">
                         <div className="w-32 h-32 mx-auto relative group">
                             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/30 bg-white/20 flex items-center justify-center">
                                 {getSafeImageUrl(avatarPreview) ? (

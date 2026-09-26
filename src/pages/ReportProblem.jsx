@@ -62,7 +62,7 @@ const ReportProblem = () => {
     };
 
     return (
-        <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen bg-brand-paper pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
             <div className="max-w-2xl mx-auto">
                 <nav className="flex mb-8 text-sm text-gray-500 dark:text-gray-400">
                     <Link to="/" className="hover:text-amber-600 transition-colors">{t.home}</Link>
@@ -80,7 +80,7 @@ const ReportProblem = () => {
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 mb-4">
                             <FaExclamationTriangle className="text-3xl" />
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                        <h1 className="font-display text-3xl sm:text-4xl text-[var(--brand-navy)] dark:text-white">
                             {t.report_problem_title || "Report a Problem"}
                         </h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-300">

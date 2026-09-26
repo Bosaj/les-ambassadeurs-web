@@ -23,7 +23,7 @@ const ErrorPage = ({ error, resetErrorBoundary, is404 = false }) => {
     const isRtl = language === 'ar';
 
     return (
-        <div className={`min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 ${isRtl ? 'font-arabic' : ''}`} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen flex items-center justify-center p-4 bg-brand-grid transition-colors duration-300 ${isRtl ? 'font-arabic' : ''}`} dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="max-w-2xl w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 md:p-12 text-center animate-fade-in relative overflow-hidden">
                 {/* Background decorative blob */}
                 <div className="absolute -top-20 -left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>

@@ -8,7 +8,7 @@ const TermsOfUse = () => {
     const isRTL = language === 'ar';
 
     return (
-        <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen bg-brand-paper pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
             <div className="max-w-4xl mx-auto">
                 <nav className="flex mb-8 text-sm text-gray-500 dark:text-gray-400">
                     <Link to="/" className="hover:text-amber-600 transition-colors">{t.home}</Link>
@@ -23,7 +23,7 @@ const TermsOfUse = () => {
                     className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 sm:p-12 overflow-hidden border border-gray-100 dark:border-gray-700"
                 >
                     <div className="border-b border-gray-200 dark:border-gray-700 pb-8 mb-8">
-                        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                        <h1 className="font-display text-3xl sm:text-4xl text-[var(--brand-navy)] dark:text-white mb-4">
                             {t.terms_title || "Terms of Use"}
                         </h1>
                         <p className="text-gray-600 dark:text-gray-300">

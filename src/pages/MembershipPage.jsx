@@ -93,11 +93,11 @@ const MembershipPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
+        <div className="min-h-screen bg-brand-paper py-12 px-4">
             <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-                <div className="bg-blue-900 text-white p-8 text-center">
+                <div className="bg-brand-grid text-white p-8 text-center border-b-8 border-[var(--brand-red)]">
                     <FaUserShield className="text-5xl mx-auto mb-4 animate-bounce-slow" />
-                    <h1 className="text-3xl font-bold mb-2">{t.become_member_title || "Official Membership Application"}</h1>
+                    <h1 className="font-display text-3xl md:text-4xl mb-2">{t.become_member_title || "Official Membership Application"}</h1>
                     <p className="opacity-90">{t.become_member_subtitle || "Join our dedicated core team."}</p>
                 </div>
 

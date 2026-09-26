@@ -59,9 +59,9 @@ const GalleryPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="min-h-screen bg-brand-paper transition-colors duration-300">
             {/* Hero Header */}
-            <div className="relative bg-blue-900 dark:bg-gray-800 overflow-hidden py-24 px-4">
+            <div className="relative bg-brand-grid overflow-hidden py-24 px-4 border-b-8 border-[var(--brand-red)]">
                 {/* Decorative blobs */}
                 <div className="absolute top-0 left-0 w-96 h-96 bg-blue-700/30 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
                 <div className="absolute bottom-0 right-0 w-96 h-96 bg-red-500/20 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
@@ -75,7 +75,7 @@ const GalleryPage = () => {
                             <FaImages className="text-yellow-400" />
                             {t.gallery_page_title}
                         </span>
-                        <h1 className="text-4xl md:text-6xl font-black text-white mb-4 leading-tight" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                        <h1 className="font-display text-4xl md:text-6xl text-white mb-4 leading-tight" dir={language === 'ar' ? 'rtl' : 'ltr'}>
                             {t.gallery_page_title}
                         </h1>
                         <p className="text-blue-200 text-lg max-w-2xl mx-auto" dir={language === 'ar' ? 'rtl' : 'ltr'}>

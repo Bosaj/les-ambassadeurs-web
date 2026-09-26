@@ -8,6 +8,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import AttendeesList from '../components/AttendeesList';
 import SupportersList from '../components/SupportersList';
 import { formatDateRange, calculateDuration, isExpired } from '../utils/dateUtils';
+import PageHeader from '../components/PageHeader';
 
 const EventsPage = () => {
     const { events, registerForEvent, cancelRegistration, getLocalizedContent } = useData();
@@ -57,9 +58,9 @@ const EventsPage = () => {
     };
 
     return (
-        <div className="py-20 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-            <div className="container mx-auto px-4">
-                <h1 className="font-display text-4xl md:text-5xl text-center text-[var(--brand-navy)] dark:text-white mb-12">{t.events_page_title}</h1>
+        <div className="bg-brand-paper min-h-screen pb-20 transition-colors duration-300">
+            <PageHeader title={t.events_page_title} />
+            <div className="container mx-auto px-4 pt-12">
 
                 <div className="space-y-8">
                     {events.length > 0 ? events.map((event) => {

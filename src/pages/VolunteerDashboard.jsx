@@ -247,12 +247,12 @@ const VolunteerDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+        <div className="min-h-screen bg-brand-paper py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t.welcome}, {(language === 'ar' && user?.full_name_ar) ? user.full_name_ar : (user?.full_name || user?.email?.split('@')[0])}</h1>
+                        <h1 className="font-display text-3xl md:text-4xl text-[var(--brand-navy)] dark:text-gray-100">{t.welcome}, {(language === 'ar' && user?.full_name_ar) ? user.full_name_ar : (user?.full_name || user?.email?.split('@')[0])}</h1>
                         <p className="text-gray-600 dark:text-gray-400">{t.volunteer_dashboard}</p>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto">
@@ -436,7 +436,7 @@ const VolunteerDashboard = () => {
                             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
                                 <FaHandHoldingHeart className="text-red-500" /> {t.donation_impact || "My Donation Impact"}
                             </h2>
-                            <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white p-8 rounded-2xl mb-8 text-center">
+                            <div className="bg-brand-grid text-white p-8 rounded-2xl mb-8 text-center">
                                 <p className="text-xl mb-2 opacity-90">{t.total_contribution || "Total Contribution"}</p>
                                 <h3 className="text-5xl font-bold">{totalDonated} <span className="text-2xl">{t.currency_mad || "DH"}</span></h3>
                                 <p className="mt-4 text-sm opacity-75">{t.thank_you_diff || "Thank you for making a difference!"}</p>
