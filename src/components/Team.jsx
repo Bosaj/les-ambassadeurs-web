@@ -119,10 +119,10 @@ const Team = () => {
     ];
 
     return (
-        <section className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 overflow-hidden">
+        <section className="py-20 bg-brand-paper transition-colors duration-300 overflow-hidden">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h3 className="text-4xl font-bold text-blue-900 dark:text-white mb-6 relative inline-block">
+                    <h3 className="font-display text-4xl md:text-5xl text-[var(--brand-navy)] dark:text-white mb-6 relative inline-block">
                         {t.team_title}
                         <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-red-500 rounded-full"></div>
                     </h3>

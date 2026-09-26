@@ -25,7 +25,7 @@ const Footer = () => {
     return (
         <footer className="bg-gray-900 dark:bg-black text-white pt-12 pb-6 transition-colors duration-300">
             <div className="container mx-auto px-4">
-                <div className="grid md:grid-cols-4 gap-8 mb-8">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
                     <div>
                         <h3 className="text-xl font-bold mb-4">
                             {t.association_name}
@@ -88,7 +88,7 @@ const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-2">
                                 <FaMapMarkerAlt className="text-gray-400 mt-1" />
-                                <span className="text-gray-400">{t.address}</span>
+                                <span className="text-gray-400 break-all min-w-0">{t.address}</span>
                             </li>
                             <li className="flex items-center gap-2">
                                 <FaPhone className="text-gray-400" />
@@ -96,7 +96,7 @@ const Footer = () => {
                             </li>
                             <li className="flex items-center gap-2">
                                 <FaEnvelope className="text-gray-400" />
-                                <span className="text-gray-400">asosoufaraelkhir48@gmail.com</span>
+                                <span className="text-gray-400 break-all min-w-0">asosoufaraelkhir48@gmail.com</span>
                             </li>
                         </ul>
                     </div>

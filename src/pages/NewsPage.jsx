@@ -56,13 +56,13 @@ const NewsPage = () => {
     return (
         <div className="py-20 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
             <div className="container mx-auto px-4">
-                <h1 className="text-4xl font-bold text-center text-blue-900 dark:text-white mb-12">
+                <h1 className="font-display text-4xl md:text-5xl text-center text-[var(--brand-navy)] dark:text-white mb-12">
                     {t.news_title}
                 </h1>
 
                 {/* News Section */}
                 <div className="mb-16">
-                    <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-8 border-l-4 border-yellow-500 pl-4">
+                    <h2 className="font-display text-3xl md:text-4xl text-[var(--brand-navy)] dark:text-white mb-8 border-l-4 border-yellow-500 pl-4">
                         {t.news_section_title}
                     </h2>
                     {news.length === 0 ? (
@@ -114,7 +114,7 @@ const NewsPage = () => {
 
                 {/* Events Section */}
                 <div>
-                    <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-8 border-l-4 border-blue-600 pl-4">
+                    <h2 className="font-display text-3xl md:text-4xl text-[var(--brand-navy)] dark:text-white mb-8 border-l-4 border-blue-600 pl-4">
                         {t.events_section_title}
                     </h2>
                     {events.length === 0 ? (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { FaHistory, FaEye, FaCheck, FaTimes, FaTrash, FaStar } from 'react-icons/fa';
+import { FaHistory, FaEye, FaCheck, FaTimes, FaTrash, FaStar, FaSearch } from 'react-icons/fa';
+import { getLevel } from '../../lib/gamification';
 import MembershipHistoryModal from './MembershipHistoryModal';
 import AwardPointsModal from './AwardPointsModal';
 import ConfirmationModal from '../ConfirmationModal';
@@ -19,6 +20,8 @@ const CommunityManagement = ({ t, onViewUser, initialView = 'members' }) => {
     const { updateAttendanceStatus, fetchData: refreshGlobalData, cancelRegistration } = useData();
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, data: null });
     const [awardModal, setAwardModal] = useState({ isOpen: false, user: null });
+    const [search, setSearch] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
 
     const fetchData = async () => {
         setLoading(true);
@@ -179,7 +182,7 @@ const CommunityManagement = ({ t, onViewUser, initialView = 'members' }) => {
                 )}
 
                 <button
-                    onClick={refreshGlobalData ? refreshGlobalData : fetchData}
+                    onClick={fetchData}
                     disabled={loading}
                     className="self-end md:self-auto flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap"
                 >
@@ -196,66 +199,98 @@ const CommunityManagement = ({ t, onViewUser, initialView = 'members' }) => {
                 ) : (
                     <>
                         {view === 'members' ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left min-w-[900px]">
-                                    <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                            <div className="p-4 space-y-4">
+                                <div className="flex flex-col md:flex-row gap-3 md:items-center">
+                                    <label className="relative flex-1">
+                                        <FaSearch className="absolute top-1/2 -translate-y-1/2 start-3 text-gray-400" />
+                                        <input
+                                            type="search"
+                                            value={search}
+                                            onChange={e => setSearch(e.target.value)}
+                                            placeholder={t.search_members || 'Search by name, email, phone or city'}
+                                            className="w-full ps-9 pe-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        />
+                                    </label>
+                                    <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg overflow-x-auto">
+                                        {['all', 'volunteer', 'member', 'admin'].map(r => (
+                                            <button key={r} onClick={() => setRoleFilter(r)}
+                                                className={`px-3 py-1 rounded text-sm font-medium whitespace-nowrap ${roleFilter === r ? 'bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-gray-600 dark:text-gray-300'}`}>
+                                                {r === 'all' ? (t.filter_all || 'All') : (t[`role_${r}`] || r)} ({r === 'all' ? users.length : users.filter(u => u.role === r).length})
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="admin-table-wrap">
+                                <table className="admin-table min-w-[980px]">
+                                    <thead>
                                         <tr>
-                                            <th className="p-4 whitespace-nowrap w-[20%]">{t.table_header_name || "Name"}</th>
-                                            <th className="p-4 whitespace-nowrap w-[25%]">{t.table_header_email || "Email"}</th>
-                                            <th className="p-4 whitespace-nowrap w-[10%]">{t.table_header_role || "Role"}</th>
-                                            <th className="p-4 whitespace-nowrap w-[15%]">{t.table_header_phone || "Phone"}</th>
-                                            <th className="p-4 whitespace-nowrap w-[15%]">{t.table_header_city || "City"}</th>
-                                            <th className="p-4 whitespace-nowrap text-right w-[15%]">{t.table_header_actions || "Actions"}</th>
+                                            <th>{t.table_header_name || "Member"}</th>
+                                            <th>{t.table_header_role || "Role"}</th>
+                                            <th>{t.membership_label || "Membership"}</th>
+                                            <th>{t.points || "Points"}</th>
+                                            <th>{t.table_header_phone || "Phone"} / {t.table_header_city || "City"}</th>
+                                            <th>{t.joined_on || "Joined"}</th>
+                                            <th className="text-end">{t.table_header_actions || "Actions"}</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {users.length > 0 ? users.map(u => (
-                                            <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                                <td className="p-4 font-medium dark:text-white align-middle">
-                                                    <div className="truncate max-w-[200px]" title={(language === 'ar' && u.full_name_ar) ? u.full_name_ar : u.full_name}>
-                                                        {(language === 'ar' && u.full_name_ar) ? u.full_name_ar : u.full_name}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{u.email}</td>
-                                                <td className="p-4 whitespace-nowrap align-middle"><span className={`px-2 py-1 rounded text-xs inline-block ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>{t[`role_${u.role}`] || u.role}</span></td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{u.phone_number || '-'}</td>
-                                                <td className="p-4 text-gray-500 dark:text-gray-400 whitespace-nowrap align-middle">{(language === 'ar' && u.city_ar) ? u.city_ar : (u.city ? (t[`city_${u.city.toLowerCase()}`] || u.city) : '-')}</td>
-                                                <td className="p-4 text-right whitespace-nowrap align-middle">
-                                                    <div className="flex justify-end gap-2 items-center">
-                                                        <button
-                                                            onClick={() => setSelectedUserForHistory(u)}
-                                                            className="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 p-2 rounded hover:bg-purple-200 transition flex-shrink-0"
-                                                            title={t.membership_history_title || "Membership History"}
-                                                        >
-                                                            <FaHistory />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => onViewUser && onViewUser(u)}
-                                                            title={t.view_profile || "View Full Profile"}
-                                                        >
-                                                            <FaEye />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setAwardModal({ isOpen: true, user: u })}
-                                                            className="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300 p-2 rounded hover:bg-yellow-200 transition flex-shrink-0"
-                                                            title={t.award_points || "Award Points"}
-                                                        >
-                                                            <FaStar />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr>
-                                                <td colSpan="6" className="p-4 text-center text-gray-500">No members found.</td>
-                                            </tr>
-                                        )}
+                                    <tbody>
+                                        {(() => {
+                                            const q = search.trim().toLowerCase();
+                                            const rows = users
+                                                .filter(u => roleFilter === 'all' || u.role === roleFilter)
+                                                .filter(u => !q || [u.full_name, u.full_name_ar, u.email, u.phone_number, u.city, u.city_ar]
+                                                    .some(v => (v || '').toLowerCase().includes(q)))
+                                                .sort((a, b) => (b.points || 0) - (a.points || 0));
+                                            if (rows.length === 0) {
+                                                return <tr><td colSpan="7" className="text-center text-gray-500 py-8">{t.no_members_found || 'No members found.'}</td></tr>;
+                                            }
+                                            const roleStyle = { admin: 'bg-purple-100 text-purple-800', member: 'bg-blue-100 text-blue-800', volunteer: 'bg-green-100 text-green-800' };
+                                            const memberStyle = { active: 'bg-green-100 text-green-800', pending: 'bg-yellow-100 text-yellow-800', rejected: 'bg-red-100 text-red-700', expired: 'bg-gray-200 text-gray-700', none: 'bg-gray-100 text-gray-500' };
+                                            return rows.map(u => {
+                                                const name = (language === 'ar' && u.full_name_ar) ? u.full_name_ar : (u.full_name || u.email);
+                                                const lvl = getLevel(u.points || 0).level.id;
+                                                return (
+                                                    <tr key={u.id}>
+                                                        <td>
+                                                            <div className="flex items-center gap-3 min-w-0">
+                                                                {u.avatar_url
+                                                                    ? <img src={u.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" loading="lazy" />
+                                                                    : <span className="w-9 h-9 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold shrink-0">{(name || '?').charAt(0).toUpperCase()}</span>}
+                                                                <div className="min-w-0">
+                                                                    <p className="font-semibold dark:text-white truncate max-w-[220px]" title={name}>{name}</p>
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[220px]">{u.email}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td><span className={`px-2 py-1 rounded text-xs font-semibold ${roleStyle[u.role] || 'bg-gray-100 text-gray-700'}`}>{t[`role_${u.role}`] || u.role}</span></td>
+                                                        <td><span className={`px-2 py-1 rounded text-xs font-semibold ${memberStyle[u.membership_status] || memberStyle.none}`}>{t[`membership_${u.membership_status}`] || u.membership_status || 'none'}</span></td>
+                                                        <td>
+                                                            <p className="font-bold text-blue-800 dark:text-blue-300">{u.points || 0}</p>
+                                                            <p className="text-xs text-gray-500">{t[`level_${lvl}`] || lvl}</p>
+                                                        </td>
+                                                        <td className="text-gray-600 dark:text-gray-300">
+                                                            <p className="whitespace-nowrap">{u.phone_number || '—'}</p>
+                                                            <p className="text-xs text-gray-500">{(language === 'ar' && u.city_ar) ? u.city_ar : (u.city ? (t[`city_${u.city.toLowerCase()}`] || u.city) : '—')}</p>
+                                                        </td>
+                                                        <td className="text-gray-500 whitespace-nowrap">{u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+                                                        <td>
+                                                            <div className="flex justify-end gap-2">
+                                                                <button onClick={() => setSelectedUserForHistory(u)} className="p-2 rounded bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300" title={t.membership_history_title || "Membership History"} aria-label={t.membership_history_title || "Membership History"}><FaHistory /></button>
+                                                                <button onClick={() => onViewUser && onViewUser(u)} className="p-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300" title={t.view_profile || "View Full Profile"} aria-label={t.view_profile || "View Full Profile"}><FaEye /></button>
+                                                                <button onClick={() => setAwardModal({ isOpen: true, user: u })} className="p-2 rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300" title={t.award_points || "Award Points"} aria-label={t.award_points || "Award Points"}><FaStar /></button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            });
+                                        })()}
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left min-w-[900px]">
+                            <div className="admin-table-wrap">
+                                <table className="admin-table min-w-[900px]">
                                     <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                         <tr>
                                             <th className="p-4 whitespace-nowrap w-[20%]">{t.tab_events || "Event"}</th>

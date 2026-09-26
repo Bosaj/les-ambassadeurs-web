@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Lalezar&display=swap');
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
@@ -31,3 +31,192 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+/* ==========================================================================
+   Brand theme — matches the 2026 Instagram visual identity
+   (navy + red, grid paper, halftone dots, torn white paper, bold poster type)
+   ========================================================================== */
+:root {
+    --brand-navy: #1c2d8f;
+    --brand-navy-dark: #121d5e;
+    --brand-red: #e0262d;
+    --brand-paper: #f6f3ec;
+}
+
+.font-display {
+    font-family: 'Lalezar', 'Cairo', system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
+/* Navy background with a light grid, like the posters' graph paper */
+.bg-brand-grid {
+    background-color: var(--brand-navy);
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+
+/* Red background with navy dots */
+.bg-brand-dots {
+    background-color: var(--brand-red);
+    background-image: radial-gradient(rgba(28, 45, 143, 0.85) 2px, transparent 2.5px);
+    background-size: 26px 26px;
+}
+
+/* Light paper with faint dots for section backgrounds */
+.bg-brand-paper {
+    background-color: var(--brand-paper);
+    background-image: radial-gradient(rgba(28, 45, 143, 0.08) 1.5px, transparent 2px);
+    background-size: 22px 22px;
+}
+.dark .bg-brand-paper {
+    background-color: #0f172a;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 2px);
+}
+
+/* White "torn paper" card */
+.paper-torn {
+    background: #fff;
+    color: var(--brand-navy);
+    clip-path: polygon(0% 4%, 6% 1%, 13% 3%, 21% 0%, 30% 3%, 38% 1%, 47% 4%, 55% 1%, 63% 3%, 72% 0%, 80% 3%, 88% 1%, 95% 3%, 100% 1%,
+                       100% 96%, 94% 99%, 86% 97%, 78% 100%, 70% 97%, 61% 99%, 52% 96%, 44% 99%, 35% 97%, 27% 100%, 18% 97%, 10% 99%, 3% 97%, 0% 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+.dark .paper-torn {
+    background: #f1f5f9;
+}
+
+/* Masking-tape strip decoration */
+.brand-tape {
+    position: relative;
+}
+.brand-tape::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    width: 90px;
+    height: 24px;
+    transform: translateX(-50%) rotate(-4deg);
+    background: rgba(240, 190, 170, 0.75);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+}
+
+/* Poster-style section title with a red brush underline */
+.brand-title {
+    font-family: 'Lalezar', 'Cairo', system-ui, sans-serif;
+    color: var(--brand-navy);
+    position: relative;
+    display: inline-block;
+}
+.dark .brand-title {
+    color: #fff;
+}
+.brand-title::after {
+    content: '';
+    display: block;
+    height: 6px;
+    width: 60%;
+    margin: 6px auto 0;
+    background: var(--brand-red);
+    border-radius: 999px;
+    transform: rotate(-1.5deg);
+}
+
+/* Poster-style buttons */
+.btn-brand {
+    background: var(--brand-red);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 0.6rem;
+    box-shadow: 4px 4px 0 var(--brand-navy-dark);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-brand:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--brand-navy-dark);
+}
+.btn-brand-light {
+    background: #fff;
+    color: var(--brand-navy);
+    font-weight: 700;
+    border-radius: 0.6rem;
+    box-shadow: 4px 4px 0 var(--brand-red);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-brand-light:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--brand-red);
+}
+
+/* ==========================================================================
+   Admin tables — one consistent style, scrollable on phones and tablets.
+   Unlayered on purpose so it wins over Tailwind utility classes on the cells.
+   ========================================================================== */
+.admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0.9rem;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.dark .admin-table-wrap {
+    border-color: #374151;
+    background: #1f2937;
+}
+.admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+}
+.admin-table thead th {
+    background: var(--brand-navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.8rem 1rem;
+    text-align: start;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: 3px solid var(--brand-red);
+}
+.admin-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+.dark .admin-table tbody td {
+    border-bottom-color: #374151;
+}
+.admin-table tbody tr:nth-child(even) td {
+    background: #f8fafc;
+}
+.dark .admin-table tbody tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.03);
+}
+.admin-table tbody tr:hover td {
+    background: #eef2ff;
+}
+.dark .admin-table tbody tr:hover td {
+    background: rgba(99, 102, 241, 0.12);
+}
+.admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+@media (max-width: 640px) {
+    .admin-table thead th,
+    .admin-table tbody td {
+        padding: 0.6rem 0.7rem;
+    }
+}
+

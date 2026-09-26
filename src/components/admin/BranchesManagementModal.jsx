@@ -282,8 +282,8 @@ const BranchesManagementModal = ({ isOpen, onClose, t, onUpdate }) => {
                         </div>
 
                         {/* List Section */}
-                        <div className="overflow-y-auto max-h-[600px] border rounded dark:border-gray-600">
-                            <table className="w-full text-left">
+                        <div className="admin-table-wrap overflow-y-auto max-h-[600px]">
+                            <table className="admin-table min-w-[560px]">
                                 <thead className="bg-gray-100 dark:bg-gray-700 sticky top-0">
                                     <tr>
                                         <th className="p-3 dark:text-white">{t.branch_name || "Name"}</th>

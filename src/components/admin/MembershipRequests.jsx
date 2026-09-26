@@ -48,9 +48,9 @@ const MembershipRequests = () => {
                     <p>{t.no_pending_requests || "No pending membership requests."}</p>
                 </div>
             ) : (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
                     {/* Desktop Table */}
-                    <table className="w-full text-left hidden md:table">
+                    <table className="admin-table hidden md:table">
                         <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                             <tr>
                                 <th className="p-4">{t.table_header_name || "Name"}</th>

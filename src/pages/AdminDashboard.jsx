@@ -269,8 +269,8 @@ const AdminManagement = () => {
                 <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.existing_admins}</h3>
 
                 {/* Desktop Table View */}
-                <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden">
-                    <table className="w-full text-left">
+                <div className="hidden md:block admin-table-wrap">
+                    <table className="admin-table">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th className="p-3">{t.table_header_name}</th>
@@ -357,9 +357,9 @@ const AdminManagement = () => {
 
             <div>
                 <h3 className="font-bold mb-4 text-gray-800 dark:text-white">{t.pending_requests || "Pending Requests"}</h3>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-hidden overflow-x-auto">
+                <div className="admin-table-wrap">
                     {requests.length === 0 ? <p className="p-4 text-center">{t.no_pending_requests || "No pending requests"}</p> : (
-                        <table className="w-full text-left min-w-[300px]">
+                        <table className="admin-table min-w-[480px]">
                             <thead className="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th className="p-3 whitespace-nowrap">{t.table_header_name || "Name"}</th>
@@ -615,7 +615,7 @@ const AdminDashboard = () => {
                 />
             )}
 
-            <aside className={`fixed inset-y-0 left-0 z-50 md:z-30 w-64 bg-blue-900 dark:bg-gray-800 text-white p-6 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} `}>
+            <aside className={`fixed inset-y-0 left-0 z-50 md:z-30 w-64 bg-[var(--brand-navy)] dark:bg-gray-800 text-white p-6 border-e-4 border-[var(--brand-red)] overflow-y-auto transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} `}>
                 <h2 className="text-2xl font-bold mb-8 flex justify-between items-center">
                     {t.admin_panel}
                     <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-white">
