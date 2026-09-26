@@ -12,10 +12,10 @@ const Mission = () => {
         <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-blue-900 dark:text-gray-100 mb-4">
+                    <h2 className="font-display text-3xl md:text-4xl text-[var(--brand-navy)] dark:text-gray-100 mb-4">
                         {t.mission_vision_title}
                     </h2>
-                    <div className="w-24 h-1 bg-red-500 mx-auto"></div>
+                    <div className="w-24 h-1.5 rounded-full -rotate-2 bg-[var(--brand-red)] mx-auto"></div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">

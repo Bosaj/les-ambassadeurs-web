@@ -230,7 +230,7 @@ const Donate = () => {
         >
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold text-blue-900 dark:text-white mb-6">{t.donate_title}</h1>
+                    <h1 className="font-display text-4xl md:text-5xl text-[var(--brand-navy)] dark:text-white mb-6">{t.donate_title}</h1>
                     <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
                         {t.donate_hero_desc}
                     </p>
@@ -306,7 +306,7 @@ const Donate = () => {
 
                 <div className="mt-20 text-center bg-blue-50 dark:bg-gray-800 p-10 rounded-2xl max-w-4xl mx-auto transition-colors duration-300">
                     <FaHeart className="text-red-500 text-5xl mx-auto mb-6 animate-pulse" />
-                    <h2 className="text-3xl font-bold text-blue-900 dark:text-white mb-4">{t.impact_title}</h2>
+                    <h2 className="font-display text-3xl md:text-4xl text-[var(--brand-navy)] dark:text-white mb-4">{t.impact_title}</h2>
                     <p className="text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
                         {t.impact_desc}
                     </p>

@@ -162,8 +162,8 @@ const DonationsList = () => {
                 {loading ? (
                     <div className="p-8 text-center text-gray-500">{t.loading || "Loading..."}</div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left whitespace-nowrap">
+                    <div className="admin-table-wrap">
+                        <table className="admin-table min-w-[760px] whitespace-nowrap">
                             <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                 <tr>
                                     <th className="p-4">{t.donor_name || "Donor Name"}</th>

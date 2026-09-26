@@ -508,8 +508,8 @@ const VolunteerDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="overflow-hidden rounded-xl border dark:border-gray-700">
-                                <table className="w-full text-left border-collapse">
+                            <div className="admin-table-wrap">
+                                <table className="admin-table min-w-[520px]">
                                     <thead className="bg-gray-50 dark:bg-gray-900/50">
                                         <tr>
                                             <th className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300">{t.year || "Year"}</th>

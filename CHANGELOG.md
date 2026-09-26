@@ -8,6 +8,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 ## [Unreleased]
 
 ### Added
+- **Brand theme from the 2026 Instagram identity**: navy grid-paper and red halftone-dot backgrounds, torn white paper cards, taped polaroid photos, Lalezar poster display font for headings, offset-shadow buttons; new hero, header bar, team section, Gamification Hub header and admin sidebar
+- **Admin tables**: one consistent style everywhere (navy header with red rule, zebra rows, hover, rounded frame) and horizontal scrolling on phones/tablets; Community members table rebuilt with search, role filter with counts, avatar, membership status, points and level, contact and join date, and labelled action buttons
+
 - **Admin overview** (#135): real KPIs from a single admin-only RPC (`get_admin_overview`): members (+30 days), paid members and fees this year, verified donations, events and confirmed participations; a *Needs attention* list with counts that opens the right panel (attendance to confirm, membership requests/payments, donations, admin requests, testimonials, suggestions, reports); top-5 leaderboard
 - **Admin Inbox** (#135): new panel to triage problem reports (open → in progress → resolved/closed) and approve or reject event suggestions, notifying the author
 - **Volunteer progress card** (#135): level, progress to next level, points, rank, badges and the closest next badge on the volunteer dashboard
@@ -30,6 +33,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | Versioning: [
 - Added global wiki `_Footer.md`, `_Sidebar.md`, `_Header.md` pages and corrected association details across the wiki
 
 ### Fixed
+- Footer overflowed horizontally on tablets (long e-mail in a 4-column grid); Community "Refresh" button reloaded global data instead of the table; hero image reduced from 1.7 MB to 160 KB
+
 - **Data standards** (#135): CHECK constraints and defaults for roles, statuses, categories, ratings, amounts and points; email-only event registrations linked to member accounts; membership payments without a method marked `manual`
 - **Testimonials** (#135): admins could not see or delete pending testimonials (only approved ones were readable) and members could submit a testimonial already approved
 - **Event suggestions** (#135): admins had no access at all; they can now review, approve, reject and delete them
