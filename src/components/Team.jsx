@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../translations';
 import { FaLinkedin, FaEnvelope } from 'react-icons/fa';
@@ -9,9 +9,29 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/effect-coverflow';
 
+// 2026 team, as introduced on Instagram (@goodness_ambassadors_oujda, "MEET OUR TEAM OF 9 members")
+const TEAM_2026 = [
+    { name: 'Marouane', roleKey: 'president', image: '/team/2026/marouane_president.jpg' },
+    { name: 'Hanae', roleKey: 'social_media_manager', image: '/team/2026/hanae_social_media_manager.jpg' },
+    { name: 'Israe', roleKey: 'visual_artist', image: '/team/2026/israe_visual_artist.jpg' },
+    { name: 'Mohammed', roleKey: 'multimedia', image: '/team/2026/mohammed_multimedia.jpg' },
+    { name: 'Aymen', roleKey: 'multimedia', image: '/team/2026/aymen_multimedia.jpg' },
+    { name: 'Oussama', roleKey: 'ai_web_engineer', image: '/team/2026/oussama_ai_web_engineer.jpg', email: 'oussousselhadji@gmail.com', linkedin: 'https://www.linkedin.com/in/oussama-elhadji/' },
+    { name: 'Saadia', roleKey: 'regional_coordinator', image: '/team/2026/saadia_regional_coordinator.jpg' },
+    { name: 'Anas', roleKey: 'operations_coordinator', image: '/team/2026/anas_operations_coordinator.jpg' },
+    { name: 'Abderrazzak', roleKey: 'logistics_manager', image: '/team/2026/abderrazzak_logistics_manager.jpg' },
+];
+
+const ROLE_FALLBACK = {
+    president: 'President', social_media_manager: 'Social Media Manager', visual_artist: 'Visual Artist / Designer',
+    multimedia: 'Multimedia', ai_web_engineer: 'AI / Web Engineer', regional_coordinator: 'Regional Coordinator',
+    operations_coordinator: 'Operations Coordinator', logistics_manager: 'Logistics Manager',
+};
+
 const Team = () => {
     const { language } = useLanguage();
     const t = translations[language];
+    const [season, setSeason] = useState('2026');
 
     const teamMembers = [
         {
@@ -109,8 +129,48 @@ const Team = () => {
                     <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-lg mt-4">
                         {t.team_intro_desc}
                     </p>
+                    <div className="inline-flex mt-8 rounded-full bg-white dark:bg-gray-800 p-1 shadow" role="tablist">
+                        {[['2026', t.team_2026 || 'Team 2026'], ['previous', t.team_previous || 'Previous team']].map(([key, label]) => (
+                            <button
+                                key={key}
+                                role="tab"
+                                aria-selected={season === key}
+                                onClick={() => setSeason(key)}
+                                className={`px-5 py-2 rounded-full text-sm font-bold transition ${season === key ? 'bg-blue-900 text-white dark:bg-red-500' : 'text-gray-600 dark:text-gray-300'}`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
+                {season === '2026' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto" data-testid="team-2026">
+                        {TEAM_2026.map((member) => {
+                            const role = t[`team2026_${member.roleKey}`] || ROLE_FALLBACK[member.roleKey];
+                            return (
+                                <figure key={member.name} className="group bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 -rotate-1 hover:rotate-0 odd:rotate-1">
+                                    <div className="aspect-[4/5] overflow-hidden">
+                                        <img src={member.image} alt={`${member.name} — ${role}`} loading="lazy"
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                    </div>
+                                    <figcaption className="p-4 text-center border-t-4 border-red-500">
+                                        <p className="text-lg font-extrabold text-blue-900 dark:text-white tracking-wide uppercase">{member.name}</p>
+                                        <p className="text-sm font-semibold text-red-600 dark:text-red-400">{role}</p>
+                                        {(member.email || member.linkedin) && (
+                                            <div className="flex justify-center gap-3 mt-2 text-gray-500">
+                                                {member.linkedin && <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-blue-700"><FaLinkedin /></a>}
+                                                {member.email && <a href={`mailto:${member.email}`} aria-label="Email" className="hover:text-red-500"><FaEnvelope /></a>}
+                                            </div>
+                                        )}
+                                    </figcaption>
+                                </figure>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {season === 'previous' && (
                 <div className="team-swiper-container px-4" dir="ltr">
                     <Swiper
                         key={language}
@@ -197,6 +257,7 @@ const Team = () => {
                         ))}
                     </Swiper>
                 </div>
+                )}
             </div>
 
             <style>{`

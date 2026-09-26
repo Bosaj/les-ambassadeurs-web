@@ -43,3 +43,9 @@ Permissions are stored as a JSONB array in `profiles.permissions`. The app evalu
 ## Inviting an admin
 
 Admins with the `manage_admins` permission can promote an **existing account** from **Admin Dashboard > Admins > Invite new admin**. The person must sign up first; the database function `make_admin_by_email` rejects callers without `manage_admins` and returns "not found" for unknown emails. The promoted user receives an in-app notification.
+
+## Overview & Inbox
+
+* **Overview** shows live KPIs (members, paid members and fees this year, verified donations, events and confirmed participations) and a **Needs attention** list. Each item shows how many things are waiting and opens the right panel; for example, *Attendance to confirm* opens Community › Attendance. Confirming a participation gives the volunteer +20 points.
+* **Inbox** collects **problem reports** (move them through open → in progress → resolved/closed) and **event suggestions** (approve or reject; the author is notified).
+* **Data rules:** statuses only accept standard values (for example, donations: pending/verified/rejected; registrations: pending/confirmed/attended/rejected; reports: open/in_progress/resolved/closed).
