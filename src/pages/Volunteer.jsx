@@ -20,13 +20,13 @@ const Volunteer = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="min-h-screen bg-gray-50 dark:bg-gray-900 py-20 px-4 flex flex-col items-center justify-center transition-colors duration-300"
+            className="min-h-screen bg-brand-paper py-20 px-4 flex flex-col items-center justify-center transition-colors duration-300"
         >
             <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden text-center">
-                <div className="bg-blue-900 p-8 text-white relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                <div className="bg-brand-grid p-8 text-white relative overflow-hidden border-b-8 border-[var(--brand-red)]">
+                    
                     <FaHandPaper className="text-5xl mx-auto mb-4 relative z-10 animate-bounce-slow" />
-                    <h1 className="text-3xl font-bold relative z-10">{t.volunteer_title}</h1>
+                    <h1 className="font-display text-3xl md:text-4xl relative z-10">{t.volunteer_title}</h1>
                     <p className="text-blue-200 mt-2 relative z-10">
                         {t.volunteer_subtitle}
                     </p>
