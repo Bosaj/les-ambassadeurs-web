@@ -95,7 +95,6 @@ const GamificationHub = () => {
     const points = progress.points || 0;
     const lvl = getLevel(points);
     const earned = new Map((progress.badges || []).map(b => [b.id, b]));
-    const isAdmin = user?.role === 'admin';
 
     return (
         <div className="max-w-6xl mx-auto p-4 space-y-8">
@@ -134,7 +133,7 @@ const GamificationHub = () => {
                         <div className="bg-white/15 rounded-xl p-4 text-center">
                             <p className="text-xs uppercase tracking-wider opacity-80">{t.gam_rank || 'Rank'}</p>
                             <p className="text-3xl font-extrabold mt-1">
-                                {isAdmin ? '—' : (progress.rank ? `#${progress.rank}` : '—')}
+                                {progress.rank ? `#${progress.rank}` : '—'}
                             </p>
                         </div>
                     </div>
@@ -176,7 +175,7 @@ const GamificationHub = () => {
                     ))}
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                    {t.gam_fair_note || 'Points are only given for activity verified by the team, and each activity counts once. Admins are not ranked.'}
+                    {t.gam_fair_note || 'Points are only given for activity verified by the team, and each activity counts once.'}
                 </p>
             </section>
 
@@ -271,6 +270,7 @@ const GamificationHub = () => {
                                         <p className="font-semibold truncate dark:text-white">
                                             {(language === 'ar' && row.display_name_ar) ? row.display_name_ar : row.display_name}
                                             {row.is_me && <span className="text-xs text-blue-600 dark:text-blue-300 ms-1">({t.gam_you || 'You'})</span>}
+                                            {row.role === 'admin' && <span className="ms-2 text-[10px] font-bold uppercase bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded align-middle">{t.role_admin_tag || 'Admin'}</span>}
                                         </p>
                                         <p className="text-xs text-gray-500 flex items-center gap-2">
                                             <span>{row.points} {t.points || 'pts'}</span>
@@ -281,9 +281,6 @@ const GamificationHub = () => {
                                 </div>
                             ))}
                         </div>
-                        {isAdmin && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{t.gam_admin_note || 'Admins are not ranked on the leaderboard.'}</p>
-                        )}
                     </section>
 
                     <section className="space-y-4">

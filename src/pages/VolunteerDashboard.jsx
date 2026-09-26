@@ -14,6 +14,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import MembershipRenewalModal from '../components/MembershipRenewalModal';
 import RequestAdminModal from '../components/RequestAdminModal';
 import AttendeesList from '../components/AttendeesList';
+import ProgressCard from '../components/ProgressCard';
 
 const VolunteerDashboard = () => {
     const { user, logout } = useAuth();
@@ -274,6 +275,8 @@ const VolunteerDashboard = () => {
                     {/* OVERVIEW TAB */}
                     {activeTab === 'overview' && (
                         <>
+                            <ProgressCard />
+
                             {/* Stats Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-blue-900 text-white rounded-xl p-6 shadow-md flex items-center justify-between cursor-pointer transform hover:scale-105 transition" onClick={() => setActiveTab('impact')}>
