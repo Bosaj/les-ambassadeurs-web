@@ -209,7 +209,10 @@ export const AuthProvider = ({ children }) => {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: getURL()
+                    redirectTo: getURL(),
+                    // Always show Google's account chooser; otherwise people with several
+                    // Google accounts are silently signed in with whichever one is active.
+                    queryParams: { prompt: 'select_account' }
                 }
             });
             if (error) throw error;
