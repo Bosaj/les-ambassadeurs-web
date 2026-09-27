@@ -4,6 +4,15 @@ import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import LoadingSpinner from './LoadingSpinner';
 
+// Which roles may open each protected area. Members (paid, approved) use the
+// volunteer dashboard; admins can open both.
+const ROUTE_ACCESS = {
+    volunteer: ['volunteer', 'member', 'admin'],
+    admin: ['admin'],
+};
+
+const homeFor = (role) => (role === 'admin' ? '/dashboard/admin' : '/dashboard/volunteer');
+
 const ProtectedRoute = ({ children, requiredRole }) => {
     const { user, loading } = useAuth();
     const { t } = useLanguage();
@@ -16,28 +25,15 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     // Auth resolved: no user → redirect to login
     if (!user) {
-        console.warn(`[ProtectedRoute] No user found! Redirecting to /login...`);
         return <Navigate to="/login" replace />;
     }
 
-    // Role check
-    if (requiredRole && user.role !== requiredRole) {
-        // Admin can access volunteer routes
-        if (user.role === 'admin' && requiredRole === 'volunteer') {
-            return children;
+    if (requiredRole) {
+        const allowed = ROUTE_ACCESS[requiredRole] || [requiredRole];
+        if (!allowed.includes(user.role)) {
+            // Send people to the dashboard they are allowed to use
+            return <Navigate to={homeFor(user.role)} replace />;
         }
-        // Redirect to their correct dashboard
-        if (user.role === 'admin') {
-            console.warn(`[ProtectedRoute] Sending admin back to dashboard/admin`);
-            return <Navigate to="/dashboard/admin" replace />;
-        }
-        if (user.role === 'volunteer') {
-            console.warn(`[ProtectedRoute] Sending volunteer back to dashboard/volunteer`);
-            return <Navigate to="/dashboard/volunteer" replace />;
-        }
-
-        console.warn(`[ProtectedRoute] Sending unknown role back to root /`);
-        return <Navigate to="/" replace />;
     }
 
     return children;
