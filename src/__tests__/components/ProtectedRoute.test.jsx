@@ -35,9 +35,28 @@ describe('ProtectedRoute', () => {
         warn.mockRestore();
     });
 
-    it('keeps volunteers out of admin pages', () => {
+    it('keeps volunteers out of admin pages and sends them to their dashboard', () => {
         auth = { user: { role: 'volunteer' }, loading: false };
         renderAt('admin');
         expect(screen.queryByText('secret')).not.toBeInTheDocument();
+        expect(screen.getByText('volunteer home')).toBeInTheDocument();
+    });
+
+    it.each(['volunteer', 'member', 'admin'])('lets a %s open the volunteer dashboard', (role) => {
+        auth = { user: { role }, loading: false };
+        renderAt('volunteer');
+        expect(screen.getByText('secret')).toBeInTheDocument();
+    });
+
+    it('sends members to the volunteer dashboard, not the home page, when they open an admin page', () => {
+        auth = { user: { role: 'member' }, loading: false };
+        renderAt('admin');
+        expect(screen.getByText('volunteer home')).toBeInTheDocument();
+    });
+
+    it('lets only admins open the admin dashboard', () => {
+        auth = { user: { role: 'admin' }, loading: false };
+        renderAt('admin');
+        expect(screen.getByText('secret')).toBeInTheDocument();
     });
 });
