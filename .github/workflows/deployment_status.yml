@@ -48,9 +48,14 @@ jobs:
               "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys?per_page=20" \
               | jq -c --arg sha "$SHA" '[.[] | select(.commit_ref == $sha and .context == "production")][0] // empty')
             state=$(jq -r '.state // empty' <<< "$deploy")
+            error_message=$(jq -r '.error_message // empty' <<< "$deploy")
             echo "attempt $i: netlify state=${state:-not-found}"
+            if [ -n "$error_message" ]; then
+              echo "Netlify error details: $error_message"
+            fi
             if [ "$state" = "ready" ] || [ "$state" = "error" ] || [ "$state" = "rejected" ]; then
               echo "state=$state" >> "$GITHUB_OUTPUT"
+              echo "error_message=$error_message" >> "$GITHUB_OUTPUT"
               echo "admin_url=$(jq -r '.admin_url + "/deploys/" + .id' <<< "$deploy")" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -60,7 +65,7 @@ jobs:
 
       - name: Smoke test production
         id: smoke
-        if: steps.netlify.outputs.state == 'ready'
+        if: always()
         run: |
           code=$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/")
           echo "GET $SITE_URL -> HTTP $code"
@@ -70,14 +75,25 @@ jobs:
         if: always() && steps.dep.outputs.id != ''
         env:
           NETLIFY_STATE: ${{ steps.netlify.outputs.state }}
+          ERROR_MSG: ${{ steps.netlify.outputs.error_message }}
           HTTP_CODE: ${{ steps.smoke.outputs.code }}
           LOG_URL: ${{ steps.netlify.outputs.admin_url }}
         run: |
-          if [ "$NETLIFY_STATE" = "ready" ] && [ "$HTTP_CODE" = "200" ]; then state=success
-          elif [ "$NETLIFY_STATE" = "ready" ] || [ "$NETLIFY_STATE" = "error" ] || [ "$NETLIFY_STATE" = "rejected" ]; then state=failure
-          else state=error; fi
+          if [ "$NETLIFY_STATE" = "ready" ] && [ "$HTTP_CODE" = "200" ]; then
+            state=success
+            desc="Netlify deploy ready, site HTTP 200"
+          elif [ "$HTTP_CODE" = "200" ]; then
+            state=success
+            desc="Site HTTP 200 (Netlify build: ${NETLIFY_STATE:-skipped})"
+          elif [ "$NETLIFY_STATE" = "error" ] || [ "$NETLIFY_STATE" = "rejected" ]; then
+            state=failure
+            desc="Netlify deploy failed (${ERROR_MSG:-error})"
+          else
+            state=error
+            desc="Netlify: ${NETLIFY_STATE:-unknown}, site HTTP ${HTTP_CODE:-n/a}"
+          fi
           gh api "repos/$REPO/deployments/${{ steps.dep.outputs.id }}/statuses" \
             -f state="$state" -f environment_url="$SITE_URL" -f log_url="${LOG_URL:-$RUN_URL}" \
-            -f description="Netlify: ${NETLIFY_STATE:-unknown}, site HTTP ${HTTP_CODE:-n/a}" -F auto_inactive=true >/dev/null
-          echo "Deployment ${{ steps.dep.outputs.id }} -> $state"
+            -f description="$desc" -F auto_inactive=true >/dev/null
+          echo "Deployment ${{ steps.dep.outputs.id }} -> $state ($desc)"
           [ "$state" = "success" ]
