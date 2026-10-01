@@ -1,0 +1,160 @@
+// DBML Schema for les-ambassadeurs-web (Les Ambassadeurs de la Propreté)
+// Derived from Supabase PostgreSQL Migrations & Production Data Standards
+
+Project les_ambassadeurs_web {
+  database_type: 'PostgreSQL'
+  Note: 'Les Ambassadeurs de la Propreté - Environmental & Community Action Platform'
+}
+
+Table profiles {
+  id uuid [pk, note: 'References auth.users']
+  email varchar
+  full_name varchar
+  phone varchar
+  avatar_url text
+  role varchar [not null, default: 'volunteer', note: 'volunteer | member | admin']
+  membership_status varchar [not null, default: 'none', note: 'none | pending | active | rejected | expired']
+  payment_status varchar [not null, default: 'unpaid', note: 'unpaid | paid']
+  request_status varchar [not null, default: 'none', note: 'none | pending | approved | denied']
+  points integer [not null, default: 0]
+  badges jsonb [not null, default: '[]']
+  is_active boolean [not null, default: true]
+  permissions jsonb [default: '[]']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+}
+
+Table events {
+  id uuid [pk, default: `gen_random_uuid()`]
+  title varchar [not null]
+  description text [not null]
+  category varchar [default: 'event', note: 'event | project | program']
+  event_date timestamptz [not null]
+  location_name varchar [not null]
+  cover_image_url text
+  capacity integer
+  is_published boolean [not null, default: false]
+  created_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+}
+
+Table event_attendees {
+  id uuid [pk, default: `gen_random_uuid()`]
+  event_id uuid [not null]
+  user_id uuid
+  email varchar
+  status varchar [not null, default: 'pending', note: 'pending | confirmed | attended | rejected']
+  registered_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (event_id, user_id) [unique]
+  }
+}
+
+Table event_suggestions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid
+  title varchar [not null]
+  description text [not null]
+  proposed_date date
+  proposed_location varchar
+  status varchar [not null, default: 'pending', note: 'pending | approved | rejected']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table annual_memberships {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  year integer [not null]
+  amount decimal(10,2)
+  payment_method varchar [note: 'stripe | online | paypal | bank | cash | manual']
+  status varchar [not null, default: 'pending', note: 'pending | paid | rejected']
+  paid_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table donations {
+  id uuid [pk, default: `gen_random_uuid()`]
+  donor_id uuid
+  donor_name varchar
+  donor_email varchar
+  amount decimal(10,2) [not null]
+  payment_method varchar [not null]
+  payment_reference varchar
+  status varchar [not null, default: 'pending', note: 'pending | verified | rejected']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table problem_reports {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid
+  title varchar [not null]
+  description text [not null]
+  location varchar
+  photo_url text
+  status varchar [not null, default: 'open', note: 'open | in_progress | resolved | closed']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table testimonials {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid
+  author_name varchar [not null]
+  author_role varchar
+  content text [not null]
+  rating integer [note: '1 to 5']
+  is_approved boolean [not null, default: false]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table badge_definitions {
+  id varchar [pk]
+  name varchar [not null]
+  name_i18n jsonb
+  description text
+  description_i18n jsonb
+  icon varchar
+  points_required integer [not null, default: 0]
+}
+
+Table notifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  title varchar [not null]
+  message text [not null]
+  type varchar [default: 'info']
+  is_read boolean [not null, default: false]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table gallery_images {
+  id uuid [pk, default: `gen_random_uuid()`]
+  event_id uuid
+  image_url text [not null]
+  caption varchar
+  uploaded_by uuid
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table partners {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar [not null]
+  logo_url text
+  website_url text
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+// Relationships
+Ref: events.created_by > profiles.id [delete: set null]
+Ref: event_attendees.event_id > events.id [delete: cascade]
+Ref: event_attendees.user_id > profiles.id [delete: cascade]
+Ref: event_suggestions.user_id > profiles.id [delete: set null]
+Ref: annual_memberships.user_id > profiles.id [delete: cascade]
+Ref: donations.donor_id > profiles.id [delete: set null]
+Ref: problem_reports.user_id > profiles.id [delete: set null]
+Ref: testimonials.user_id > profiles.id [delete: set null]
+Ref: notifications.user_id > profiles.id [delete: cascade]
+Ref: gallery_images.event_id > events.id [delete: cascade]
+Ref: gallery_images.uploaded_by > profiles.id [delete: set null]
