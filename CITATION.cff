@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "Les Ambassadeurs Web"
+abstract: "Official website of the Ambassadors of Good Association - Oujda Branch. A trilingual (Arabic/French/English) platform for volunteering, events, donations, and community management."
+authors:
+  - family-names: "Oussous"
+    given-names: "El Hadji"
+    alias: "Bosaj"
+    email: "oussousselhadji@gmail.com"
+repository-code: "https://github.com/Bosaj/les-ambassadeurs-web"
+url: "https://github.com/Bosaj/les-ambassadeurs-web"
+date-released: 2026-10-02
+license: "GPL-3.0-or-later"
+keywords:
+  - "ai"
+  - "software-engineering"
+  - "bosaj"

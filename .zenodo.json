@@ -1,0 +1,20 @@
+{
+  "title": "Les Ambassadeurs Web: Official website of the Ambassadors of Good Association - Oujda Branch. A trilingual (Arabic/French/English) platform for volunteering, events, donations, and community management.",
+  "description": "<p>Official website of the Ambassadors of Good Association - Oujda Branch. A trilingual (Arabic/French/English) platform for volunteering, events, donations, and community management.</p><p>Authored and maintained by Bosaj (El Hadji Oussous).</p>",
+  "creators": [
+    {
+      "name": "Oussous, El Hadji",
+      "affiliation": "Software Engineer & AI Researcher",
+      "orcid": ""
+    }
+  ],
+  "access_right": "open",
+  "license": "GPL-3.0-or-later",
+  "upload_type": "software",
+  "keywords": [
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Software Engineering",
+    "Bosaj"
+  ]
+}
